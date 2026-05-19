@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\CheckoutRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Services\OrderService;
@@ -88,5 +89,25 @@ class OrderController extends Controller
             'message' => 'Status pesanan berhasil diubah.', 
             'data'    => $order
         ], 200);
+    }
+
+    public function checkout(CheckoutRequest $request): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $order = $this->orderService->checkout($request->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Checkout berhasil. Pesanan telah dibuat.',
+                'data'    => $order
+            ], 201);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Checkout gagal: ' . $e->getMessage(),
+                'data'    => null
+            ], 400);
+        }
     }
 }

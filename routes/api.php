@@ -31,6 +31,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/', [\App\Http\Controllers\Api\OrderController::class, 'store']); // Buat pesanan (Pembeli)
             Route::get('/', [\App\Http\Controllers\Api\OrderController::class, 'index']); // Riwayat pesanan
             Route::put('/{id}/status', [\App\Http\Controllers\Api\OrderController::class, 'updateStatus']); // Ubah status pesanan
+
+            Route::post('/checkout', [\App\Http\Controllers\Api\OrderController::class, 'checkout']); // Checkout
         });
 
         // Cart Routes (Hanya untuk user yang sudah login)
