@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('peternak_profiles', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->uuid('user_id')->unique();
-            $table->string('nama_kandang');
+            $table->string('nama_peternakan');
             $table->jsonb('jenis_ternak')->default('[]');
             $table->integer('kapasitas_ternak')->nullable();
             $table->text('deskripsi')->nullable();

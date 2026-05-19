@@ -13,7 +13,7 @@ class Category extends Model
     // Izinkan pengisian massal
     protected $guarded = [];
 
-    // Relasi balik ke Product (Satu kategori punya banyak produk)
+    // Relasi balik ke Product 
     public function products()
     {
         return $this->hasMany(Product::class);

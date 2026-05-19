@@ -35,4 +35,7 @@ Route::prefix('v1')->group(function () {
         
     });
 
+    // Green Dashboard Route (Public)
+    Route::get('/dashboard/impact', [\App\Http\Controllers\Api\DashboardController::class, 'getImpactDashboard']);
+
 });
