@@ -32,6 +32,14 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\OrderController::class, 'index']); // Riwayat pesanan
             Route::put('/{id}/status', [\App\Http\Controllers\Api\OrderController::class, 'updateStatus']); // Ubah status pesanan
         });
+
+        // Cart Routes (Hanya untuk user yang sudah login)
+        Route::prefix('cart-items')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\CartController::class, 'index']);
+            Route::post('/', [\App\Http\Controllers\Api\CartController::class, 'store']);
+            Route::put('/{id}', [\App\Http\Controllers\Api\CartController::class, 'update']);
+            Route::delete('/{id}', [\App\Http\Controllers\Api\CartController::class, 'destroy']);
+        });
         
     });
 
