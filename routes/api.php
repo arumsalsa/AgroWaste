@@ -56,6 +56,12 @@ Route::prefix('v1')->group(function () {
         Route::middleware('role:admin')->prefix('admin')->group(function () {
             Route::put('/products/{id}/status', [\App\Http\Controllers\Api\ProductController::class, 'updateStatus']);
         });
+
+        // Notification Routes
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+            Route::put('/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+        });
         
     });
 
