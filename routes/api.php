@@ -42,10 +42,19 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}', [\App\Http\Controllers\Api\CartController::class, 'update']);
             Route::delete('/{id}', [\App\Http\Controllers\Api\CartController::class, 'destroy']);
         });
+
+        // Payment Routes (Butuh Login)
+        Route::prefix('payments')->group(function () {
+            Route::post('/manual', [\App\Http\Controllers\Api\PaymentController::class, 'uploadManualProof']);
+            Route::post('/midtrans/token', [\App\Http\Controllers\Api\PaymentController::class, 'getSnapToken']);
+        });
         
     });
 
     // Green Dashboard Route (Public)
     Route::get('/dashboard/impact', [\App\Http\Controllers\Api\DashboardController::class, 'getImpactDashboard']);
+
+    // Webhook Midtrans Route (Public)
+    Route::post('/webhooks/midtrans', [\App\Http\Controllers\Api\PaymentController::class, 'midtransWebhook']);
 
 });
