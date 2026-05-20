@@ -1,30 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use App\Models\Category;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes; // Wajib untuk fitur soft delete
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Product extends Model
+// Tambahkan "implements HasMedia" di sini
+class Product extends Model implements HasMedia
 {
-    use SoftDeletes;
+    use HasUuids, SoftDeletes;
+    
+    // Tambahkan trait InteractsWithMedia di sini
+    use InteractsWithMedia;
 
-    // Beri tahu Laravel bahwa ID kita adalah UUID string
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $fillable = [
+        'peternak_profile_id',
+        'category_id',
+        'name',
+        'description',
+        'price',
+        'stock_kg',
+        'status', // menunggu_review, aktif, ditolak
+    ];
 
-    // Izinkan mass assignment
-    protected $guarded = [];
-
-    // Relasi ke Peternak Profile
-    public function peternakProfile()
+    public function peternakProfile(): BelongsTo
     {
         return $this->belongsTo(PeternakProfile::class);
     }
 
-    // Relasi ke Category
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }

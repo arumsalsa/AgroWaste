@@ -24,6 +24,9 @@ Route::prefix('v1')->group(function () {
             Route::post('/', [ProductController::class, 'store']); // Create Produk
             Route::put('/{id}', [ProductController::class, 'update']); // Edit Produk
             Route::delete('/{id}', [ProductController::class, 'destroy']); // Hapus Produk
+
+            // Upload Images
+            Route::post('/{id}/images', [\App\Http\Controllers\Api\ProductController::class, 'uploadImages']);
         });
 
         // Order Routes
@@ -47,6 +50,11 @@ Route::prefix('v1')->group(function () {
         Route::prefix('payments')->group(function () {
             Route::post('/manual', [\App\Http\Controllers\Api\PaymentController::class, 'uploadManualProof']);
             Route::post('/midtrans/token', [\App\Http\Controllers\Api\PaymentController::class, 'getSnapToken']);
+        });
+
+        // Admin Routes (Hanya Admin)
+        Route::middleware('role:admin')->prefix('admin')->group(function () {
+            Route::put('/products/{id}/status', [\App\Http\Controllers\Api\ProductController::class, 'updateStatus']);
         });
         
     });

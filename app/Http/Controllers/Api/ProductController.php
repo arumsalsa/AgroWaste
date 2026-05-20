@@ -8,6 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\UploadProductImageRequest;
+use App\Http\Requests\UpdateProductStatusRequest;
+use App\Models\Product;
+
 
 class ProductController extends Controller
 {
@@ -119,5 +123,51 @@ class ProductController extends Controller
         $product->delete(); // Ini akan melakukan Soft Delete karena kita pakai trait SoftDeletes
 
         return response()->json(['success' => true, 'message' => 'Produk berhasil dihapus.'], 200);
+    }
+
+    /**
+     * Endpoint untuk Peternak mengunggah gambar produk (Maks 3)
+     */
+    public function uploadImages(UploadProductImageRequest $request, string $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        // Keamanan: Pastikan hanya pemilik produk yang bisa upload gambar
+        if ($product->peternakProfile->user_id !== $request->user()->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $product = $this->productService->uploadImages($product, $request->file('images'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Gambar produk berhasil diunggah.',
+                // Load relasi media agar url gambarnya langsung muncul di response frontend
+                'data'    => $product->load('media') 
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data'    => null
+            ], 400);
+        }
+    }
+
+    /**
+     * Endpoint untuk Admin menyetujui / menolak produk
+     */
+    public function updateStatus(UpdateProductStatusRequest $request, string $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+        
+        $product = $this->productService->updateStatus($product, $request->validated('status'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status produk berhasil diperbarui menjadi ' . $product->status,
+            'data'    => $product
+        ], 200);
     }
 }

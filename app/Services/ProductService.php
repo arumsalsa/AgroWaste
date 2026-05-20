@@ -35,4 +35,33 @@ class ProductService
 
         return Product::create($data);
     }
+
+    /**
+     * Upload gambar produk menggunakan Spatie Media Library
+     */
+    public function uploadImages(\App\Models\Product $product, array $images): \App\Models\Product
+    {
+        // Hitung gambar yang sudah ada
+        $existingMediaCount = $product->getMedia('product_images')->count();
+        
+        // Validasi agar total tidak lebih dari 3
+        if ($existingMediaCount + count($images) > 3) {
+            throw new \Exception('Satu produk maksimal hanya boleh memiliki 3 gambar.');
+        }
+
+        foreach ($images as $image) {
+            $product->addMedia($image)->toMediaCollection('product_images');
+        }
+
+        return $product;
+    }
+
+    /**
+     * Update status produk (Khusus Admin)
+     */
+    public function updateStatus(\App\Models\Product $product, string $status): \App\Models\Product
+    {
+        $product->update(['status' => $status]);
+        return $product;
+    }
 }
