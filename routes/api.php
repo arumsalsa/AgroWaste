@@ -62,6 +62,12 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
             Route::put('/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
         });
+
+        // Logistik Routes (Hanya Mitra Logistik)
+        Route::middleware('role:logistik')->prefix('logistik')->group(function () {
+            Route::get('/shipments', [\App\Http\Controllers\Api\ShipmentController::class, 'index']);
+            Route::put('/shipments/{id}/status', [\App\Http\Controllers\Api\ShipmentController::class, 'updateStatus']);
+        });
         
     });
 
