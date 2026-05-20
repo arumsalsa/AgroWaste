@@ -15,6 +15,11 @@ Route::prefix('v1')->group(function () {
     // Katalog Produk (Public - Bisa dilihat tanpa login)
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']); // Detail produk
+   
+    // Edukasi Artikel (Public)
+    Route::get('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'index']);
+    Route::get('/articles/{slug}', [\App\Http\Controllers\Api\ArticleController::class, 'show']);
+
 
    // Protected Routes (Wajib bawa Token)
     Route::middleware('auth:sanctum')->group(function () {
@@ -55,6 +60,9 @@ Route::prefix('v1')->group(function () {
         // Admin Routes (Hanya Admin)
         Route::middleware('role:admin')->prefix('admin')->group(function () {
             Route::put('/products/{id}/status', [\App\Http\Controllers\Api\ProductController::class, 'updateStatus']);
+
+            // Artikel Edukasi
+            Route::post('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'store']);
         });
 
         // Notification Routes
