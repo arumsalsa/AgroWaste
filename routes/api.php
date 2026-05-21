@@ -62,9 +62,10 @@ Route::prefix('v1')->group(function () {
         // Admin Routes (Hanya Admin)
         Route::middleware('role:admin')->prefix('admin')->group(function () {
             Route::put('/products/{id}/status', [\App\Http\Controllers\Api\ProductController::class, 'updateStatus']);
+            Route::post('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'store']); // Artikel Edukasi
 
-            // Artikel Edukasi
-            Route::post('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'store']);
+            Route::get('/dashboard', [\App\Http\Controllers\Api\AdminController::class, 'dashboard']);
+            Route::put('/users/{id}/suspend', [\App\Http\Controllers\Api\AdminController::class, 'suspendUser']);
         });
 
         // Notification Routes
@@ -78,6 +79,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/shipments', [\App\Http\Controllers\Api\ShipmentController::class, 'index']);
             Route::put('/shipments/{id}/status', [\App\Http\Controllers\Api\ShipmentController::class, 'updateStatus']);
         });
+
+        // Seller Routes (Hanya Peternak)
+        Route::middleware('role:peternak')->prefix('seller')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Api\SellerController::class, 'dashboard']);
+        });
         
     });
 
@@ -86,5 +92,7 @@ Route::prefix('v1')->group(function () {
 
     // Webhook Midtrans Route (Public)
     Route::post('/webhooks/midtrans', [\App\Http\Controllers\Api\PaymentController::class, 'midtransWebhook']);
+
+
 
 });
