@@ -67,7 +67,6 @@ class OrderService
                 throw new \Exception('Keranjang belanja kosong.');
             }
 
-            // Generate Nomor Order unik sesuai aturan CLAUDE.md
             $orderNumber = 'AGW-' . date('Y') . '-' . strtoupper(\Illuminate\Support\Str::random(5));
             $totalQuantity = 0;
             $totalPrice = 0;
@@ -76,14 +75,13 @@ class OrderService
             $order = \App\Models\Order::create([
                 'id'                => \Illuminate\Support\Str::uuid()->toString(),
                 'order_number'      => $orderNumber,
-                'user_id'           => $userId, // Pembeli
-                // Asumsi MVP: pesanan ditarik dari produk pertama untuk ID Peternaknya
+                'user_id'           => $userId, 
                 'peternak_id'       => $cartItems->first()->product->peternakProfile->user_id, 
                 'status'            => 'menunggu_pembayaran',
                 'metode_pengiriman' => $data['metode_pengiriman'],
                 'metode_pembayaran' => $data['metode_pembayaran'],
                 'alamat_pengiriman' => $data['alamat_pengiriman'] ?? null,
-                'total_price'       => 0, // Akan diupdate di bawah
+                'total_price'       => 0, 
                 'quantity_kg'       => 0, // Akan diupdate di bawah (untuk observer karbon)
             ]);
 
@@ -123,5 +121,31 @@ class OrderService
 
             return $order;
         });
+    }
+
+    /**
+     * Peternak: Terima atau Tolak Pesanan
+     */
+    public function processOrderBySeller(string $orderId, string $status, ?string $reason = null)
+    {
+        $order = \App\Models\Order::findOrFail($orderId);
+        
+        $order->update([
+            'status' => $status, // 'dikonfirmasi' atau 'ditolak'
+            'rejection_reason' => $reason
+        ]);
+
+        return $order;
+    }
+
+    /**
+     * Pembeli: Konfirmasi Terima Barang
+     */
+    public function completeOrder(string $orderId)
+    {
+        $order = \App\Models\Order::findOrFail($orderId);
+        $order->update(['status' => 'selesai']);
+
+        return $order;
     }
 }

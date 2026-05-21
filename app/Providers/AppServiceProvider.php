@@ -21,5 +21,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // Daftarkan pengawas order
         \App\Models\Order::observe(\App\Observers\OrderObserver::class);
+        
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Observers;
 
 use App\Models\Order;
@@ -10,35 +8,50 @@ use Illuminate\Support\Str;
 
 class OrderObserver
 {
-    /**
-     * Menangani event setelah data Order berhasil diupdate
-     */
     public function updated(Order $order): void
     {
-        // Fitur dipicu HANYA jika status pesanan baru saja berubah menjadi 'selesai'
         if ($order->isDirty('status') && $order->status === 'selesai') {
             
-            // Ambil data produk terkait untuk mengetahui jenis ternaknya
-            $product = $order->product;
-            $jenisTernak = $product->jenis_ternak; // Contoh: 'sapi'
+            // 1. Hitung total Kg dari relasi orderItems 
+            $totalKg = $order->orderItems->sum('quantity_kg'); 
+            
+            // 2. Kalkulasi CO2eq menggunakan faktor dari config
+            $factors = config('impact.co2eq_factors', []);
+            $co2Saved = 0;
+            
+            foreach ($order->orderItems as $item) {
+                $factor = $factors['sapi'] ?? 0.98; 
+                $co2Saved += ($item->quantity_kg * $factor);
+            }
 
-            // Ambil faktor pengali dari config/impact.php dengan jaminan fallback array kosong
-        $factors = config('impact.co2eq_factors') ?? [];
-        $multiplier = $factors[$jenisTernak] ?? ($factors['lainnya'] ?? 0.050);
-
-            // Rumus: Total Berat Pesanan x Faktor Konversi IPCC
-            $co2Reduced = $order->quantity_kg * $multiplier;
-
-            // Catat ke dalam log dampak lingkungan secara otomatis
+            // 3. Catat di ImpactLog agar muncul di Green Dashboard
             ImpactLog::create([
-                'id'               => Str::uuid()->toString(),
-                'order_id'         => $order->id,
-                'waste_managed_kg' => $order->quantity_kg,
-                'co2eq_reduced_kg' => $co2Reduced,
+                'id'          => Str::uuid()->toString(),
+                'order_id'    => $order->id,
+                'volume_kg'   => $totalKg,
+                'co2eq_saved' => $co2Saved,
             ]);
+
+            // 4. Update total penjualan dan Badge Peternak
+            $firstItem = $order->orderItems->first();
             
-            $peternak = $product->peternakProfile;
-            
+            if ($firstItem && $firstItem->product && $firstItem->product->peternakProfile) {
+                $peternakProfile = $firstItem->product->peternakProfile;
+                $peternakProfile->total_sold_kg += $totalKg;
+
+                // Sistem Gamifikasi
+                $badge = 'none';
+                if ($peternakProfile->total_sold_kg >= 1000) {
+                    $badge = 'pahlawan_bumi';
+                } elseif ($peternakProfile->total_sold_kg >= 500) {
+                    $badge = 'agen_iklim';
+                } elseif ($peternakProfile->total_sold_kg >= 100) {
+                    $badge = 'peternak_hijau';
+                }
+
+                $peternakProfile->badge = $badge;
+                $peternakProfile->save();
+            }
         }
     }
 }

@@ -110,4 +110,21 @@ class OrderController extends Controller
             ], 400);
         }
     }
+
+    public function processBySeller(\Illuminate\Http\Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:dikonfirmasi,ditolak',
+            'rejection_reason' => 'required_if:status,ditolak|string|nullable'
+        ]);
+
+        $order = $this->orderService->processOrderBySeller($id, $request->status, $request->rejection_reason);
+        return response()->json(['success' => true, 'message' => 'Pesanan berhasil diproses.', 'data' => $order]);
+    }
+
+    public function completeByBuyer($id)
+    {
+        $order = $this->orderService->completeOrder($id);
+        return response()->json(['success' => true, 'message' => 'Pesanan selesai. Terima kasih!', 'data' => $order]);
+    }
 }
