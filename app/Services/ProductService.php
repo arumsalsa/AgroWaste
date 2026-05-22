@@ -15,7 +15,6 @@ class ProductService
      */
     public function createProduct(array $data, User $user): Product
     {
-        // Ambil profil peternak dari user yang sedang login
         $peternak = $user->peternakProfile;
 
         if (!$peternak) {
@@ -26,7 +25,7 @@ class ProductService
         $data['id']                  = Str::uuid()->toString();
         $data['peternak_profile_id'] = $peternak->id;
         $data['slug']                = Str::slug($data['name'] . '-' . Str::random(5));
-        $data['status']              = 'pending'; // Menunggu persetujuan admin
+        $data['status']              = 'menunggu_review'; // Menunggu persetujuan admin
         
         // Ambil lokasi produk dari lokasi peternak
         $data['provinsi']  = $peternak->provinsi;
@@ -41,7 +40,6 @@ class ProductService
      */
     public function uploadImages(\App\Models\Product $product, array $images): \App\Models\Product
     {
-        // Hitung gambar yang sudah ada
         $existingMediaCount = $product->getMedia('product_images')->count();
         
         // Validasi agar total tidak lebih dari 3
