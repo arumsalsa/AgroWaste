@@ -22,21 +22,28 @@ class ShipmentService
             ->get();
     }
 
-    /**
-     * Update status pengiriman
-     */
+    /* Update status pengiriman */
     public function updateStatus(string $shipmentId, array $data): Shipment
     {
         $logistikProfileId = Auth::user()->logistikProfile->id;
 
-        // Pastikan kurir hanya bisa update paket miliknya sendiri
         $shipment = Shipment::where('logistik_profile_id', $logistikProfileId)
+            ->with('order') 
             ->findOrFail($shipmentId);
 
         $shipment->update([
             'status'         => $data['status'],
             'tracking_notes' => $data['tracking_notes'] ?? $shipment->tracking_notes,
         ]);
+
+        if ($shipment->order) {
+            app(\App\Services\NotificationService::class)->send(
+                $shipment->order->user_id,
+                'PENGIRIMAN_UPDATE',
+                'Update Pengiriman',
+                "Status paketmu sekarang: {$data['status']}."
+            );
+        }
 
         return $shipment;
     }

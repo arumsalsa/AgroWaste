@@ -23,36 +23,62 @@ class ProductController extends Controller
     }
 
     /**
-     * Menampilkan daftar semua produk untuk Katalog (Public)
+     * Menampilkan katalog produk dengan fitur Filter, Search, dan Sorting
      */
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
     {
-        try {
-            // Mengambil semua produk beserta data kategori dan profil peternaknya
-            // Menggunakan paginate(10) agar data tidak berat jika jumlahnya ribuan
-            $products = \App\Models\Product::with(['category', 'peternakProfile'])->paginate(10);
+        // Mulai query, pastikan hanya mengambil produk yang statusnya 'aktif'
+        $query = \App\Models\Product::with(['peternakProfile', 'category'])
+            ->where('status', 'aktif');
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Berhasil mengambil daftar produk.',
-                'data'    => $products
-            ], 200);
-            
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil data produk: ' . $e->getMessage(),
-                'data'    => null
-            ], 500);
+        // 1. Fitur Search (Berdasarkan nama produk)
+        if ($request->has('search') && $request->search !== '') {
+            $query->where('name', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('description', 'ilike', '%' . $request->search . '%');
         }
+
+        // 2. Fitur Filter Kategori
+        if ($request->has('kategori') && $request->kategori !== '') {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('name', $request->kategori); 
+            });
+        }
+
+        // 3. Fitur Filter Provinsi (Dari profil peternak)
+        if ($request->has('provinsi') && $request->provinsi !== '') {
+            $query->whereHas('peternakProfile', function($q) use ($request) {
+                $q->where('provinsi', 'ilike', '%' . $request->provinsi . '%');
+            });
+        }
+
+        // 4. Fitur Sorting (Terbaru / Harga)
+        $sort = $request->get('sort', 'terbaru');
+        if ($sort === 'harga_terendah') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'harga_tertinggi') {
+            $query->orderBy('price', 'desc');
+        } else {
+            // Default: terbaru
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // 5. Pagination 
+        $products = $query->paginate(12);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Katalog produk berhasil diambil.',
+            'data'    => $products
+        ], 200);
     }
+ 
 
     public function store(StoreProductRequest $request): JsonResponse
     {
         try {
             $product = $this->productService->createProduct(
                 $request->validated(), 
-                $request->user() // Mengambil data user dari token Sanctum
+                $request->user() 
             );
 
             return response()->json([
@@ -95,7 +121,6 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan.'], 404);
         }
 
-        // Pastikan yang mengubah adalah peternak pemilik produk tersebut
         if ($product->peternak_profile_id !== $request->user()->peternakProfile->id) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak. Anda bukan pemilik produk ini.'], 403);
         }
@@ -120,7 +145,7 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Akses ditolak. Anda bukan pemilik produk ini.'], 403);
         }
 
-        $product->delete(); // Ini akan melakukan Soft Delete karena kita pakai trait SoftDeletes
+        $product->delete(); 
 
         return response()->json(['success' => true, 'message' => 'Produk berhasil dihapus.'], 200);
     }
@@ -132,7 +157,6 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        // Keamanan: Pastikan hanya pemilik produk yang bisa upload gambar
         if ($product->peternakProfile->user_id !== $request->user()->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
@@ -143,7 +167,6 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Gambar produk berhasil diunggah.',
-                // Load relasi media agar url gambarnya langsung muncul di response frontend
                 'data'    => $product->load('media') 
             ], 200);
         } catch (\Exception $e) {

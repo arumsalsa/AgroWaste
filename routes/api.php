@@ -74,6 +74,12 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
         });
 
+        // Profile Routes (Untuk semua role yang login)
+        Route::prefix('profile')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\ProfileController::class, 'show']);
+            Route::put('/', [\App\Http\Controllers\Api\ProfileController::class, 'update']);
+        });
+
         // Logistik Routes (Hanya Mitra Logistik)
         Route::middleware('role:logistik')->prefix('logistik')->group(function () {
             Route::get('/shipments', [\App\Http\Controllers\Api\ShipmentController::class, 'index']);

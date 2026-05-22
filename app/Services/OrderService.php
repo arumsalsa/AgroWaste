@@ -42,7 +42,7 @@ class OrderService
             'quantity_kg'      => $data['quantity_kg'],
             'total_price'      => $totalPrice,
             'delivery_address' => $data['delivery_address'],
-            'status'           => 'pending', // Menunggu konfirmasi peternak
+            'status'           => 'pending', 
         ]);
 
         // 5. Potong stok produk
@@ -82,7 +82,7 @@ class OrderService
                 'metode_pembayaran' => $data['metode_pembayaran'],
                 'alamat_pengiriman' => $data['alamat_pengiriman'] ?? null,
                 'total_price'       => 0, 
-                'quantity_kg'       => 0, // Akan diupdate di bawah (untuk observer karbon)
+                'quantity_kg'       => 0, 
             ]);
 
             // 3. Pindahkan item keranjang ke order_items & kurangi stok
@@ -118,7 +118,14 @@ class OrderService
 
             // 4. Kosongkan keranjang setelah sukses
             \App\Models\CartItem::where('user_id', $userId)->delete();
-
+           
+            // Kirim notifikasi ke Peternak
+            app(\App\Services\NotificationService::class)->send(
+                $order->peternak_id, 
+                'ORDER_BARU', 
+                'Pesanan Baru Masuk!', 
+                "Ada pesanan baru dengan nomor: {$order->order_number}"
+            );
             return $order;
         });
     }
@@ -135,6 +142,11 @@ class OrderService
             'rejection_reason' => $reason
         ]);
 
+        $type = $status === 'dikonfirmasi' ? 'ORDER_DIKONFIRMASI' : 'ORDER_DITOLAK';
+        $msg = $status === 'dikonfirmasi' ? 'Hore! Pesananmu sedang diproses oleh peternak.' : "Maaf, pesanan ditolak dengan alasan: {$reason}";
+        
+        app(\App\Services\NotificationService::class)->send($order->user_id, $type, 'Status Pesanan Diperbarui', $msg);
+
         return $order;
     }
 
@@ -145,6 +157,13 @@ class OrderService
     {
         $order = \App\Models\Order::findOrFail($orderId);
         $order->update(['status' => 'selesai']);
+
+        app(\App\Services\NotificationService::class)->send(
+            $order->peternak_id, 
+            'ORDER_SELESAI', 
+            'Pesanan Selesai', 
+            "Pembeli telah menerima pesanan {$order->order_number}. Dana siap dicairkan!"
+        );
 
         return $order;
     }

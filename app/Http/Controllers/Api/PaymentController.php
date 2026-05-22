@@ -75,7 +75,7 @@ class PaymentController extends Controller
 
         // Jika pembayaran sukses, ubah status order dan payment
         if ($request->transaction_status == 'settlement' || $request->transaction_status == 'capture') {
-            $order->update(['status' => 'dikonfirmasi']); // Status bergeser sesuai alur
+            $order->update(['status' => 'dikonfirmasi']); 
             
             $payment = $order->payment;
             if ($payment) {
