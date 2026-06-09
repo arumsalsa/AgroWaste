@@ -6,6 +6,10 @@
 
 ---
 
+## Register
+
+product
+
 ## Produk
 
 AgroWaste — platform e-commerce limbah organik peternakan. Menghubungkan peternak
@@ -13,8 +17,8 @@ AgroWaste — platform e-commerce limbah organik peternakan. Menghubungkan peter
 (pembeli). Tiga fungsi inti: jual-beli limbah, edukasi pengolahan, dan pelacakan
 dampak lingkungan (Green Dashboard / SDG 12 & 13).
 
-Stack frontend: Next.js 14 (App Router) · TypeScript · Tailwind CSS · shadcn/ui ·
-Recharts · Leaflet. Desain melayani tugas, bukan sebaliknya.
+Stack frontend: Next.js 15 (App Router) · TypeScript · Tailwind v4 · Recharts ·
+Leaflet. Desain melayani tugas, bukan sebaliknya.
 
 > Catatan: nama ditulis konsisten "AgroWaste" di seluruh UI (dokumen lama sempat
 > menulis "AgrowWaste" — pilih satu, jangan campur).
