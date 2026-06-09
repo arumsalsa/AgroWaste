@@ -1,0 +1,10 @@
+@theme {
+  /* Public/User Theme Variables */
+  /* User currently uses the global root variables and default Tailwind utilities */
+}
+
+@layer utilities {
+  .user-theme {
+    /* Optional: Custom scrollbar for user dashboard */
+  }
+}
