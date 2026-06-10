@@ -111,6 +111,7 @@ export default function CheckoutContent() {
       }
 
       setSuccessOrder(json.data as CheckoutOrder);
+      window.dispatchEvent(new Event("cart-change"));
     } catch {
       setSubmitError("Tidak dapat terhubung ke server. Coba lagi.");
     } finally {

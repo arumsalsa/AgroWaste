@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Star, MapPin, ShieldCheck, Plus, ChevronDown, Leaf } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
 interface Product {
   id: string;
   name: string;
   price: string;
   unit: string;
+  min_order_kg: string;
   kabupaten: string;
   rating_avg: string | number;
   review_count: number;
@@ -36,13 +40,85 @@ function formatRupiah(price: string | number): string {
   }).format(Number(price));
 }
 
-export default function MarketplaceProducts() {
+const SORT_OPTIONS = [
+  { value: "terbaru",         label: "Terbaru" },
+  { value: "harga_terendah",  label: "Harga Terendah" },
+  { value: "harga_tertinggi", label: "Harga Tertinggi" },
+];
+
+export default function MarketplaceProducts({
+  filterParams = "",
+}: {
+  filterParams?: string;
+}) {
+  const router = useRouter();
+
   const [paginated, setPaginated] = useState<PaginatedData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState<string | null>(null);
+  const [sort,      setSort]      = useState("terbaru");
+  const [page,      setPage]      = useState(1);
+
+  // Add-to-cart feedback per product id
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [addedId,  setAddedId]  = useState<string | null>(null);
+  const [errorId,  setErrorId]  = useState<string | null>(null);
+
+  const handleAddToCart = async (product: Product, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!getToken()) {
+      router.push("/login?callbackUrl=/marketplace");
+      return;
+    }
+
+    setAddingId(product.id);
+    setErrorId(null);
+
+    try {
+      const res  = await apiFetch("/cart-items", {
+        method: "POST",
+        body: JSON.stringify({
+          product_id:  product.id,
+          quantity_kg: Math.max(1, parseFloat(product.min_order_kg || "1")),
+        }),
+      });
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setErrorId(product.id);
+        setTimeout(() => setErrorId(null), 2500);
+      } else {
+        window.dispatchEvent(new Event("cart-change"));
+        setAddedId(product.id);
+        setTimeout(() => setAddedId(null), 2000);
+      }
+    } catch {
+      setErrorId(product.id);
+      setTimeout(() => setErrorId(null), 2500);
+    } finally {
+      setAddingId(null);
+    }
+  };
+
+  // Reset ke halaman 1 setiap kali filter atau sort berubah
+  useEffect(() => {
+    setPage(1);
+  }, [filterParams, sort]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`)
+    setLoading(true);
+    setError(null);
+
+    const parts = [
+      filterParams,
+      `sort=${sort}`,
+      page > 1 ? `page=${page}` : "",
+    ].filter(Boolean);
+    const qs = parts.join("&");
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products${qs ? `?${qs}` : ""}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Gagal memuat produk (${res.status})`);
         return res.json();
@@ -55,8 +131,16 @@ export default function MarketplaceProducts() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [filterParams, sort, page]);
 
+  const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Terbaru";
+
+  const handleSortCycle = () => {
+    const idx = SORT_OPTIONS.findIndex((o) => o.value === sort);
+    setSort(SORT_OPTIONS[(idx + 1) % SORT_OPTIONS.length].value);
+  };
+
+  /* ── Count bar (sort button) ───────────────────────── */
   const countBar = (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
       <span className="text-land-muted font-bold text-base">
@@ -65,12 +149,17 @@ export default function MarketplaceProducts() {
         </span>{" "}
         Produk ditemukan
       </span>
-      <button className="flex items-center gap-2 px-5 py-3 bg-white border border-[#E8E0D5] rounded-full text-sm font-bold text-land-ink hover:border-[#009A44] transition-colors shadow-sm">
-        Urutkan: Terbaru <ChevronDown className="w-4 h-4" />
+      <button
+        type="button"
+        onClick={handleSortCycle}
+        className="flex items-center gap-2 px-5 py-3 bg-white border border-[#E8E0D5] rounded-full text-sm font-bold text-land-ink hover:border-[#009A44] transition-colors shadow-sm"
+      >
+        Urutkan: {sortLabel} <ChevronDown className="w-4 h-4" />
       </button>
     </div>
   );
 
+  /* ── Loading skeleton ──────────────────────────────── */
   if (loading) {
     return (
       <>
@@ -95,6 +184,7 @@ export default function MarketplaceProducts() {
     );
   }
 
+  /* ── Error ─────────────────────────────────────────── */
   if (error) {
     return (
       <>
@@ -109,26 +199,31 @@ export default function MarketplaceProducts() {
 
   const products = paginated?.data ?? [];
 
+  /* ── Empty ─────────────────────────────────────────── */
   if (products.length === 0) {
     return (
       <>
         {countBar}
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <Leaf className="w-12 h-12 text-[#E8E0D5] mb-4" />
-          <p className="text-land-muted font-bold text-lg">Belum ada produk tersedia</p>
+          <p className="text-land-muted font-bold text-lg mb-1">
+            Tidak ada produk yang cocok
+          </p>
+          <p className="text-sm text-land-muted">Coba ubah atau reset filter yang dipilih.</p>
         </div>
       </>
     );
   }
 
+  /* ── Product grid ──────────────────────────────────── */
   return (
     <>
       {countBar}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
         {products.map((product) => {
-          const badge = product.peternak_profile?.badge;
-          const showBadge = badge && badge !== "none";
+          const badge      = product.peternak_profile?.badge;
+          const showBadge  = badge && badge !== "none";
           const isVerified = badge === "verified" || badge === "terverifikasi";
           const badgeLabel = isVerified ? "TERVERIFIKASI" : badge?.toUpperCase();
 
@@ -188,11 +283,24 @@ export default function MarketplaceProducts() {
                     </div>
                   </div>
                   <button
-                    className="w-12 h-12 rounded-full bg-land-warm text-land-ink flex items-center justify-center hover:bg-[#009A44] hover:text-white transition-colors shadow-sm"
+                    onClick={(e) => handleAddToCart(product, e)}
+                    disabled={addingId === product.id}
                     aria-label="Tambah ke keranjang"
-                    onClick={(e) => e.preventDefault()}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed ${
+                      addedId === product.id
+                        ? "bg-[#009A44] text-white"
+                        : errorId === product.id
+                        ? "bg-red-100 text-red-500"
+                        : "bg-land-warm text-land-ink hover:bg-[#009A44] hover:text-white"
+                    }`}
                   >
-                    <Plus className="w-5 h-5" />
+                    {addedId === product.id ? (
+                      <Check className="w-5 h-5" />
+                    ) : errorId === product.id ? (
+                      <X className="w-5 h-5" />
+                    ) : (
+                      <Plus className={`w-5 h-5 ${addingId === product.id ? "animate-pulse" : ""}`} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -201,30 +309,39 @@ export default function MarketplaceProducts() {
         })}
       </div>
 
+      {/* Pagination */}
       {paginated && paginated.last_page > 1 && (
         <div className="flex justify-center pt-8 border-t border-[#E8E0D5]">
           <div className="flex items-center gap-2">
             <button
-              className="w-12 h-12 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center text-land-muted hover:border-[#009A44] hover:text-[#009A44] transition-colors disabled:opacity-40"
-              disabled={paginated.current_page === 1}
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="w-12 h-12 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center text-land-muted hover:border-[#009A44] hover:text-[#009A44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronDown className="w-5 h-5 rotate-90" />
             </button>
-            {Array.from({ length: paginated.last_page }, (_, i) => i + 1).map((page) => (
+
+            {Array.from({ length: paginated.last_page }, (_, i) => i + 1).map((p) => (
               <button
-                key={page}
+                key={p}
+                type="button"
+                onClick={() => setPage(p)}
                 className={`w-12 h-12 rounded-full font-bold transition-colors ${
-                  page === paginated.current_page
+                  p === page
                     ? "bg-[#009A44] text-white shadow-md"
                     : "bg-white border border-transparent text-land-muted hover:bg-land-warm"
                 }`}
               >
-                {page}
+                {p}
               </button>
             ))}
+
             <button
-              className="w-12 h-12 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center text-land-muted hover:border-[#009A44] hover:text-[#009A44] transition-colors disabled:opacity-40"
-              disabled={paginated.current_page === paginated.last_page}
+              type="button"
+              onClick={() => setPage((p) => Math.min(paginated.last_page, p + 1))}
+              disabled={page === paginated.last_page}
+              className="w-12 h-12 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center text-land-muted hover:border-[#009A44] hover:text-[#009A44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronDown className="w-5 h-5 -rotate-90" />
             </button>

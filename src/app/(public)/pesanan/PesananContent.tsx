@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,6 +17,12 @@ interface OrderProduct {
   unit: string;
 }
 
+interface OrderItem {
+  quantity_kg: string | number;
+  price_per_kg: string | number;
+  product: OrderProduct;
+}
+
 interface Order {
   id: string;
   order_number?: string;
@@ -26,7 +32,17 @@ interface Order {
   metode_pengiriman?: string;
   created_at: string;
   product?: OrderProduct;
+  items?: OrderItem[];
 }
+
+// Sidebar status filter options
+const STATUS_FILTERS = [
+  { label: "Semua Status",        value: "" },
+  { label: "Menunggu Pembayaran", value: "menunggu_pembayaran" },
+  { label: "Sedang Diproses",     value: "dikonfirmasi" },
+  { label: "Sedang Dikirim",      value: "dikirim" },
+  { label: "Selesai",             value: "selesai" },
+];
 
 function formatRupiah(n: string | number) {
   return new Intl.NumberFormat("id-ID", {
@@ -50,25 +66,31 @@ interface StatusMeta {
 function statusMeta(status: string): StatusMeta {
   switch (status) {
     case "menunggu_pembayaran":
-      return { label: "Menunggu Pembayaran", Icon: Clock,         color: "text-amber-600",   bg: "bg-amber-100"       };
+      return { label: "Menunggu Pembayaran", Icon: Clock,         color: "text-amber-600",  bg: "bg-amber-100"    };
     case "dikonfirmasi":
-      return { label: "Dikonfirmasi",         Icon: CheckCircle2, color: "text-blue-600",    bg: "bg-blue-100"        };
+      return { label: "Dikonfirmasi",         Icon: CheckCircle2, color: "text-blue-600",   bg: "bg-blue-100"     };
     case "dikirim":
-      return { label: "Sedang Dikirim",       Icon: Truck,        color: "text-amber-600",   bg: "bg-amber-100"       };
+      return { label: "Sedang Dikirim",       Icon: Truck,        color: "text-amber-600",  bg: "bg-amber-100"    };
     case "selesai":
-      return { label: "Selesai",              Icon: CheckCircle2, color: "text-[#009A44]",   bg: "bg-[#009A44]/10"    };
+      return { label: "Selesai",              Icon: CheckCircle2, color: "text-[#009A44]",  bg: "bg-[#009A44]/10" };
     case "ditolak":
-      return { label: "Ditolak",              Icon: XCircle,      color: "text-red-600",     bg: "bg-red-100"         };
+      return { label: "Ditolak",              Icon: XCircle,      color: "text-red-600",    bg: "bg-red-100"      };
     default:
-      return { label: "Menunggu",             Icon: Clock,        color: "text-amber-600",   bg: "bg-amber-100"       };
+      return { label: "Menunggu",             Icon: Clock,        color: "text-amber-600",  bg: "bg-amber-100"    };
   }
 }
 
 export default function PesananContent() {
   const router = useRouter();
+
+  // Remote data
   const [orders,  setOrders]  = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
+
+  // Local filter state
+  const [searchInput,  setSearchInput]  = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     if (!getToken()) {
@@ -90,6 +112,27 @@ export default function PesananContent() {
       });
   }, [router]);
 
+  // Frontend filter: search (order_number OR product name) + status
+  const visibleOrders = useMemo(() => {
+    return orders.filter((order) => {
+      // Status filter
+      if (statusFilter && order.status !== statusFilter) return false;
+
+      // Search filter — cari di order_number dan semua nama produk
+      const q = searchInput.trim().toLowerCase();
+      if (q) {
+        const idText = (order.order_number ?? order.id).toLowerCase();
+        const productNames = [
+          order.product?.name ?? "",
+          ...(order.items?.map((i) => i.product?.name ?? "") ?? []),
+        ].join(" ").toLowerCase();
+        if (!idText.includes(q) && !productNames.includes(q)) return false;
+      }
+
+      return true;
+    });
+  }, [orders, searchInput, statusFilter]);
+
   return (
     <div className="flex-1 animate-fade-in pb-20">
       <div className="max-w-7xl mx-auto px-6">
@@ -99,17 +142,23 @@ export default function PesananContent() {
           <div className="absolute top-0 left-0 w-64 h-64 bg-[#009A44] rounded-full mix-blend-screen filter blur-[100px] opacity-20 pointer-events-none" />
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#4ADE80] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
 
-          <h1 className="text-3xl md:text-4xl font-land-heading font-bold text-white mb-8 relative z-10" style={{ textWrap: "balance" }}>
+          <h1
+            className="text-3xl md:text-4xl font-land-heading font-bold text-white mb-8 relative z-10"
+            style={{ textWrap: "balance" }}
+          >
             Pantau <span className="text-[#4ADE80]">Pesanan</span> Anda.
           </h1>
 
           <div className="w-full max-w-3xl relative z-20 group">
             <input
               type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Cari ID Pesanan atau nama produk..."
               className="w-full h-16 md:h-20 pl-14 md:pl-16 pr-32 md:pr-40 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/60 text-base md:text-xl focus:outline-none focus:bg-white/20 focus:border-[#4ADE80] transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15)]"
             />
-            <Search className="w-6 h-6 md:w-8 md:h-8 text-white/60 absolute left-5 md:left-6 top-1/2 -translate-y-1/2 group-focus-within:text-[#4ADE80] transition-colors" />
+            <Search className="w-6 h-6 md:w-8 md:h-8 text-white/60 absolute left-5 md:left-6 top-1/2 -translate-y-1/2 group-focus-within:text-[#4ADE80] transition-colors pointer-events-none" />
+
             <button
               type="button"
               className="absolute right-2 top-2 bottom-2 px-6 md:px-10 bg-[#009A44] hover:bg-[#008139] text-white rounded-full font-bold md:text-lg transition-transform hover:scale-105 shadow-md flex items-center justify-center"
@@ -130,31 +179,52 @@ export default function PesananContent() {
                 <h2 className="font-land-heading font-bold text-xl text-land-ink">Filter</h2>
               </div>
 
+              {/* Status filter — controlled */}
               <div className="mb-8">
                 <h3 className="font-bold text-sm text-land-ink mb-4 uppercase tracking-wider">Status</h3>
                 <div className="space-y-4">
-                  {["Semua Status", "Menunggu Pembayaran", "Sedang Diproses", "Sedang Dikirim", "Selesai"].map((s, i) => (
-                    <label key={i} className="flex items-center gap-3 cursor-pointer group">
-                      <input type="radio" name="status" defaultChecked={i === 0} className="w-5 h-5 border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer" />
-                      <span className="text-land-muted font-medium group-hover:text-land-ink transition-colors">{s}</span>
+                  {STATUS_FILTERS.map((sf) => (
+                    <label key={sf.value} className="flex items-center gap-3 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="status"
+                        checked={statusFilter === sf.value}
+                        onChange={() => setStatusFilter(sf.value)}
+                        className="w-5 h-5 border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer"
+                      />
+                      <span className={`font-medium transition-colors group-hover:text-land-ink ${
+                        statusFilter === sf.value ? "text-[#009A44] font-semibold" : "text-land-muted"
+                      }`}>
+                        {sf.label}
+                      </span>
                     </label>
                   ))}
                 </div>
               </div>
 
+              {/* Waktu Beli — UI only (filter frontend by date not yet wired) */}
               <div className="mb-8">
                 <h3 className="font-bold text-sm text-land-ink mb-4 uppercase tracking-wider">Waktu Beli</h3>
                 <div className="space-y-4">
                   {["Semua Waktu", "30 Hari Terakhir", "3 Bulan Terakhir", "Tahun Ini"].map((t, i) => (
                     <label key={i} className="flex items-center gap-3 cursor-pointer group">
-                      <input type="radio" name="time" defaultChecked={i === 0} className="w-5 h-5 border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer" />
+                      <input
+                        type="radio"
+                        name="time"
+                        defaultChecked={i === 0}
+                        className="w-5 h-5 border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer"
+                      />
                       <span className="text-land-muted font-medium group-hover:text-land-ink transition-colors">{t}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              <button type="button" className="btn-clay-secondary w-full py-3.5">
+              <button
+                type="button"
+                onClick={() => { setSearchInput(""); setStatusFilter(""); }}
+                className="btn-clay-secondary w-full py-3.5"
+              >
                 Terapkan Filter
               </button>
             </div>
@@ -182,7 +252,7 @@ export default function PesananContent() {
               </div>
             )}
 
-            {/* Empty */}
+            {/* Empty — belum ada pesanan sama sekali */}
             {!loading && !error && orders.length === 0 && (
               <div className="bg-white border border-[#E8E0D5] rounded-[32px] p-12 text-center shadow-sm">
                 <Leaf className="w-12 h-12 text-[#E8E0D5] mx-auto mb-4" />
@@ -196,12 +266,36 @@ export default function PesananContent() {
               </div>
             )}
 
+            {/* Empty — ada pesanan tapi tidak cocok filter/search */}
+            {!loading && !error && orders.length > 0 && visibleOrders.length === 0 && (
+              <div className="bg-white border border-[#E8E0D5] rounded-[32px] p-12 text-center shadow-sm">
+                <Search className="w-12 h-12 text-[#E8E0D5] mx-auto mb-4" />
+                <p className="font-bold text-land-ink text-xl mb-2">Tidak ada pesanan yang cocok</p>
+                <p className="text-land-muted text-sm mb-6">
+                  Coba ubah kata kunci atau filter status.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setSearchInput(""); setStatusFilter(""); }}
+                  className="btn-clay-secondary px-8 py-3 inline-flex"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            )}
+
             {/* Order cards */}
-            {!loading && !error && orders.map((order) => {
+            {!loading && !error && visibleOrders.map((order) => {
               const { label: statusLabel, Icon: StatusIcon, color: statusColor, bg: statusBg } = statusMeta(order.status);
-              const productName = order.product?.name ?? "Pesanan AgroWaste";
-              const orderId     = order.order_number ?? order.id.slice(0, 8).toUpperCase();
-              const isShipping  = order.status === "dikirim";
+
+              // Nama produk: dari relasi lama (product) atau item pertama di items[]
+              const productName =
+                order.product?.name ??
+                order.items?.[0]?.product?.name ??
+                "Pesanan AgroWaste";
+
+              const orderId    = order.order_number ?? order.id.slice(0, 8).toUpperCase();
+              const isShipping = order.status === "dikirim";
 
               return (
                 <div

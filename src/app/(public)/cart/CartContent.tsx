@@ -99,13 +99,17 @@ export default function CartContent() {
 
   const handleDelete = async (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
+    window.dispatchEvent(new Event("cart-change"));
     try {
       await apiFetch(`/cart-items/${id}`, { method: "DELETE" });
     } catch {
       // restore by re-fetching
       apiFetch("/cart-items")
         .then((r) => r.json())
-        .then((j) => setItems(j.data as CartItem[]));
+        .then((j) => {
+          setItems(j.data as CartItem[]);
+          window.dispatchEvent(new Event("cart-change"));
+        });
     }
   };
 

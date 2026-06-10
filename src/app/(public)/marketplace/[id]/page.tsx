@@ -86,6 +86,7 @@ export default function ProductDetail() {
         setCartError(json.message ?? "Gagal menambahkan ke keranjang.");
       } else {
         setCartSuccess(true);
+        window.dispatchEvent(new Event("cart-change"));
         setTimeout(() => setCartSuccess(false), 2500);
       }
     } catch {
