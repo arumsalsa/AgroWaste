@@ -1,20 +1,154 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
+import { saveAuth, getToken } from "@/lib/auth";
+
+interface ProfileResponse {
+  success: boolean;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    avatar_url: string | null;
+    role: string;
+    peternak_profile?: {
+      nama_peternakan: string;
+      deskripsi: string | null;
+      provinsi: string;
+      kabupaten: string;
+      kecamatan: string;
+    };
+  };
+}
 
 export default function SettingsPage() {
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  // Form states
+  const [ownerName, setOwnerName] = useState("");
+  const [farmName, setFarmName] = useState("");
+  const [description, setDescription] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [provinsi, setProvinsi] = useState("");
+  const [kabupaten, setKabupaten] = useState("");
+  const [kecamatan, setKecamatan] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    apiFetch("/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json: ProfileResponse | null) => {
+        if (json?.success && json?.data) {
+          const u = json.data;
+          setOwnerName(u.name || "");
+          setEmail(u.email || "");
+          setPhone(u.phone || "");
+          setAvatarUrl(u.avatar_url || "");
+          
+          if (u.peternak_profile) {
+            setFarmName(u.peternak_profile.nama_peternakan || "");
+            setDescription(u.peternak_profile.deskripsi || "");
+            setProvinsi(u.peternak_profile.provinsi || "");
+            setKabupaten(u.peternak_profile.kabupaten || "");
+            setKecamatan(u.peternak_profile.kecamatan || "");
+          }
+        } else {
+          setErrorMsg("Gagal memuat profil.");
+        }
+      })
+      .catch(() => {
+        setErrorMsg("Tidak dapat terhubung ke server.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSuccessModalOpen(true);
+    setSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const body = {
+        name: ownerName,
+        email: email,
+        phone: phone,
+        avatar_url: avatarUrl || null,
+        nama_peternakan: farmName,
+        deskripsi: description || null,
+        provinsi: provinsi,
+        kabupaten: kabupaten,
+        kecamatan: kecamatan,
+      };
+
+      const res = await apiFetch("/profile", {
+        method: "PUT",
+        body: JSON.stringify(body),
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        // Sync local storage auth data
+        const token = getToken();
+        if (token && json.data) {
+          saveAuth(token, {
+            id: json.data.id,
+            name: json.data.name,
+            email: json.data.email,
+            role: json.data.role,
+          });
+        }
+        setIsSuccessModalOpen(true);
+      } else {
+        setErrorMsg(json.message || "Gagal memperbarui profil.");
+      }
+    } catch {
+      setErrorMsg("Terjadi kesalahan koneksi server.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-8 animate-pulse pb-10">
+        <div className="h-8 w-48 bg-[#EAE6E1] rounded mb-6"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-1 space-y-4">
+            <div className="h-10 bg-[#EAE6E1] rounded-xl"></div>
+            <div className="h-10 bg-[#EAE6E1] rounded-xl"></div>
+          </div>
+          <div className="lg:col-span-3 space-y-6">
+            <div className="h-64 bg-[#EAE6E1] rounded-2xl"></div>
+            <div className="h-64 bg-[#EAE6E1] rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    farmName || ownerName
+  )}&background=3F4F44&color=fff&rounded=true`;
 
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">Pengaturan Akun Saya</h2>
+        <p className="text-sm text-seller-textsecondary">Perbarui informasi profil peternakan dan kontak Anda.</p>
       </div>
+
+      {errorMsg && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 font-semibold">
+          {errorMsg}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar Settings Menu */}
@@ -22,14 +156,11 @@ export default function SettingsPage() {
           <button className="w-full text-left px-4 py-3 bg-seller-primary text-white rounded-xl text-sm font-bold shadow-md shadow-seller-primary/20 transition-colors">
             Profil Peternakan
           </button>
-          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors">
-            Notifikasi
+          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors opacity-60 cursor-not-allowed">
+            Notifikasi (Segera Hadir)
           </button>
-          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors">
-            Keamanan
-          </button>
-          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors">
-            Integrasi Logistik
+          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors opacity-60 cursor-not-allowed">
+            Keamanan (Segera Hadir)
           </button>
         </div>
 
@@ -43,24 +174,58 @@ export default function SettingsPage() {
               
               <div className="flex items-center gap-6 mb-8">
                 <div className="relative">
-                  <img src="https://ui-avatars.com/api/?name=Pak+Sugeng&background=3F4F44&color=fff&rounded=true" alt="Logo" className="w-20 h-20 rounded-full object-cover shadow-sm border border-seller-hairline" />
+                  <img
+                    src={avatarUrl || fallbackAvatar}
+                    alt="Logo"
+                    className="w-20 h-20 rounded-full object-cover shadow-sm border border-seller-hairline"
+                  />
                 </div>
-                <div>
-                  <button type="button" className="px-4 py-2 bg-[#EBE7E0] hover:bg-seller-hairline text-seller-textprimary text-xs font-bold rounded-xl transition-colors">
-                    Ubah Logo
-                  </button>
-                  <p className="text-[10px] text-seller-textsecondary mt-2">JPG, GIF, atau PNG. Maksimal 2MB.</p>
+                <div className="flex-1 max-w-sm">
+                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">URL Avatar / Logo</label>
+                  <input
+                    type="text"
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                    className="w-full px-3 py-1.5 bg-seller-warmbg border border-seller-hairline rounded-lg text-xs font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                  />
+                  <p className="text-[9px] text-seller-textsecondary mt-1">Masukkan URL gambar logo atau biarkan kosong untuk inisial default.</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nama Peternakan</label>
-                  <input type="text" defaultValue="AgroWaste Merchant" className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nama Pemilik *</label>
+                    <input
+                      type="text"
+                      required
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nama Peternakan *</label>
+                    <input
+                      type="text"
+                      required
+                      value={farmName}
+                      onChange={(e) => setFarmName(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
+                  </div>
                 </div>
+
                 <div>
                   <label className="block text-xs font-bold text-seller-textsecondary mb-1">Deskripsi Peternakan</label>
-                  <textarea rows={4} defaultValue="Peternakan sapi terpadu yang berfokus pada pengolahan limbah organik menjadi pupuk kandang berkualitas tinggi dan berkelanjutan." className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"></textarea>
+                  <textarea
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Jelaskan jenis ternak dan komitmen pengolahan limbah organik peternakan Anda..."
+                    className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary resize-none"
+                  ></textarea>
                 </div>
               </div>
             </div>
@@ -70,26 +235,71 @@ export default function SettingsPage() {
               <h3 className="text-lg font-bold text-seller-textprimary mb-6">Lokasi & Kontak</h3>
               
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Alamat Lengkap</label>
-                  <textarea rows={3} defaultValue="Jl. Agrowisata No. 45, Desa Sukamaju, Kec. Ciawi, Bogor, Jawa Barat 16720" className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"></textarea>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Email Kontak</label>
-                    <input type="email" defaultValue="kontak@agrowastemerchant.com" className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary" />
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Provinsi *</label>
+                    <input
+                      type="text"
+                      required
+                      value={provinsi}
+                      onChange={(e) => setProvinsi(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">No. Handphone</label>
-                    <input type="text" defaultValue="+62 812-3456-7890" className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary font-tabular focus:outline-none focus:ring-1 focus:ring-seller-primary" />
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kabupaten/Kota *</label>
+                    <input
+                      type="text"
+                      required
+                      value={kabupaten}
+                      onChange={(e) => setKabupaten(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kecamatan *</label>
+                    <input
+                      type="text"
+                      required
+                      value={kecamatan}
+                      onChange={(e) => setKecamatan(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Email Kontak *</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">No. Handphone *</label>
+                    <input
+                      type="text"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary font-tabular focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-end">
-              <button type="submit" className="px-6 py-3 bg-seller-primary hover:bg-seller-primary-hover text-white text-sm font-bold rounded-xl shadow-md shadow-seller-primary/20 transition-colors">
-                Simpan Perubahan
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-6 py-3 bg-seller-primary hover:bg-seller-primary-hover text-white text-sm font-bold rounded-xl shadow-md shadow-seller-primary/20 transition-colors disabled:opacity-50"
+              >
+                {submitting ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
           </form>
@@ -101,13 +311,18 @@ export default function SettingsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-seller-surfacewhite w-full max-w-sm rounded-3xl border border-seller-hairline overflow-hidden p-8 text-center space-y-4 animate-fade-in shadow-xl">
             <div className="w-16 h-16 bg-seller-primary-light text-seller-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
             </div>
             <div>
               <h3 className="text-xl font-bold text-seller-textprimary">Berhasil Disimpan</h3>
-              <p className="text-sm text-seller-textsecondary mt-2">Perubahan profil peternakan Anda telah berhasil diperbarui.</p>
+              <p className="text-sm text-seller-textsecondary mt-2">Perubahan profil peternakan Anda telah berhasil diperbarui di server dan lokal.</p>
             </div>
-            <button onClick={() => setIsSuccessModalOpen(false)} className="w-full mt-6 py-3 bg-seller-primary hover:bg-seller-primary-hover text-white rounded-xl text-sm font-bold transition-colors">
+            <button
+              onClick={() => setIsSuccessModalOpen(false)}
+              className="w-full mt-6 py-3 bg-seller-primary hover:bg-seller-primary-hover text-white rounded-xl text-sm font-bold transition-colors"
+            >
               Tutup
             </button>
           </div>

@@ -1,58 +1,99 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { apiFetch } from "@/lib/api";
 
-const mockUsers = [
-  {
-    id: "U-1001",
-    name: "Budi Santoso",
-    email: "budi.farm@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80",
-    initials: null,
-    role: "PETERNAK TERVERIFIKASI",
-    roleColor: "bg-admin-semgreen/10 text-admin-semgreen",
-    status: "Aktif",
-    statusColor: "bg-admin-semgreen",
-    statusBg: "bg-admin-semgreen/10 text-admin-semgreen",
-    joinedAt: "12 Jan 2023",
-  },
-  {
-    id: "U-1002",
-    name: "PT. Pupuk Indoagro",
-    email: "corp@indoagro.com",
-    avatar: null,
-    initials: "PI",
-    role: "B2B PEMBELI",
-    roleColor: "bg-blue-50 text-blue-600",
-    status: "Aktif",
-    statusColor: "bg-admin-semgreen",
-    statusBg: "bg-admin-semgreen/10 text-admin-semgreen",
-    joinedAt: "04 Mar 2023",
-  },
-  {
-    id: "U-1003",
-    name: "Agung Wijaya",
-    email: "agung_kuy@yahoo.com",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-    initials: null,
-    role: "PETERNAK BARU",
-    roleColor: "bg-admin-semamber/10 text-admin-semamber",
-    status: "Ditangguhkan",
-    statusColor: "bg-admin-semred",
-    statusBg: "bg-admin-semred/10 text-admin-semred",
-    joinedAt: "28 Okt 2023",
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  is_suspended: boolean | number;
+  created_at: string;
+  peternak_profile?: { nama_peternakan: string; badge?: string } | null;
+}
+
+function formatRole(role: string) {
+  switch (role) {
+    case "peternak": return { label: "Peternak", cls: "bg-admin-semamber/10 text-admin-semamber" };
+    case "pembeli":  return { label: "Pembeli", cls: "bg-blue-50 text-blue-600" };
+    case "admin":    return { label: "Admin", cls: "bg-purple-50 text-purple-600" };
+    case "logistik": return { label: "Logistik", cls: "bg-orange-50 text-orange-600" };
+    default:         return { label: role, cls: "bg-admin-warmbg text-admin-textsecondary" };
   }
-];
+}
+
+function statusInfo(isSuspended: boolean | number) {
+  const suspended = !!isSuspended;
+  return suspended
+    ? { label: "Ditangguhkan", color: "bg-admin-semred", bg: "bg-admin-semred/10 text-admin-semred" }
+    : { label: "Aktif", color: "bg-admin-semgreen", bg: "bg-admin-semgreen/10 text-admin-semgreen" };
+}
 
 export default function AdminUserManagement() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("Semua Pengguna");
+  const [search, setSearch] = useState("");
+  const [suspendingId, setSuspendingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const filterMap: Record<string, string> = {
     "Semua Pengguna": "ALL",
-    "Peternak": "PETERNAK",
-    "Pembeli": "PEMBELI",
-    "Kurir": "KURIR"
+    "Peternak": "peternak",
+    "Pembeli": "pembeli",
+    "Logistik": "logistik",
   };
+
+  const fetchUsers = () => {
+    setLoading(true);
+    apiFetch("/admin/users")
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((json) => {
+        setUsers(json.data ?? []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleToggleSuspend = async (user: User) => {
+    setSuspendingId(user.id);
+    setActionError(null);
+    try {
+      const res = await apiFetch(`/admin/users/${user.id}/suspend`, { method: "PUT" });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, is_suspended: !u.is_suspended } : u))
+        );
+      } else {
+        setActionError(json.message ?? "Gagal mengubah status suspend pengguna.");
+      }
+    } catch {
+      setActionError("Tidak dapat terhubung ke server.");
+    } finally {
+      setSuspendingId(null);
+    }
+  };
+
+  const visible = useMemo(() => {
+    const roleFilter = filterMap[activeFilter];
+    return users.filter((u) => {
+      const matchRole = roleFilter === "ALL" || u.role === roleFilter;
+      const matchSearch =
+        u.name.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase());
+      return matchRole && matchSearch;
+    });
+  }, [users, activeFilter, search]);
+
+  const totalPeternakCount = useMemo(() => users.filter((u) => u.role === "peternak").length, [users]);
+  const totalPembeliCount = useMemo(() => users.filter((u) => u.role === "pembeli").length, [users]);
+  const totalLogistikCount = useMemo(() => users.filter((u) => u.role === "logistik").length, [users]);
 
   return (
     <div className="space-y-8 animate-fade-in pb-10">
@@ -61,11 +102,14 @@ export default function AdminUserManagement() {
           <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Manajemen Pengguna</h2>
           <p className="text-sm text-admin-textsecondary">Kelola data seluruh pelaku ekosistem AgroWaste.</p>
         </div>
-        <button className="px-5 py-2.5 bg-admin-primary text-white text-sm font-bold rounded-xl hover:bg-admin-primary-hover transition-colors shadow-md shadow-admin-primary/20 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
-          Tambah Pengguna Baru
-        </button>
       </div>
+
+      {actionError && (
+        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold flex justify-between items-center animate-fade-in">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError(null)} className="underline">Tutup</button>
+        </div>
+      )}
 
       {/* Row 1: KPI Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -74,48 +118,32 @@ export default function AdminUserManagement() {
             <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semgreen flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-              +12%
-            </span>
           </div>
           <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">TOTAL PENGGUNA AKTIF</span>
-          <div className="text-3xl font-bold font-tabular text-admin-textprimary">24,592</div>
-          <span className="text-xs text-admin-textsecondary font-medium block mt-1">Bulan Ini</span>
+          <div className="text-3xl font-bold font-tabular text-admin-textprimary">{loading ? "..." : users.length}</div>
         </div>
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-admin-semgreen/10 text-admin-semgreen flex items-center justify-center group-hover:bg-admin-semgreen/20 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semgreen flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-              +5.2%
-            </span>
           </div>
           <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">TOTAL PENJUAL (PETERNAK)</span>
-          <div className="text-3xl font-bold font-tabular text-admin-textprimary">1,840</div>
-          <span className="text-xs text-admin-textsecondary font-medium block mt-1">Bulan Ini</span>
+          <div className="text-3xl font-bold font-tabular text-admin-textprimary">{loading ? "..." : totalPeternakCount}</div>
         </div>
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-admin-semamber/10 text-admin-semamber flex items-center justify-center group-hover:bg-admin-semamber/20 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semred flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-              -2.1%
-            </span>
           </div>
           <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">MITRA LOGISTIK / KURIR</span>
-          <div className="text-3xl font-bold font-tabular text-admin-textprimary">426</div>
-          <span className="text-xs text-admin-textsecondary font-medium block mt-1">Bulan Ini</span>
+          <div className="text-3xl font-bold font-tabular text-admin-textprimary">{loading ? "..." : totalLogistikCount}</div>
         </div>
       </div>
 
       {/* User Table Surface */}
       <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl overflow-hidden">
-        
         {/* Table Filter Controls */}
         <div className="p-6 border-b border-admin-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-max">
@@ -138,12 +166,14 @@ export default function AdminUserManagement() {
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-admin-textsecondary">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </span>
-              <input type="text" placeholder="Cari nama atau email..." className="w-64 pl-9 pr-4 py-2 bg-admin-warmbg border border-admin-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-admin-primary" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari nama atau email..."
+                className="w-64 pl-9 pr-4 py-2 bg-admin-warmbg border border-admin-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-admin-primary"
+              />
             </div>
-            <button className="text-xs font-bold px-4 py-2 bg-[#EBE7E0] hover:bg-admin-hairline text-admin-textprimary rounded-xl flex items-center gap-2 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              Ekspor CSV
-            </button>
           </div>
         </div>
 
@@ -160,61 +190,87 @@ export default function AdminUserManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-admin-hairline">
-              {mockUsers
-                .filter(u => activeFilter === "Semua Pengguna" || u.role.includes(filterMap[activeFilter]))
-                .map((user) => (
-                <tr key={user.id} className="hover:bg-admin-warmbg/40 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      {user.avatar ? (
-                        <img className="w-10 h-10 rounded-full border border-admin-hairline object-cover group-hover:border-admin-primary transition-colors" src={user.avatar} alt={user.name}/>
-                      ) : (
-                        <div className="w-10 h-10 rounded-full border border-admin-hairline bg-admin-primary-light text-admin-primary flex items-center justify-center font-bold group-hover:border-admin-primary transition-colors">
-                          {user.initials}
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-bold text-admin-textprimary group-hover:text-admin-primary transition-colors">{user.name}</div>
-                        <span className="text-xs text-admin-textsecondary font-tabular">{user.email}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider ${user.roleColor}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${user.statusBg}`}>
-                      <span className={`w-2 h-2 rounded-full ${user.statusColor}`}></span> {user.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-admin-textsecondary font-tabular font-medium">{user.joinedAt}</td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-admin-primary hover:text-admin-primary-hover hover:underline text-sm font-bold transition-all">Detail</button>
+              {loading && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-admin-textsecondary text-sm animate-pulse">
+                    Memuat data pengguna...
                   </td>
                 </tr>
-              ))}
+              )}
+              {!loading && visible.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-admin-textsecondary text-sm">
+                    Tidak ada pengguna yang ditemukan.
+                  </td>
+                </tr>
+              )}
+              {!loading && visible.map((user) => {
+                const role = formatRole(user.role);
+                const status = statusInfo(user.is_suspended);
+                const joinedAt = new Date(user.created_at).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
+                const initials = user.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase();
+
+                return (
+                  <tr key={user.id} className="hover:bg-admin-warmbg/40 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full border border-admin-hairline bg-admin-primary-light text-admin-primary flex items-center justify-center font-bold group-hover:border-admin-primary transition-colors">
+                          {initials}
+                        </div>
+                        <div>
+                          <div className="font-bold text-admin-textprimary group-hover:text-admin-primary transition-colors">
+                            {user.name}
+                          </div>
+                          <span className="text-xs text-admin-textsecondary font-tabular">{user.email}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider ${role.cls}`}>
+                        {role.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${status.bg}`}>
+                        <span className={`w-2 h-2 rounded-full ${status.color}`}></span> {status.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-admin-textsecondary font-tabular font-medium">{joinedAt}</td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleToggleSuspend(user)}
+                        disabled={suspendingId === user.id}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                          user.is_suspended
+                            ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                            : "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                        }`}
+                      >
+                        {suspendingId === user.id ? "..." : user.is_suspended ? "Aktifkan" : "Suspend"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="p-6 border-t border-admin-hairline bg-admin-surfacewhite flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xs text-admin-textsecondary font-medium font-tabular">Menampilkan <span className="text-admin-textprimary font-bold">{mockUsers.filter(u => activeFilter === "Semua Pengguna" || u.role.includes(filterMap[activeFilter])).length}</span> dari <span className="text-admin-textprimary font-bold">24,592</span> pengguna</span>
-          <div className="flex items-center gap-2">
-            <button className="w-8 h-8 flex items-center justify-center border border-admin-hairline rounded-lg text-admin-textsecondary opacity-50 cursor-not-allowed">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center bg-admin-primary text-white font-bold text-xs rounded-lg shadow-sm">1</button>
-            <button className="w-8 h-8 flex items-center justify-center border border-transparent hover:bg-admin-warmbg text-admin-textsecondary font-bold text-xs rounded-lg transition-colors">2</button>
-            <button className="w-8 h-8 flex items-center justify-center border border-transparent hover:bg-admin-warmbg text-admin-textsecondary font-bold text-xs rounded-lg transition-colors">3</button>
-            <span className="px-1 text-admin-textsecondary font-bold">...</span>
-            <button className="w-8 h-8 flex items-center justify-center border border-transparent hover:bg-admin-warmbg text-admin-textsecondary font-bold text-xs rounded-lg transition-colors">820</button>
-            <button className="w-8 h-8 flex items-center justify-center border border-admin-hairline rounded-lg text-admin-textsecondary hover:text-admin-primary hover:border-admin-primary transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
+          <span className="text-xs text-admin-textsecondary font-medium font-tabular">
+            Menampilkan <span className="text-admin-textprimary font-bold">{visible.length}</span> dari{" "}
+            <span className="text-admin-textprimary font-bold">{users.length}</span> pengguna
+          </span>
         </div>
       </div>
     </div>

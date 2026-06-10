@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 interface Product {
@@ -16,6 +16,7 @@ interface Product {
   kabupaten: string;
   rating_avg: string | number;
   review_count: number;
+  image_url?: string | null;
   peternak_profile?: {
     nama_peternakan: string;
     badge: string;
@@ -234,6 +235,14 @@ export default function MarketplaceProducts({
               className="bg-white border border-[#E8E0D5] rounded-[28px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.04)] flex flex-col group hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(44,57,48,0.08)] transition-all"
             >
               <div className="w-full aspect-[4/3] rounded-[20px] overflow-hidden mb-5 relative bg-[#F0F5F1] flex items-center justify-center">
+                {product.image_url && (
+                  <img
+                    src={getProductImageUrl(product.image_url)}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  />
+                )}
                 <Leaf className="w-16 h-16 text-[#009A44]/20" />
                 {showBadge && (
                   <div

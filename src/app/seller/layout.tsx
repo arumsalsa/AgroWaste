@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/seller/Sidebar";
 import { Topbar } from "@/components/seller/Topbar";
+import SellerGuard from "@/components/seller/SellerGuard";
 
 export const metadata = {
   title: "AgroWaste Peternak Dashboard",
@@ -23,7 +24,7 @@ export default function SellerLayout({
         {/* Area Konten Dinamis */}
         <div className="flex-1 p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            {children}
+            <SellerGuard>{children}</SellerGuard>
           </div>
         </div>
       </main>

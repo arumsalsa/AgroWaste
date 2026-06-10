@@ -1,8 +1,54 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
+
+interface Activity {
+  id: string;
+  type: "product" | "order";
+  title: string;
+  user: string;
+  description: string;
+  created_at: string;
+}
+
+interface Stats {
+  total_users: number;
+  total_peternak: number;
+  total_pembeli: number;
+  total_produk_aktif: number;
+  total_transaksi: number;
+  total_limbah_kg: number;
+  total_co2_saved: number;
+  total_pendapatan: number;
+  chart_data: { date: string; total: number }[];
+  recent_activities?: Activity[];
+}
+
+function formatRupiah(n: string | number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(Number(n));
+}
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiFetch("/admin/dashboard")
+      .then((res) => (res.ok ? res.json() : { data: null }))
+      .then((json) => {
+        if (json.success && json.data) {
+          setStats(json.data);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       {/* Header Section */}
@@ -31,12 +77,14 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-              12%
+              {loading ? "..." : "12%"}
             </span>
           </div>
           <div>
             <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Total Pengguna</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">24,892</h3>
+            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+              {loading ? "..." : (stats?.total_users.toLocaleString("id-ID") ?? "0")}
+            </h3>
           </div>
         </div>
 
@@ -48,12 +96,14 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-              5%
+              {loading ? "..." : "5%"}
             </span>
           </div>
           <div>
             <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Listing Aktif</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">1,402</h3>
+            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+              {loading ? "..." : (stats?.total_produk_aktif.toLocaleString("id-ID") ?? "0")}
+            </h3>
           </div>
         </div>
 
@@ -63,14 +113,16 @@ export default function AdminDashboard() {
             <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semred bg-red-50 px-2 py-1 rounded-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
-              2%
+            <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+              {loading ? "..." : "100%"}
             </span>
           </div>
           <div>
             <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Nilai Transaksi</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">IDR 4.2B</h3>
+            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+              {loading ? "..." : formatRupiah(stats?.total_pendapatan ?? 0)}
+            </h3>
           </div>
         </div>
 
@@ -82,12 +134,14 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-              18%
+              {loading ? "..." : "100%"}
             </span>
           </div>
           <div>
             <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Dampak Lingkungan</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">842.5 T</h3>
+            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+              {loading ? "..." : stats?.total_limbah_kg ? `${(Number(stats.total_limbah_kg) / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Ton` : "0 Ton"}
+            </h3>
           </div>
         </div>
       </div>
@@ -99,10 +153,10 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="text-lg font-bold text-admin-textprimary">Perkembangan Platform</h3>
-              <p className="text-xs text-admin-textsecondary mt-1">Grafik pendaftaran seller baru vs pertumbuhan komoditas limbah.</p>
+              <p className="text-xs text-admin-textsecondary mt-1">Grafik jumlah transaksi harian AgroWaste dalam 7 hari terakhir.</p>
             </div>
             <button className="text-xs font-bold px-4 py-2 bg-admin-warmbg text-admin-textprimary rounded-xl flex items-center gap-2 hover:bg-admin-hairline transition-colors">
-              6 Bulan Terakhir
+              7 Hari Terakhir
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
           </div>
@@ -131,7 +185,14 @@ export default function AdminDashboard() {
 
             {/* X Axis Labels */}
             <div className="flex justify-between text-xs text-admin-textsecondary mt-3 px-6 uppercase tracking-wider">
-              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mei</span><span>Jun</span>
+              {stats?.chart_data && stats.chart_data.length > 0 ? (
+                stats.chart_data.map((c) => {
+                  const d = new Date(c.date);
+                  return <span key={c.date}>{d.toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</span>;
+                })
+              ) : (
+                <><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mei</span><span>Jun</span></>
+              )}
             </div>
           </div>
         </div>
@@ -146,34 +207,34 @@ export default function AdminDashboard() {
 
             {/* Vertical Activity Log Feed */}
             <div className="space-y-5">
-              <div className="flex gap-4">
-                <div className="w-3 h-3 rounded-full bg-admin-semgreen mt-1 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-admin-textprimary leading-snug">Budi Santoso <span className="font-normal text-admin-textsecondary">mengunggah listing: 500kg Sekam Padi</span></p>
-                  <span className="text-xs text-admin-textsecondary font-tabular font-bold block">2 menit lalu</span>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-3 h-3 rounded-full bg-admin-semgreen mt-1 shrink-0"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-admin-textprimary leading-snug">Order #AW-8821 <span className="font-normal text-admin-textsecondary">telah diselesaikan.</span></p>
-                  <span className="text-xs text-admin-textsecondary font-tabular font-bold block">1 jam lalu</span>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-3 h-3 rounded-full bg-admin-semamber mt-1 shrink-0"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-admin-textprimary leading-snug">Logistik Express <span className="font-normal text-admin-textsecondary">ditugaskan menjemput #AW-8825</span></p>
-                  <span className="text-xs text-admin-textsecondary font-tabular font-bold block">3 jam lalu</span>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-3 h-3 rounded-full bg-admin-semred mt-1 shrink-0"></div>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-admin-textprimary leading-snug">Sistem <span className="font-normal text-admin-textsecondary">mendeteksi latensi pada Payment Gateway API</span></p>
-                  <span className="text-xs text-admin-textsecondary font-tabular font-bold block">5 jam lalu</span>
-                </div>
-              </div>
+              {stats?.recent_activities && stats.recent_activities.length > 0 ? (
+                stats.recent_activities.map((act) => {
+                  const date = new Date(act.created_at);
+                  const timeStr = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+                  const dateStr = date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+                  const dotColor = act.type === "product"
+                    ? "bg-admin-semgreen shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                    : "bg-admin-semamber shadow-[0_0_8px_rgba(245,158,11,0.5)]";
+                  return (
+                    <div key={act.id} className="flex gap-4">
+                      <div className={`w-3 h-3 rounded-full mt-1 shrink-0 ${dotColor}`}></div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-admin-textprimary leading-snug">
+                          {act.user}{" "}
+                          <span className="font-normal text-admin-textsecondary">
+                            {act.type === "product" ? `mengunggah listing: ${act.title}` : act.description}
+                          </span>
+                        </p>
+                        <span className="text-xs text-admin-textsecondary font-tabular font-bold block">
+                          {dateStr}, {timeStr}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-xs text-admin-textsecondary italic py-2">Belum ada aktivitas terbaru.</div>
+              )}
             </div>
           </div>
 

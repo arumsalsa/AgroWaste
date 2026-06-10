@@ -7,9 +7,10 @@ import { apiFetch } from "@/lib/api";
 import { saveAuth, type AuthUser } from "@/lib/auth";
 
 function redirectByRole(role: string): string {
+  if (role === "admin") return "/admin";
   if (role === "peternak") return "/seller";
-  if (role === "pembeli") return "/marketplace";
-  return "/home";
+  if (role === "logistik") return "/courier";
+  return "/marketplace";
 }
 
 export default function LoginPage() {

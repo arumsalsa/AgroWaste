@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Leaf } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 interface Product {
@@ -22,6 +22,8 @@ interface Product {
   kecamatan: string;
   rating_avg: string | number;
   review_count: number;
+  image_url?: string | null;
+  image_urls?: string[];
   category?: { name: string };
   peternak_profile?: { nama_peternakan: string; badge: string };
 }
@@ -46,6 +48,7 @@ export default function ProductDetail() {
   const [product, setProduct]       = useState<Product | null>(null);
   const [loading, setLoading]       = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const [qty, setQty]               = useState(1);
   const [cartLoading, setCartLoading] = useState(false);
   const [cartSuccess, setCartSuccess] = useState(false);
@@ -59,7 +62,14 @@ export default function ProductDetail() {
       })
       .then((json) => {
         const p: Product = json.data;
+        if (p.image_url) {
+          p.image_url = getProductImageUrl(p.image_url);
+        }
+        if (p.image_urls) {
+          p.image_urls = p.image_urls.map((url) => getProductImageUrl(url));
+        }
         setProduct(p);
+        setActiveImage(p.image_url ?? null);
         setQty(Math.max(1, Math.ceil(parseFloat(p.min_order_kg))));
         setLoading(false);
       })
@@ -158,16 +168,47 @@ export default function ProductDetail() {
 
             {/* Gallery */}
             <div className="mb-8">
-              <div className="aspect-[4/3] bg-[#F0F5F1] rounded-3xl overflow-hidden mb-4 border border-[#E8E0D5] flex items-center justify-center">
+              {/* Main image */}
+              <div className="aspect-[4/3] bg-[#F0F5F1] rounded-3xl overflow-hidden mb-4 border border-[#E8E0D5] flex items-center justify-center relative">
+                {activeImage && (
+                  <img
+                    src={activeImage}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  />
+                )}
                 <Leaf className="w-24 h-24 text-[#009A44]/15" />
               </div>
+
+              {/* Thumbnails */}
               <div className="flex gap-4">
-                <div className="w-24 h-24 rounded-2xl border-2 border-[#009A44] bg-[#F0F5F1] flex items-center justify-center cursor-pointer">
-                  <Leaf className="w-8 h-8 text-[#009A44]/30" />
-                </div>
-                <div className="w-24 h-24 rounded-2xl border border-[#E8E0D5] bg-[#F5F1E8] flex items-center justify-center cursor-pointer hover:border-[#009A44] transition-colors text-[#555555]">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </div>
+                {product.image_urls && product.image_urls.length > 0 ? (
+                  product.image_urls.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveImage(url)}
+                      className={`w-24 h-24 rounded-2xl overflow-hidden flex items-center justify-center transition-colors relative ${
+                        activeImage === url
+                          ? "border-2 border-[#009A44] bg-[#F0F5F1]"
+                          : "border border-[#E8E0D5] bg-[#F0F5F1] hover:border-[#009A44]"
+                      }`}
+                    >
+                      <img
+                        src={url}
+                        alt={`Gambar ${i + 1}`}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      />
+                      <Leaf className="w-6 h-6 text-[#009A44]/30" />
+                    </button>
+                  ))
+                ) : (
+                  <div className="w-24 h-24 rounded-2xl border-2 border-[#009A44] bg-[#F0F5F1] flex items-center justify-center">
+                    <Leaf className="w-8 h-8 text-[#009A44]/30" />
+                  </div>
+                )}
               </div>
             </div>
 

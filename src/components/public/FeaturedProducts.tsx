@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star, ShoppingCart, ArrowRight, Plus, Check, X, Leaf, MapPin } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 interface Product {
@@ -17,6 +17,7 @@ interface Product {
   kabupaten: string;
   rating_avg: string | number;
   review_count: number;
+  image_url?: string | null;
   peternak_profile?: { nama_peternakan: string; badge: string };
   category?: { name: string };
 }
@@ -168,8 +169,16 @@ export default function FeaturedProducts() {
             href={`/marketplace/${product.id}`}
             className="w-[300px] md:w-[350px] shrink-0 bg-white rounded-[32px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.05)] border border-[#E8E0D5] flex flex-col group hover:-translate-y-1 transition-transform snap-center"
           >
-            {/* Image placeholder — konsisten dengan marketplace */}
+            {/* Product image */}
             <div className="w-full h-56 rounded-[24px] overflow-hidden relative mb-5 bg-[#F0F5F1] flex items-center justify-center border border-[#E8E0D5]/40">
+              {product.image_url && (
+                <img
+                  src={getProductImageUrl(product.image_url)}
+                  alt={product.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
               <Leaf className="w-16 h-16 text-[#009A44]/20" />
 
               {Number(product.rating_avg) > 0 && (

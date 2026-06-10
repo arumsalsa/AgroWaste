@@ -1,22 +1,74 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
+import { getUser } from "@/lib/auth";
+import { useToast } from "@/components/admin/Toast";
 
 export default function SettingsPage() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("personal");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showMobileSession, setShowMobileSession] = useState(true);
 
   // Formulir data diri
-  const [profileName, setProfileName] = useState("Amanda Putri");
-  const [profileBio, setProfileBio] = useState("Bertanggung jawab penuh atas kelancaran moderasi marketplace limbah tani AgroWaste dan sinkronisasi logistik regional Jawa Barat.");
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profileBio, setProfileBio] = useState("Bertanggung jawab penuh atas kelancaran moderasi marketplace limbah tani AgroWaste.");
 
-  const handleSavePersonal = (e: React.FormEvent) => {
+  useEffect(() => {
+    apiFetch("/profile")
+      .then((r) => (r.ok ? r.json() : { data: null }))
+      .then((json) => {
+        if (json.success && json.data) {
+          setProfileName(json.data.name ?? "");
+          setProfileEmail(json.data.email ?? "");
+        } else {
+          const localUser = getUser();
+          if (localUser) {
+            setProfileName(localUser.name);
+            setProfileEmail(localUser.email);
+          }
+        }
+      })
+      .catch(() => {
+        const localUser = getUser();
+        if (localUser) {
+          setProfileName(localUser.name);
+          setProfileEmail(localUser.email);
+        }
+      });
+  }, []);
+
+  const handleSavePersonal = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSuccessModalOpen(true);
+    try {
+      const res = await apiFetch("/profile", {
+        method: "PUT",
+        body: JSON.stringify({ name: profileName }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        // Update local storage user name too
+        const localUser = getUser();
+        if (localUser) {
+          localUser.name = profileName;
+          localStorage.setItem("agrowaste_user", JSON.stringify(localUser));
+        }
+        setIsSuccessModalOpen(true);
+        // Force header update
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        showToast(json.message ?? "Gagal memperbarui profil.", "error");
+      }
+    } catch {
+      showToast("Gagal terhubung ke server.", "error");
+    }
   };
-
+  
   const handleSavePassword = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSuccessModalOpen(true);
@@ -121,7 +173,7 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-admin-textsecondary mb-1">Email Administrator</label>
-                      <input type="email" defaultValue="amanda.putri@agrowaste.id" className="w-full px-4 py-2.5 bg-admin-warmbg border border-admin-hairline rounded-xl text-sm text-admin-textprimary focus:outline-none focus:ring-1 focus:ring-admin-primary" />
+                      <input type="email" value={profileEmail} disabled className="w-full px-4 py-2.5 bg-admin-hairline/50 border border-admin-hairline rounded-xl text-sm font-bold text-admin-textsecondary cursor-not-allowed" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-admin-textsecondary mb-1">Nomor Handphone Darurat</label>

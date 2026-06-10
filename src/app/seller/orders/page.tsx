@@ -1,213 +1,344 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { apiFetch, getProductImageUrl } from "@/lib/api";
+
+interface OrderItem {
+  quantity_kg: string | number;
+  price_per_kg: string | number;
+  product?: { id: string; name: string; image_url?: string | null };
+}
+
+interface Order {
+  id: string;
+  order_number?: string;
+  total_price: string | number;
+  status: string;
+  metode_pengiriman?: string;
+  metode_pembayaran?: string;
+  alamat_pengiriman?: string;
+  rejection_reason?: string | null;
+  created_at: string;
+  items?: OrderItem[];
+  product?: { id: string; name: string; image_url?: string | null };
+}
+
+const TAB_MAP: Record<string, string> = {
+  "Semua": "",
+  "Menunggu Konfirmasi": "menunggu_pembayaran",
+  "Diproses": "dikonfirmasi",
+  "Dikirim": "dikirim",
+  "Selesai": "selesai",
+  "Dibatalkan": "ditolak",
+};
+
+function formatRupiah(n: string | number) {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(Number(n));
+}
+
+function formatDate(d: string) {
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(d));
+}
+
+function statusBadge(status: string) {
+  switch (status) {
+    case "menunggu_pembayaran": return { label: "Menunggu Konfirmasi", cls: "bg-amber-100 text-amber-700" };
+    case "dikonfirmasi":        return { label: "Dikonfirmasi",         cls: "bg-blue-100 text-blue-700" };
+    case "dikirim":             return { label: "Dikirim",              cls: "bg-orange-100 text-orange-700" };
+    case "selesai":             return { label: "Selesai",              cls: "bg-seller-primary-light text-seller-semgreen" };
+    case "ditolak":             return { label: "Ditolak",              cls: "bg-red-100 text-red-700" };
+    default:                    return { label: status,                 cls: "bg-[#EAE6E1] text-seller-textsecondary" };
+  }
+}
 
 function OrdersContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
-  const [activeTab, setActiveTab] = useState("Semua");
 
-  // Jika ada ID di URL, tampilkan halaman Detail Pesanan
+  const [orders,          setOrders]          = useState<Order[]>([]);
+  const [loading,         setLoading]         = useState(true);
+  const [activeTab,       setActiveTab]       = useState("Semua");
+  const [processingId,    setProcessingId]    = useState<string | null>(null);
+  const [rejectingOrder,  setRejectingOrder]  = useState<Order | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [actionError,     setActionError]     = useState<string | null>(null);
+
+  const fetchOrders = () => {
+    setLoading(true);
+    apiFetch("/orders")
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((json) => {
+        setOrders(json.data as Order[]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchOrders(); }, []);
+
+  const visible = useMemo(() => {
+    const statusFilter = TAB_MAP[activeTab];
+    if (!statusFilter) return orders;
+    return orders.filter((o) => o.status === statusFilter);
+  }, [orders, activeTab]);
+
+  // ── Process order (terima/tolak) ──────────────────────────
+  const handleProcess = async (order: Order, status: "dikonfirmasi" | "ditolak", reason?: string) => {
+    setProcessingId(order.id);
+    setActionError(null);
+    try {
+      const body: Record<string, string> = { status };
+      if (status === "ditolak" && reason) body.rejection_reason = reason;
+      const res  = await apiFetch(`/orders/${order.id}/process`, { method: "PUT", body: JSON.stringify(body) });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setActionError(json.message ?? "Gagal memproses pesanan.");
+        return;
+      }
+      // update status lokal
+      setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status, rejection_reason: reason ?? null } : o));
+      setRejectingOrder(null);
+      setRejectionReason("");
+    } catch {
+      setActionError("Tidak dapat terhubung ke server.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // ── Update order status (kirim barang) ────────────────────
+  const handleUpdateStatus = async (order: Order, status: "dikirim") => {
+    setProcessingId(order.id);
+    setActionError(null);
+    try {
+      const body = { status };
+      const res = await apiFetch(`/orders/${order.id}/status`, { method: "PUT", body: JSON.stringify(body) });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setActionError(json.message ?? "Gagal memperbarui status pesanan.");
+        return;
+      }
+      // update status lokal
+      setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status } : o));
+    } catch {
+      setActionError("Tidak dapat terhubung ke server.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // ── DETAIL VIEW ───────────────────────────────────────────
   if (orderId) {
+    const order = orders.find((o) => o.id === orderId);
+
     return (
       <div className="space-y-6 animate-fade-in pb-10">
         <div className="flex items-center text-xs font-bold text-seller-textsecondary mb-2">
           <Link href="/seller/orders" className="hover:text-seller-primary">Pesanan</Link>
           <span className="mx-2">&rsaquo;</span>
-          <span className="text-seller-textprimary">INV/20231027/AGR/9921</span>
+          <span className="text-seller-textprimary">{order?.order_number ?? orderId.slice(0, 8).toUpperCase()}</span>
         </div>
 
-        <div className="flex justify-between items-start">
-          <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary">Detail Pesanan</h2>
-          <div className="flex gap-3">
-            <button className="px-4 py-2 border-2 border-seller-primary text-seller-primary rounded-xl text-sm font-bold hover:bg-seller-primary-light transition-colors flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-              Hubungi Pembeli
-            </button>
-            <button className="px-4 py-2 bg-seller-primary text-white rounded-xl text-sm font-bold hover:bg-seller-primary-hover transition-colors flex items-center gap-2 shadow-md shadow-seller-primary/20">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-              Cetak Label Pengiriman
-            </button>
+        {loading && (
+          <div className="p-12 text-center text-seller-textsecondary text-sm animate-pulse">Memuat detail pesanan...</div>
+        )}
+
+        {!loading && !order && (
+          <div className="p-12 text-center">
+            <p className="text-seller-textsecondary mb-4">Pesanan tidak ditemukan.</p>
+            <Link href="/seller/orders" className="text-seller-primary font-bold text-sm hover:underline">← Kembali ke Daftar</Link>
           </div>
-        </div>
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Ringkasan Status */}
-            <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
-              <div className="flex justify-between items-start mb-6 pb-6 border-b border-seller-hairline">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-seller-primary-light text-seller-primary flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        {!loading && order && (() => {
+          const { label, cls } = statusBadge(order.status);
+          const items = order.items ?? [];
+          return (
+            <>
+              <div className="flex justify-between items-start">
+                <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary">Detail Pesanan</h2>
+                {order.status === "menunggu_pembayaran" && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleProcess(order, "dikonfirmasi")}
+                      disabled={processingId === order.id}
+                      className="px-4 py-2 bg-seller-primary text-white rounded-xl text-sm font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
+                    >
+                      {processingId === order.id ? "Memproses..." : "Terima Pesanan"}
+                    </button>
+                    <button
+                      onClick={() => { setRejectingOrder(order); setRejectionReason(""); }}
+                      disabled={processingId === order.id}
+                      className="px-4 py-2 border-2 border-red-400 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors disabled:opacity-60"
+                    >
+                      Tolak
+                    </button>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-0.5">ID PESANAN</span>
-                    <h3 className="text-lg font-bold text-seller-textprimary">#AGR-9921-X3</h3>
+                )}
+                {order.status === "dikonfirmasi" && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleUpdateStatus(order, "dikirim")}
+                      disabled={processingId === order.id}
+                      className="px-4 py-2 bg-seller-primary text-white rounded-xl text-sm font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
+                    >
+                      {processingId === order.id ? "Memproses..." : "Kirim Barang"}
+                    </button>
                   </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-0.5">TANGGAL PESANAN</span>
-                  <h3 className="text-sm font-bold text-seller-textprimary">27 Oktober 2023, 14:20 WIB</h3>
-                </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">STATUS PEMBAYARAN</span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-seller-primary-light text-seller-primary text-[10px] font-bold tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-seller-primary"></span>
-                    Selesai
-                  </span>
+              {actionError && (
+                <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold">
+                  {actionError}
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">METODE BAYAR</span>
-                  <span className="text-sm font-bold text-seller-textprimary">Bank Transfer (BCA)</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">TOTAL PENDAPATAN</span>
-                  <span className="text-lg font-bold text-seller-semgreen font-tabular">Rp 2.450.000</span>
-                </div>
-              </div>
-            </div>
+              )}
 
-            {/* Rincian Produk */}
-            <div className="bg-seller-surfacewhite border border-seller-hairline rounded-2xl overflow-hidden">
-              <div className="p-6 border-b border-seller-hairline">
-                <h3 className="text-lg font-bold text-seller-textprimary">Rincian Produk</h3>
-              </div>
-              <div className="p-6">
-                <div className="flex gap-6 items-center">
-                  <div className="w-24 h-24 rounded-xl bg-[#5C4033] flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    <div className="w-full h-full bg-[#5C4033]/20 flex items-center justify-center text-white/50 text-xs font-bold">IMG</div>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-lg font-bold text-seller-textprimary">Pupuk Kandang Sapi (Fermentasi)</h4>
-                    <p className="text-sm text-seller-textsecondary mt-1">Kemasan 25kg &bull; Grade A Kaya Nitrogen</p>
-                    
-                    <div className="flex gap-8 mt-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Ringkasan Status */}
+                  <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
+                    <div className="flex justify-between items-start mb-6 pb-6 border-b border-seller-hairline">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-seller-primary-light text-seller-primary flex items-center justify-center">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-0.5">ID PESANAN</span>
+                          <h3 className="text-lg font-bold text-seller-textprimary">
+                            #{order.order_number ?? order.id.slice(0, 8).toUpperCase()}
+                          </h3>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-0.5">TANGGAL PESANAN</span>
+                        <h3 className="text-sm font-bold text-seller-textprimary">{formatDate(order.created_at)}</h3>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block">HARGA SATUAN</span>
-                        <span className="text-sm font-bold text-seller-textprimary font-tabular">Rp 49.000</span>
+                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">STATUS</span>
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider ${cls}`}>
+                          {label}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block">KUANTITAS</span>
-                        <span className="text-sm font-bold text-seller-textprimary font-tabular">50 Karung</span>
+                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">METODE PENGIRIMAN</span>
+                        <span className="text-sm font-bold text-seller-textprimary capitalize">{order.metode_pengiriman ?? "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">TOTAL PESANAN</span>
+                        <span className="text-lg font-bold text-seller-semgreen font-tabular">{formatRupiah(order.total_price)}</span>
+                      </div>
+                      {order.status === "ditolak" && order.rejection_reason && (
+                        <div className="col-span-3 mt-2 p-3.5 bg-red-50 border border-red-200 rounded-xl">
+                          <span className="text-[10px] font-bold text-red-700 tracking-wider block mb-1">ALASAN PENOLAKAN</span>
+                          <p className="text-xs text-red-800 font-medium leading-relaxed">{order.rejection_reason}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Rincian Produk */}
+                  <div className="bg-seller-surfacewhite border border-seller-hairline rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-seller-hairline">
+                      <h3 className="text-lg font-bold text-seller-textprimary">Rincian Produk</h3>
+                    </div>
+                    <div className="divide-y divide-seller-hairline">
+                      {items.length > 0 ? items.map((item, i) => (
+                        <div key={i} className="p-6 flex gap-6 items-center">
+                          <div className="w-16 h-16 rounded-xl bg-[#EAE6E1] shrink-0 flex items-center justify-center text-seller-textsecondary text-[10px] font-bold relative overflow-hidden border border-seller-hairline">
+                            {item.product?.image_url ? (
+                              <img
+                                src={getProductImageUrl(item.product.image_url)}
+                                alt={item.product.name ?? "Produk"}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                              />
+                            ) : (
+                              <span>IMG</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-base font-bold text-seller-textprimary">{item.product?.name ?? "Produk"}</h4>
+                            <div className="flex gap-8 mt-2">
+                              <div>
+                                <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block">HARGA/KG</span>
+                                <span className="text-sm font-bold text-seller-textprimary font-tabular">{formatRupiah(item.price_per_kg)}</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block">JUMLAH</span>
+                                <span className="text-sm font-bold text-seller-textprimary font-tabular">{Number(item.quantity_kg).toLocaleString("id-ID")} kg</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">SUBTOTAL</span>
+                            <span className="text-base font-bold text-seller-semgreen font-tabular">
+                              {formatRupiah(Number(item.price_per_kg) * Number(item.quantity_kg))}
+                            </span>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="p-6 text-xs text-seller-textsecondary">Detail produk tidak tersedia.</div>
+                      )}
+                    </div>
+                    <div className="p-6 bg-[#F9F8F6] border-t border-seller-hairline flex justify-between items-center">
+                      <span className="font-bold text-seller-textprimary">Total Pesanan</span>
+                      <span className="text-xl font-bold text-seller-textprimary font-tabular">{formatRupiah(order.total_price)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sidebar detail */}
+                <div className="space-y-6">
+                  <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
+                    <h3 className="font-bold text-seller-textprimary mb-4">Informasi Pengiriman</h3>
+                    <div className="space-y-4 text-sm">
+                      <div>
+                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">METODE</span>
+                        <p className="font-bold text-seller-textprimary capitalize">{order.metode_pengiriman ?? "—"}</p>
+                      </div>
+                      {order.alamat_pengiriman && (
+                        <div>
+                          <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">ALAMAT PENGIRIMAN</span>
+                          <p className="text-seller-textprimary leading-relaxed">{order.alamat_pengiriman}</p>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">METODE PEMBAYARAN</span>
+                        <p className="font-bold text-seller-textprimary capitalize">{order.metode_pembayaran ?? "—"}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="text-right self-end">
-                    <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">SUBTOTAL</span>
-                    <span className="text-lg font-bold text-seller-semgreen font-tabular">Rp 2.450.000</span>
-                  </div>
                 </div>
               </div>
-              <div className="p-6 bg-[#F9F8F6] border-t border-seller-hairline flex justify-between items-center">
-                <span className="font-bold text-seller-textprimary">Total Pesanan</span>
-                <span className="text-xl font-bold text-seller-textprimary font-tabular">Rp 2.450.000</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {/* Informasi Pembeli */}
-            <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
-              <div className="flex items-center gap-2 mb-6">
-                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                <h3 className="font-bold text-seller-textprimary">Informasi Pembeli</h3>
-              </div>
-              
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-seller-hairline">
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
-                  PB
-                </div>
-                <div>
-                  <h4 className="font-bold text-seller-textprimary">Pak Budiman</h4>
-                  <span className="text-xs text-seller-textsecondary">budiman_tani@email.com</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">ALAMAT PENGIRIMAN</span>
-                  <p className="text-sm text-seller-textprimary leading-relaxed">
-                    Jl. Agrowisata No. 45, Desa Sukamaju, Kec. Ciawi, Bogor, Jawa Barat 16720
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">NO. TELEPON</span>
-                  <p className="text-sm font-bold text-seller-textprimary font-tabular">+62 812-3456-7890</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Status Pengiriman */}
-            <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
-              <div className="flex items-center gap-2 mb-6">
-                <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-                <h3 className="font-bold text-seller-textprimary">Status Pengiriman</h3>
-              </div>
-
-              <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-seller-hairline before:to-transparent mb-8">
-                
-                <div className="relative flex items-start gap-4">
-                  <div className="w-6 h-6 rounded-full bg-orange-500 border-4 border-white flex-shrink-0 relative z-10 shadow-sm"></div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className="text-sm font-bold text-orange-500">Pesanan Sedang Dikirim</h4>
-                      <span className="text-[10px] text-seller-textsecondary text-right font-tabular">Hari ini,<br/>10:15</span>
-                    </div>
-                    <p className="text-[10px] text-seller-textsecondary mt-1">Kurir (Agus - Logistik AgroWaste) sedang dalam perjalanan menuju lokasi pembeli.</p>
-                  </div>
-                </div>
-
-                <div className="relative flex items-start gap-4">
-                  <div className="w-6 h-6 rounded-full bg-[#EAE6E1] border-4 border-white flex-shrink-0 relative z-10"></div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className="text-sm font-bold text-seller-textsecondary">Paket Diserahkan ke Kurir</h4>
-                      <span className="text-[10px] text-seller-textsecondary text-right font-tabular">28 Okt,<br/>08:30</span>
-                    </div>
-                    <p className="text-[10px] text-seller-textsecondary mt-1">Serah terima paket di Warehouse Peternak berhasil.</p>
-                  </div>
-                </div>
-
-                <div className="relative flex items-start gap-4">
-                  <div className="w-6 h-6 rounded-full bg-[#EAE6E1] border-4 border-white flex-shrink-0 relative z-10"></div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className="text-sm font-bold text-seller-textsecondary">Pesanan Diproses</h4>
-                      <span className="text-[10px] text-seller-textsecondary text-right font-tabular">27 Okt,<br/>16:00</span>
-                    </div>
-                    <p className="text-[10px] text-seller-textsecondary mt-1">Penjual sedang menyiapkan barang dan pengemasan.</p>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="p-4 rounded-xl border border-dashed border-seller-hairline bg-[#F9F8F6] flex justify-between items-center">
-                <span className="text-xs font-bold text-seller-textsecondary">No. Resi:</span>
-                <span className="text-xs font-bold text-seller-textprimary font-tabular tracking-wider">AW-LOG-7728192</span>
-              </div>
-            </div>
-          </div>
-        </div>
+            </>
+          );
+        })()}
       </div>
     );
   }
 
-  // Tampilan Utama (Daftar Pesanan)
+  // ── LIST VIEW ─────────────────────────────────────────────
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">Daftar Pesanan</h2>
 
-      {/* Table Section */}
+      {actionError && (
+        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold">
+          {actionError}
+          <button onClick={() => setActionError(null)} className="ml-2 underline">Tutup</button>
+        </div>
+      )}
+
       <div className="bg-seller-surfacewhite border border-seller-hairline rounded-2xl overflow-hidden">
-        {/* Table Header */}
+        {/* Tab Bar */}
         <div className="p-6 border-b border-seller-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex bg-seller-warmbg p-1.5 rounded-xl gap-1 max-w-max">
-            {["Semua", "Menunggu Konfirmasi", "Diproses", "Dikirim", "Selesai", "Dibatalkan"].map((tab) => (
+          <div className="flex flex-wrap bg-seller-warmbg p-1.5 rounded-xl gap-1 max-w-max">
+            {Object.keys(TAB_MAP).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -221,186 +352,132 @@ function OrdersContent() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3">
-            <button className="text-xs font-bold px-4 py-2 bg-[#EBE7E0] hover:bg-seller-hairline text-seller-textprimary rounded-xl flex items-center gap-2 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              Rentang Tanggal
-            </button>
-            <button className="text-xs font-bold px-4 py-2 bg-[#EBE7E0] hover:bg-seller-hairline text-seller-textprimary rounded-xl flex items-center gap-2 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-              Filter
-            </button>
-          </div>
         </div>
 
-        {/* Table Content */}
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-[#F9F8F6] text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider border-b border-seller-hairline">
               <tr>
                 <th className="px-6 py-4">Detail Pesanan</th>
-                <th className="px-6 py-4">Pembeli</th>
-                <th className="px-6 py-4">Total Pembayaran</th>
-                <th className="px-6 py-4">Status Pembayaran</th>
-                <th className="px-6 py-4">Status Pengiriman</th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-4">Total</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-seller-hairline bg-white">
-              {/* Order 1 */}
-              <tr className="hover:bg-seller-warmbg/30 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-semgreen text-xs mb-1">#AGR-9921-X3</div>
-                  <div className="text-[10px] text-seller-textsecondary mb-2">12 Oct 2023, 14:20</div>
-                  <div className="font-semibold text-seller-textprimary text-sm">Pupuk Kandang<br/>Sapi (25kg) x 50</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">PB</div>
-                    <span className="font-bold text-seller-textprimary">Pak<br/>Budiman</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-textprimary font-tabular text-base">
-                    <span className="text-xs mr-1">Rp</span>2.450.000
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 rounded-full bg-seller-primary-light text-seller-semgreen text-[10px] font-bold tracking-wider uppercase">Selesai</span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col items-center">
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold tracking-wider mb-1">Dalam Pengiriman</span>
-                    <span className="text-[8px] text-seller-textsecondary text-center">Pengemudi: Ahmad (B<br/>1234 XY)</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Link href="/seller/orders?id=AGR-9921-X3" className="inline-block px-4 py-2 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors">
-                    Lihat Detail
-                  </Link>
-                </td>
-              </tr>
-
-              {/* Order 2 */}
-              <tr className="hover:bg-seller-warmbg/30 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-semgreen text-xs mb-1">#AGR-9877-K2</div>
-                  <div className="text-[10px] text-seller-textsecondary mb-2">12 Oct 2023, 10:45</div>
-                  <div className="font-semibold text-seller-textprimary text-sm">Limbah Jerami<br/>Premium (100kg) x 10</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-seller-primary-light text-seller-primary flex items-center justify-center font-bold text-[10px]">SR</div>
-                    <span className="font-bold text-seller-textprimary">Siti<br/>Rahma</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-textprimary font-tabular text-base">
-                    <span className="text-xs mr-1">Rp</span>1.200.000
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold tracking-wider uppercase">Menunggu</span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col items-center">
-                    <span className="px-3 py-1 rounded-full bg-[#EAE6E1] text-seller-textsecondary text-[10px] font-bold tracking-wider mb-1">Menunggu</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Link href="/seller/orders?id=AGR-9877-K2" className="inline-block px-4 py-2 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors">
-                    Lihat Detail
-                  </Link>
-                </td>
-              </tr>
-
-              {/* Order 3 */}
-              <tr className="hover:bg-seller-warmbg/30 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-semgreen text-xs mb-1">#AGR-9554-Z1</div>
-                  <div className="text-[10px] text-seller-textsecondary mb-2">11 Oct 2023, 16:12</div>
-                  <div className="font-semibold text-seller-textprimary text-sm">Pakan Ternak<br/>Fermentasi x 20</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-[10px]">HR</div>
-                    <span className="font-bold text-seller-textprimary">Herry<br/>Rosadi</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-textprimary font-tabular text-base">
-                    <span className="text-xs mr-1">Rp</span>3.800.000
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 rounded-full bg-seller-primary-light text-seller-semgreen text-[10px] font-bold tracking-wider uppercase">Selesai</span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col items-center">
-                    <span className="px-3 py-1 rounded-full bg-seller-primary-light text-seller-primary text-[10px] font-bold tracking-wider mb-1">Terkirim</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Link href="/seller/orders?id=AGR-9554-Z1" className="inline-block px-4 py-2 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors">
-                    Lihat Detail
-                  </Link>
-                </td>
-              </tr>
-
-              {/* Order 4 */}
-              <tr className="hover:bg-seller-warmbg/30 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-semgreen text-xs mb-1">#AGR-9210-L4</div>
-                  <div className="text-[10px] text-seller-textsecondary mb-2">10 Oct 2023, 09:05</div>
-                  <div className="font-semibold text-seller-textprimary text-sm">Pupuk Cair<br/>Organik (5L) x 15</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#5C4033] text-white flex items-center justify-center font-bold text-[10px]">DA</div>
-                    <span className="font-bold text-seller-textprimary">Dedi<br/>Anwar</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-seller-textprimary font-tabular text-base">
-                    <span className="text-xs mr-1">Rp</span>1.125.000
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold tracking-wider uppercase">Batal</span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col items-center">
-                    <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold tracking-wider mb-1">Dibatalkan</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Link href="/seller/orders?id=AGR-9210-L4" className="inline-block px-4 py-2 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors">
-                    Lihat Detail
-                  </Link>
-                </td>
-              </tr>
+              {loading && (
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-seller-textsecondary text-xs animate-pulse">Memuat pesanan...</td></tr>
+              )}
+              {!loading && visible.length === 0 && (
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-seller-textsecondary text-xs">Tidak ada pesanan.</td></tr>
+              )}
+              {!loading && visible.map((order) => {
+                const { label, cls } = statusBadge(order.status);
+                const orderId      = order.order_number ?? order.id.slice(0, 8).toUpperCase();
+                const productName  = order.items?.[0]?.product?.name ?? order.product?.name ?? "Pesanan AgroWaste";
+                const isPending    = order.status === "menunggu_pembayaran";
+                return (
+                  <tr key={order.id} className="hover:bg-seller-warmbg/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-seller-semgreen text-xs mb-1">#{orderId}</div>
+                      <div className="text-[10px] text-seller-textsecondary mb-1">{formatDate(order.created_at)}</div>
+                      <div className="font-semibold text-seller-textprimary text-sm">{productName}</div>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-seller-textprimary font-tabular">
+                      {formatRupiah(order.total_price)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${cls}`}>{label}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/seller/orders?id=${order.id}`}
+                          className="inline-block px-3 py-1.5 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors"
+                        >
+                          Detail
+                        </Link>
+                        {isPending && (
+                          <>
+                            <button
+                              onClick={() => handleProcess(order, "dikonfirmasi")}
+                              disabled={processingId === order.id}
+                              className="px-3 py-1.5 bg-seller-primary text-white rounded-lg text-xs font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
+                            >
+                              Terima
+                            </button>
+                            <button
+                              onClick={() => { setRejectingOrder(order); setRejectionReason(""); setActionError(null); }}
+                              disabled={processingId === order.id}
+                              className="px-3 py-1.5 border border-red-400 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors disabled:opacity-60"
+                            >
+                              Tolak
+                            </button>
+                          </>
+                        )}
+                        {order.status === "dikonfirmasi" && (
+                          <button
+                            onClick={() => handleUpdateStatus(order, "dikirim")}
+                            disabled={processingId === order.id}
+                            className="px-3 py-1.5 bg-seller-primary text-white rounded-lg text-xs font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
+                          >
+                            Kirim
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */}
+
         <div className="p-4 border-t border-seller-hairline flex items-center justify-between text-xs text-seller-textsecondary bg-[#F9F8F6]">
-          <span>Menampilkan 1-4 dari 28 pesanan</span>
-          <div className="flex gap-1">
-            <button className="w-8 h-8 flex items-center justify-center rounded border border-seller-hairline bg-white hover:bg-seller-warmbg disabled:opacity-50" disabled>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded bg-seller-primary text-white font-bold shadow-md">1</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded border border-seller-hairline bg-white hover:bg-seller-warmbg">2</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded border border-seller-hairline bg-white hover:bg-seller-warmbg">3</button>
-            <span className="w-8 h-8 flex items-center justify-center text-seller-textsecondary">...</span>
-            <button className="w-8 h-8 flex items-center justify-center rounded border border-seller-hairline bg-white hover:bg-seller-warmbg">7</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded border border-seller-hairline bg-white hover:bg-seller-warmbg">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
+          <span>Menampilkan {visible.length} dari {orders.length} pesanan</span>
         </div>
       </div>
+
+      {/* Modal Tolak Pesanan */}
+      {rejectingOrder && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-seller-surfacewhite w-full max-w-sm rounded-2xl border border-seller-hairline overflow-hidden animate-fade-in">
+            <div className="p-4 border-b border-seller-hairline flex justify-between items-center">
+              <h3 className="font-bold text-seller-textprimary">Tolak Pesanan</h3>
+              <button onClick={() => setRejectingOrder(null)} className="text-seller-textsecondary hover:text-seller-textprimary">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-seller-textsecondary">
+                Masukkan alasan penolakan untuk pesanan{" "}
+                <span className="font-bold text-seller-textprimary">
+                  #{rejectingOrder.order_number ?? rejectingOrder.id.slice(0, 8).toUpperCase()}
+                </span>.
+              </p>
+              <textarea
+                rows={4}
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Mis: Stok habis, produk tidak tersedia saat ini."
+                className="w-full px-3 py-2 bg-seller-warmbg border border-seller-hairline rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-seller-primary resize-none"
+              />
+              {actionError && <p className="text-xs text-red-600 font-semibold">{actionError}</p>}
+            </div>
+            <div className="p-4 border-t border-seller-hairline flex justify-end gap-3 bg-[#F9F8F6]">
+              <button onClick={() => setRejectingOrder(null)} className="px-4 py-2 text-xs font-bold text-seller-textsecondary hover:text-seller-textprimary">Batal</button>
+              <button
+                onClick={() => handleProcess(rejectingOrder, "ditolak", rejectionReason)}
+                disabled={processingId === rejectingOrder.id || !rejectionReason.trim()}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-60"
+              >
+                {processingId === rejectingOrder.id ? "Memproses..." : "Konfirmasi Tolak"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

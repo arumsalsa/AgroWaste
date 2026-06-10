@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/admin/Toast";
+import { apiFetch } from "@/lib/api";
 import { ListingApprovalHeaderSection } from "./ListingApprovalHeaderSection";
 import { ListingApprovalDashboardSection } from "./ListingApprovalDashboardSection";
 
@@ -25,41 +26,19 @@ const REJECTION_REASONS = [
   "Lainnya",
 ];
 
-const INITIAL_LISTINGS: Listing[] = [
-  {
-    id: "WST-2045-A",
-    title: "Kulit Sekam Padi Premium",
-    icon: "grain",
-    seller: "Budi Santoso",
-    sellerBadge: "VERIFIED PETERNAK",
-    category: "Limbah Padat",
-    date: "24 Okt 2023",
-    price: "2.500",
-    unit: "Kg",
-  },
-  {
-    id: "WST-2088-L",
-    title: "Pupuk Cair Kompos Fermentasi",
-    icon: "liquid",
-    seller: "Siti Aminah",
-    sellerBadge: "ELITE PRODUCER",
-    category: "Limbah Cair",
-    date: "25 Okt 2023",
-    price: "15.000",
-    unit: "Liter",
-  },
-  {
-    id: "WST-3011-S",
-    title: "Pupuk Kandang Sapi Kering",
-    icon: "organic",
-    seller: "Agung Wijaya",
-    sellerBadge: "NEW PETERNAK",
-    category: "Limbah Padat",
-    date: "25 Okt 2023",
-    price: "1.800",
-    unit: "Kg",
-  },
-];
+function mapProductToListing(p: any): Listing {
+  return {
+    id: p.id,
+    title: p.name,
+    icon: p.category?.slug === "limbah_cair" ? "liquid" : p.jenis_ternak === "ayam" ? "grain" : "organic",
+    seller: p.peternak_profile?.nama_peternakan ?? "Peternakan",
+    sellerBadge: p.peternak_profile?.badge?.toUpperCase() || "PETERNAK",
+    category: p.category?.slug === "limbah_cair" ? "Limbah Cair" : "Limbah Padat",
+    date: new Date(p.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }),
+    price: Number(p.price).toLocaleString("id-ID"),
+    unit: p.unit ?? "kg",
+  };
+}
 
 type PendingAction =
   | { type: "approve"; listing: Listing }
@@ -68,29 +47,79 @@ type PendingAction =
 
 export const AdminListing = () => {
   const { showToast } = useToast();
-  const [listings, setListings] = useState<Listing[]>(INITIAL_LISTINGS);
-  const [approvedToday, setApprovedToday] = useState(12);
-  const [rejectedWeekly, setRejectedWeekly] = useState(3);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [approvedToday, setApprovedToday] = useState(0);
+  const [rejectedWeekly, setRejectedWeekly] = useState(0);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [rejectionReason, setRejectionReason] = useState(REJECTION_REASONS[0]);
 
-  const confirmApprove = () => {
-    if (!pendingAction || pendingAction.type !== "approve") return;
-    const { listing } = pendingAction;
-    setListings((prev) => prev.filter((l) => l.id !== listing.id));
-    setApprovedToday((n) => n + 1);
-    showToast(`"${listing.title}" disetujui dan dipublikasikan ke pasar.`, "success");
-    setPendingAction(null);
+  const fetchListings = () => {
+    setLoading(true);
+    apiFetch("/admin/products")
+      .then((r) => (r.ok ? r.json() : { data: [], meta: { approved_today: 0, rejected_weekly: 0 } }))
+      .then((json) => {
+        const all = json.data ?? [];
+        const pending = all.filter((p: any) => p.status === "menunggu_review");
+        setListings(pending.map(mapProductToListing));
+        if (json.meta) {
+          setApprovedToday(json.meta.approved_today ?? 0);
+          setRejectedWeekly(json.meta.rejected_weekly ?? 0);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   };
 
-  const confirmReject = () => {
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const confirmApprove = async () => {
+    if (!pendingAction || pendingAction.type !== "approve") return;
+    const { listing } = pendingAction;
+    try {
+      const res = await apiFetch(`/admin/products/${listing.id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "aktif" }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setListings((prev) => prev.filter((l) => l.id !== listing.id));
+        setApprovedToday((n) => n + 1);
+        showToast(`"${listing.title}" disetujui dan dipublikasikan ke pasar.`, "success");
+      } else {
+        showToast(json.message ?? "Gagal menyetujui listing.", "error");
+      }
+    } catch {
+      showToast("Tidak dapat terhubung ke server.", "error");
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const confirmReject = async () => {
     if (!pendingAction || pendingAction.type !== "reject") return;
     const { listing } = pendingAction;
-    setListings((prev) => prev.filter((l) => l.id !== listing.id));
-    setRejectedWeekly((n) => n + 1);
-    showToast(`"${listing.title}" ditolak: ${rejectionReason}.`, "error");
-    setPendingAction(null);
-    setRejectionReason(REJECTION_REASONS[0]);
+    try {
+      const res = await apiFetch(`/admin/products/${listing.id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "ditolak", rejection_reason: rejectionReason }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setListings((prev) => prev.filter((l) => l.id !== listing.id));
+        setRejectedWeekly((n) => n + 1);
+        showToast(`"${listing.title}" ditolak: ${rejectionReason}.`, "error");
+      } else {
+        showToast(json.message ?? "Gagal menolak listing.", "error");
+      }
+    } catch {
+      showToast("Tidak dapat terhubung ke server.", "error");
+    } finally {
+      setPendingAction(null);
+      setRejectionReason(REJECTION_REASONS[0]);
+    }
   };
 
   const cancelAction = () => {
@@ -101,7 +130,7 @@ export const AdminListing = () => {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <ListingApprovalHeaderSection
-        pendingCount={listings.length + 45}
+        pendingCount={listings.length}
         approvedToday={approvedToday}
         rejectedWeekly={rejectedWeekly}
       />

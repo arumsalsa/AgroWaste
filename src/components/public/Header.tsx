@@ -50,7 +50,7 @@ export function Header() {
   }, []);
 
   const navLinks = [
-    { label: "Beranda", href: "/home" },
+    { label: "Beranda", href: "/" },
     { label: "Pasar", href: "/marketplace" },
     { name: "Peta Pelacakan", path: "/maps" },
     { name: "Dampak", path: "/impact" },
@@ -76,7 +76,7 @@ export function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-land-ink/70">
           {[
-            { href: "/", label: "Beranda", active: pathname === "/" || pathname.startsWith("/home") },
+            { href: "/", label: "Beranda", active: pathname === "/" },
             { href: "/marketplace", label: "Pasar", active: pathname.startsWith("/marketplace") },
             { href: "/pesanan", label: "Pesanan", active: pathname.startsWith("/pesanan") },
             { href: "/impact", label: "Dampak", active: pathname.startsWith("/impact") },
