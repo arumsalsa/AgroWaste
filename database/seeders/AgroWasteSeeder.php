@@ -40,8 +40,9 @@ class AgroWasteSeeder extends Seeder
             'slug' => 'limbah-olahan'
         ]);
 
-        // 2. Seed Akun Demo Peternak (Seller) 
+        // 2. Seed Akun Demo Peternak (Seller)
         $userPeternak = User::create([
+            'id'       => Str::uuid()->toString(),
             'name'     => 'Jonathan Peternak',
             'email'    => 'peternak@agrowwaste.com',
             'password' => Hash::make('password123'),
@@ -49,17 +50,19 @@ class AgroWasteSeeder extends Seeder
         ]);
 
         PeternakProfile::create([
-            'id'               => Str::uuid()->toString(),
-            'user_id'          => $userPeternak->id,
-            'nama_peternakan'  => 'Maju Jaya Organik Malang',
-            'jenis_ternak'     => json_encode(['sapi', 'kambing']),
-            'no_hp'            => '081234567890',
-            'alamat_lengkap'   => 'Jl. Raya Singosari No. 45, Kabupaten Malang',
-            'badge'            => 'none',
+            'id'              => Str::uuid()->toString(),
+            'user_id'         => $userPeternak->id,
+            'nama_peternakan' => 'Maju Jaya Organik Malang',
+            'jenis_ternak'    => json_encode(['sapi', 'kambing']),
+            'provinsi'        => 'Jawa Timur',
+            'kabupaten'       => 'Kabupaten Malang',
+            'kecamatan'       => 'Singosari',
+            'badge'           => 'none',
         ]);
 
-        // 3. Seed Akun Demo Pembeli (Buyer) 
+        // 3. Seed Akun Demo Pembeli (Buyer)
         $userPembeli = User::create([
+            'id'       => Str::uuid()->toString(),
             'name'     => 'Budi Pembeli',
             'email'    => 'pembeli@agrowwaste.com',
             'password' => Hash::make('password123'),
@@ -67,10 +70,10 @@ class AgroWasteSeeder extends Seeder
         ]);
 
         BuyerProfile::create([
-            'id'                        => Str::uuid()->toString(),
-            'user_id'                   => $userPembeli->id,
-            'no_hp'                     => '089876543210',
-            'alamat_pengiriman_default' => 'Jl. Kertanegara No. 10, Klojen, Kota Malang',
+            'id'       => Str::uuid()->toString(),
+            'user_id'  => $userPembeli->id,
+            'provinsi' => 'Jawa Timur',
+            'kabupaten'=> 'Kota Malang',
         ]);
 
         // 4. Seed Contoh Produk Aktif Realistis (Minimal 5 Produk untuk Demo)

@@ -49,18 +49,36 @@ class OrderController extends Controller
     {
         $user = $request->user();
 
-        // Jika yang login adalah pembeli, tampilkan riwayat belanjanya
         if ($user->role === 'pembeli') {
-            $orders = \App\Models\Order::with('product')
-                        ->where('buyer_profile_id', $user->buyerProfile->id)
-                        ->get();
-        } 
-        // Jika yang login adalah peternak, tampilkan pesanan yang masuk ke tokonya
-        else {
-            $orders = \App\Models\Order::with('product')
-                        ->whereHas('product', function($query) use ($user) {
-                            $query->where('peternak_profile_id', $user->peternakProfile->id);
-                        })->get();
+            $orders = \App\Models\Order::with(['items.product', 'product'])
+                ->where(function ($q) use ($user) {
+                    // Alur checkout() baru: order disimpan dengan user_id
+                    $q->where('user_id', $user->id);
+
+                    // Alur createOrder() lama: order disimpan dengan buyer_profile_id
+                    if ($user->buyerProfile) {
+                        $q->orWhere('buyer_profile_id', $user->buyerProfile->id);
+                    }
+                })
+                ->latest()
+                ->get();
+        } else {
+            // Peternak: tampilkan pesanan yang masuk ke tokonya
+            $orders = \App\Models\Order::with(['items.product', 'product'])
+                ->where(function ($q) use ($user) {
+                    // Alur checkout() baru: order disimpan dengan peternak_id
+                    $q->where('peternak_id', $user->id);
+
+                    // Alur createOrder() lama: cari via relasi produk
+                    if ($user->peternakProfile) {
+                        $peternakProfileId = $user->peternakProfile->id;
+                        $q->orWhereHas('product', function ($pq) use ($peternakProfileId) {
+                            $pq->where('peternak_profile_id', $peternakProfileId);
+                        });
+                    }
+                })
+                ->latest()
+                ->get();
         }
 
         return response()->json(['success' => true, 'data' => $orders], 200);
