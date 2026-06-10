@@ -1,9 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { Leaf, Recycle, ShieldCheck, Star, ShoppingCart, ArrowRight, Plus, MapPin, Truck } from "lucide-react";
+import { Leaf, Recycle, ShieldCheck, ArrowRight, MapPin, Truck } from "lucide-react";
 import ImpactCalculator from "@/components/public/ImpactCalculator";
 import { Marquee } from "@/components/public/Marquee";
 import ImageSlider from "@/components/public/ImageSlider";
+import FeaturedProducts from "@/components/public/FeaturedProducts";
 
 export const metadata = {
   title: "Beranda Utama | AgroWaste",
@@ -179,113 +180,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Marketplace Preview (Horizontal Scroll with Original Cards) */}
-      <section className="py-10 md:py-12 w-full overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-           <div className="max-w-xl">
-             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-land-ink text-xs font-bold tracking-widest uppercase mb-6 shadow-sm border border-[#E8E0D5]">
-               <ShoppingCart className="w-4 h-4 text-[#009A44]" />
-               Bursa Organik
-             </div>
-             <h2 className="font-land-heading font-bold text-land-ink text-3xl lg:text-4xl leading-tight mb-4" style={{ textWrap: "balance" }}>
-               Pupuk pilihan langsung dari sumbernya.
-             </h2>
-             <p className="text-land-muted text-base md:text-lg leading-relaxed">
-               Jelajahi produk organik berkualitas tinggi yang telah diverifikasi. Membantu menyuburkan tanaman Anda sekaligus menjaga keseimbangan alam.
-             </p>
-           </div>
-           <Link href="/marketplace" className="inline-flex items-center gap-2 text-[#009A44] font-bold hover:gap-3 transition-all shrink-0">
-             Lihat Semua Koleksi
-             <ArrowRight className="w-5 h-5" />
-           </Link>
-        </div>
-
-        {/* Horizontal Scrolling Container */}
-        {/* We use inline styles for cross-browser hiding of the scrollbar. */}
-        <div 
-          className="flex overflow-x-auto gap-6 px-6 pb-12 snap-x snap-mandatory items-stretch max-w-7xl mx-auto"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-           <style dangerouslySetInnerHTML={{__html: `
-             ::-webkit-scrollbar { display: none; }
-           `}} />
-
-           {/* Product 1: Card */}
-           <div className="w-[300px] md:w-[350px] shrink-0 bg-white rounded-[32px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.05)] border border-[#E8E0D5] flex flex-col group hover:-translate-y-1 transition-transform snap-center">
-              <div className="w-full h-56 rounded-[24px] overflow-hidden relative mb-5">
-                <img src="https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&w=800&q=80" alt="Pupuk Kandang Sapi Premium" className="absolute inset-0 w-full h-full object-cover" />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-land-ink shadow-sm flex items-center gap-1.5">
-                   <Star className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-                   4.9 Terlaris
-                </div>
-              </div>
-              <div className="px-3 pb-3 flex flex-col flex-1">
-                 <h3 className="font-land-heading text-xl font-bold text-land-ink mb-2">Pupuk Kandang Sapi Premium</h3>
-                 <p className="text-land-muted text-sm mb-6 line-clamp-3">Diolah melalui fermentasi alami selama 30 hari. Sangat cocok untuk meningkatkan porositas dan unsur hara makro pada tanah pertanian sawah maupun kebun sayur.</p>
-                 <div className="flex items-center justify-between mt-auto">
-                    <div>
-                       <div className="text-xl font-bold text-[#009A44]">Rp 35.000</div>
-                       <div className="text-xs font-bold text-land-muted">/ Karung 50kg</div>
-                    </div>
-                    <button className="w-12 h-12 rounded-full bg-land-warm text-land-ink flex items-center justify-center hover:bg-[#009A44] hover:text-white transition-colors shadow-sm" aria-label="Tambah">
-                      <Plus className="w-5 h-5" />
-                    </button>
-                 </div>
-              </div>
-           </div>
-
-           {/* Product 2: Card */}
-           <div className="w-[300px] md:w-[350px] shrink-0 bg-white rounded-[32px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.05)] border border-[#E8E0D5] flex flex-col group hover:-translate-y-1 transition-transform snap-center">
-              <div className="w-full h-56 rounded-[24px] overflow-hidden mb-5">
-                <img src="https://images.unsplash.com/photo-1574686008687-fae122709298?auto=format&fit=crop&w=600&q=80" alt="Sekam Padi Bakar" className="w-full h-full object-cover" />
-              </div>
-              <div className="px-3 pb-3 flex flex-col flex-1">
-                <h4 className="font-land-heading font-bold text-land-ink text-xl mb-1">Sekam Padi Bakar (Arang)</h4>
-                <p className="text-sm text-land-muted line-clamp-3 mb-6">Meningkatkan aerasi akar tanaman. Tinggi kandungan silika untuk perlindungan perlindungan dari penyakit.</p>
-                <div className="flex items-center justify-between mt-auto">
-                  <div>
-                    <span className="font-bold text-[#009A44] text-xl">Rp 15.000</span>
-                    <span className="text-xs font-bold text-land-muted"> / 10kg</span>
-                  </div>
-                  <button className="w-12 h-12 rounded-full bg-land-warm text-land-ink flex items-center justify-center hover:bg-[#009A44] hover:text-white transition-colors shadow-sm" aria-label="Tambah">
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-           </div>
-
-           {/* Product 3: Card */}
-           <div className="w-[300px] md:w-[350px] shrink-0 bg-white rounded-[32px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.05)] border border-[#E8E0D5] flex flex-col group hover:-translate-y-1 transition-transform snap-center">
-              <div className="w-full h-56 rounded-[24px] overflow-hidden mb-5">
-                <img src="https://images.unsplash.com/photo-1581578017093-cd30fce4eeb7?auto=format&fit=crop&w=600&q=80" alt="Kompos Daun Kering" className="w-full h-full object-cover" />
-              </div>
-              <div className="px-3 pb-3 flex flex-col flex-1">
-                <h4 className="font-land-heading font-bold text-land-ink text-xl mb-1">Kompos Daun Kering Premium</h4>
-                <p className="text-sm text-land-muted line-clamp-3 mb-6">Kaya akan karbon organik untuk memperbaiki kelonggaran dan daya serap air struktur tanah Anda.</p>
-                <div className="flex items-center justify-between mt-auto">
-                  <div>
-                    <span className="font-bold text-[#009A44] text-xl">Rp 20.000</span>
-                    <span className="text-xs font-bold text-land-muted"> / 20kg</span>
-                  </div>
-                  <button className="w-12 h-12 rounded-full bg-land-warm text-land-ink flex items-center justify-center hover:bg-[#009A44] hover:text-white transition-colors shadow-sm" aria-label="Tambah">
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-           </div>
-
-           {/* View More Card */}
-           <div className="w-[150px] md:w-[200px] shrink-0 bg-land-warm rounded-[32px] border border-[#E8E0D5] flex flex-col items-center justify-center group hover:bg-[#009A44] transition-colors cursor-pointer snap-center">
-              <Link href="/marketplace" className="w-full h-full flex flex-col items-center justify-center p-6 gap-4">
-                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#009A44] shadow-sm group-hover:scale-110 transition-transform">
-                   <ArrowRight className="w-6 h-6" />
-                 </div>
-                 <span className="font-bold text-land-ink text-sm group-hover:text-white text-center">Lihat Semua<br/>Produk</span>
-              </Link>
-           </div>
-           
-        </div>
-      </section>
+      <FeaturedProducts />
 
       {/* GIS Tracking Dark Section */}
       <section className="bg-[#1C231F] py-12 md:py-16 px-6 text-white mt-8">
