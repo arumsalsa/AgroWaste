@@ -3,48 +3,96 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { apiFetch } from "@/lib/api";
+import { saveAuth, type AuthUser } from "@/lib/auth";
+
+function toApiRole(param: string): "peternak" | "pembeli" | null {
+  if (param === "penjual" || param === "peternak") return "peternak";
+  if (param === "pembeli") return "pembeli";
+  return null;
+}
 
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const roleParam = searchParams.get('role') || 'pembeli';
+  const roleParam = searchParams.get("role") || "pembeli";
   const [isLoading, setIsLoading] = useState(false);
 
-  // Format display role name
-  const displayRole = roleParam === 'penjual' ? 'Penjual' : roleParam === 'logistik' ? 'Mitra Logistik' : 'Pembeli';
+  const [name, setName]                   = useState("");
+  const [email, setEmail]                 = useState("");
+  const [password, setPassword]           = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError]                 = useState<string | null>(null);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const displayRole =
+    roleParam === "penjual" ? "Penjual (Peternak)"
+    : roleParam === "logistik" ? "Mitra Logistik"
+    : "Pembeli";
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    const apiRole = toApiRole(roleParam);
+    if (!apiRole) {
+      setError("Peran ini belum didukung. Pilih Peternak atau Pembeli.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Kata sandi minimal 8 karakter.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Konfirmasi kata sandi tidak cocok.");
+      return;
+    }
+
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Set auth cookie
-      document.cookie = "auth=1; path=/; max-age=86400"; // 1 day
-      
-      // Dispatch custom event to update Header immediately
+
+    try {
+      const res = await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ name, email, password, role: apiRole }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setError(json.message ?? "Pendaftaran gagal. Coba lagi.");
+        setIsLoading(false);
+        return;
+      }
+
+      const { token, user } = json.data as { token: string; user: AuthUser };
+      saveAuth(token, user);
       window.dispatchEvent(new Event("auth-change"));
-      
-      router.push('/home');
+
+      const destination = user.role === "peternak" ? "/seller" : "/marketplace";
+      router.push(destination);
       router.refresh();
-    }, 1000);
+    } catch {
+      setError("Tidak dapat terhubung ke server. Coba lagi.");
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="flex min-h-screen bg-[#FFF8F5]">
-      
+
       {/* Left Image Side (Register has image on left) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[#00662D] overflow-hidden">
         {/* Background Image with Dark Green Overlay */}
         <div className="absolute inset-0 bg-[#00662D] mix-blend-multiply opacity-80 z-10"></div>
         <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1200&q=80" alt="Pertanian" className="absolute inset-0 w-full h-full object-cover" />
-        
+
         {/* Content Overlay */}
         <div className="relative z-20 flex flex-col justify-center px-16 xl:px-24 w-full h-full text-white">
           <div className="inline-block px-3 py-1 bg-[#4ADE80] text-[#00662D] text-[10px] font-bold tracking-widest uppercase rounded-full w-max mb-6">
             Ekonomi Sirkular
           </div>
-          
+
           <h2 className="text-5xl font-bold leading-tight mb-8">
             Mengubah Limbah<br/>Menjadi Berkah.
           </h2>
@@ -72,7 +120,7 @@ export default function RegisterPage() {
 
       {/* Right Form Side */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 xl:px-32 relative animate-fade-in py-12 overflow-y-auto">
-        
+
         {/* Logo */}
         <div className="mb-12">
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity w-max">
@@ -90,7 +138,7 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5 max-w-sm w-full mb-8">
-          
+
           <div>
             <label className="block text-[10px] font-bold text-[#555555] uppercase tracking-wider mb-2">
               Nama Lengkap
@@ -103,6 +151,8 @@ export default function RegisterPage() {
                 type="text"
                 required
                 placeholder="Contoh: Budi Santoso"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors"
               />
             </div>
@@ -114,12 +164,14 @@ export default function RegisterPage() {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
               </div>
               <input
                 type="email"
                 required
                 placeholder="nama@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors"
               />
             </div>
@@ -135,7 +187,6 @@ export default function RegisterPage() {
               </div>
               <input
                 type="tel"
-                required
                 placeholder="0812xxxx"
                 className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors"
               />
@@ -155,11 +206,13 @@ export default function RegisterPage() {
                   type="password"
                   required
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors tracking-widest"
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="block text-[10px] font-bold text-[#555555] uppercase tracking-wider mb-2">
                 Konfirmasi Kata Sandi
@@ -172,6 +225,8 @@ export default function RegisterPage() {
                   type="password"
                   required
                   placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors tracking-widest"
                 />
               </div>
@@ -195,10 +250,16 @@ export default function RegisterPage() {
             </label>
           </div>
 
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+              {error}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-4 mt-2 bg-[#00662D] hover:bg-[#005224] text-white font-bold rounded-xl shadow-md shadow-[#00662D]/20 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-4 mt-2 bg-[#00662D] hover:bg-[#005224] text-white font-bold rounded-xl shadow-md shadow-[#00662D]/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

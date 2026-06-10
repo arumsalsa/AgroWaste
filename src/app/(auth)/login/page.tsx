@@ -3,36 +3,63 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { apiFetch } from "@/lib/api";
+import { saveAuth, type AuthUser } from "@/lib/auth";
+
+function redirectByRole(role: string): string {
+  if (role === "peternak") return "/seller";
+  if (role === "pembeli") return "/marketplace";
+  return "/home";
+}
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/home';
+  const callbackUrl = searchParams.get("callbackUrl") || null;
+
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError]       = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Set auth cookie
-      document.cookie = "auth=1; path=/; max-age=86400"; // 1 day
-      
-      // Dispatch custom event to update Header immediately
+
+    try {
+      const res = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setError(json.message ?? "Email atau password salah.");
+        setIsLoading(false);
+        return;
+      }
+
+      const { token, user } = json.data as { token: string; user: AuthUser };
+      saveAuth(token, user);
       window.dispatchEvent(new Event("auth-change"));
-      
-      router.push(callbackUrl);
+
+      const destination = callbackUrl ?? redirectByRole(user.role);
+      router.push(destination);
       router.refresh();
-    }, 1000);
+    } catch {
+      setError("Tidak dapat terhubung ke server. Coba lagi.");
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="flex min-h-screen bg-[#FFF8F5]">
-      
+
       {/* Left Form Side */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 xl:px-32 relative animate-fade-in">
-        
+
         {/* Logo */}
         <div className="absolute top-8 md:top-12 left-8 md:left-16 lg:left-24 xl:left-32">
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
@@ -60,7 +87,9 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
-                defaultValue="nama@email.com"
+                placeholder="nama@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors"
               />
             </div>
@@ -80,7 +109,9 @@ export default function LoginPage() {
               <input
                 type="password"
                 required
-                defaultValue="password123"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="block w-full rounded-xl border border-[#E8E0D5] py-3.5 pl-12 pr-12 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-white shadow-sm transition-colors tracking-widest"
               />
               <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
@@ -105,10 +136,16 @@ export default function LoginPage() {
             </label>
           </div>
 
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+              {error}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-4 bg-[#00662D] hover:bg-[#005224] text-white font-bold rounded-xl shadow-md shadow-[#00662D]/20 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-4 bg-[#00662D] hover:bg-[#005224] text-white font-bold rounded-xl shadow-md shadow-[#00662D]/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -156,13 +193,13 @@ export default function LoginPage() {
         {/* Background Image with Dark Green Overlay */}
         <div className="absolute inset-0 bg-[#00662D] mix-blend-multiply opacity-80 z-10"></div>
         <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1200&q=80" alt="Pertanian" className="absolute inset-0 w-full h-full object-cover" />
-        
+
         {/* Content Overlay */}
         <div className="relative z-20 flex flex-col justify-center px-16 xl:px-24 w-full h-full text-white">
           <div className="inline-block px-3 py-1 bg-[#4ADE80] text-[#00662D] text-[10px] font-bold tracking-widest uppercase rounded-full w-max mb-6">
             Ekonomi Sirkular
           </div>
-          
+
           <h2 className="text-5xl font-bold leading-tight mb-8">
             Mengubah Limbah<br/>Menjadi Berkah.
           </h2>
