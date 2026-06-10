@@ -51,7 +51,12 @@ class ProductController extends Controller
             });
         }
 
-        // 4. Fitur Sorting (Terbaru / Harga)
+        // 4. Fitur Filter Jenis Ternak
+        if ($request->has('jenis_ternak') && $request->jenis_ternak !== '') {
+            $query->where('jenis_ternak', $request->jenis_ternak);
+        }
+
+        // 5. Fitur Sorting (Terbaru / Harga)
         $sort = $request->get('sort', 'terbaru');
         if ($sort === 'harga_terendah') {
             $query->orderBy('price', 'asc');
@@ -62,7 +67,7 @@ class ProductController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        // 5. Pagination 
+        // 6. Pagination
         $products = $query->paginate(12);
 
         return response()->json([
