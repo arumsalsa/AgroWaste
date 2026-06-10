@@ -12,11 +12,11 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#FFF8F5] font-sans text-[#111111] flex flex-col">
+    <div className="min-h-screen bg-land-bg font-land-body text-land-ink flex flex-col">
       <Header />
 
       {/* Konten Utama */}
-      <main className="flex-1 flex flex-col mt-20">
+      <main className="flex-1 flex flex-col mt-16">
         {children}
       </main>
 

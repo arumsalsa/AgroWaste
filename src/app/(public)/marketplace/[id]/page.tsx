@@ -141,11 +141,11 @@ export default function ProductDetail() {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <button className="flex-1 py-3 px-4 border border-[#3B82F6] text-[#3B82F6] rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
+                    <button className="btn-clay-secondary py-3 px-4 flex-1 text-sm flex items-center justify-center gap-2">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                       Keranjang
                     </button>
-                    <button className="flex-1 py-3 px-4 bg-[#3B82F6] text-white rounded-xl font-bold text-sm hover:bg-blue-600 shadow-md shadow-blue-500/20 transition-colors">
+                    <button className="btn-clay-primary py-3 px-4 flex-1 text-sm">
                       Beli Sekarang
                     </button>
                   </div>

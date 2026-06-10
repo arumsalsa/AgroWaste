@@ -10,7 +10,7 @@ export default function HomePage() {
     <div className="flex-1 flex flex-col bg-[#FFF8F5]">
       
       {/* Hero Section */}
-      <section className="pt-16 pb-12 px-6 flex flex-col items-center text-center animate-fade-in">
+      <section className="pt-1 pb-12 px-6 flex flex-col items-center text-center animate-fade-in">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E6F5EC] text-[#009A44] text-[10px] font-bold tracking-widest uppercase mb-6">
           Platform Ekonomi Sirkular
         </div>

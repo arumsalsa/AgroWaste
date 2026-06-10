@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { Check, Truck, Clock, Package, Sprout, ArrowRight, ShieldCheck, Heart } from "lucide-react";
 
 export const metadata = {
   title: "Pembayaran Berhasil | AgroWaste",
@@ -7,113 +8,124 @@ export const metadata = {
 
 export default function CheckoutSuccessPage() {
   return (
-    <div className="flex-1 animate-fade-up pb-20">
-      <div className="max-w-4xl mx-auto px-6 pt-16 text-center">
+    <div className="flex-1 animate-fade-up pb-24 bg-land-bg">
+      <div className="max-w-5xl mx-auto px-6 pt-16 text-center">
         
-        {/* Success Header */}
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-[#E6F5EC] rounded-full mb-6 relative">
-          <div className="absolute inset-0 border-4 border-white rounded-full"></div>
-          <svg className="w-10 h-10 text-[#009A44]" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
+        {/* Success Header with Sonar Pulse */}
+        <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6">
+          <div className="absolute inset-0 rounded-full bg-[#E6F5EC] animate-ping opacity-75"></div>
+          <div className="absolute inset-2 bg-white rounded-full border-4 border-[#009A44] flex items-center justify-center shadow-md z-10">
+            <Check className="w-10 h-10 text-[#009A44]" strokeWidth={3} />
+          </div>
         </div>
         
-        <h1 className="text-3xl font-bold text-[#00662D] mb-3">Pembayaran Berhasil!</h1>
-        <p className="text-[#555555] text-sm mb-12 max-w-lg mx-auto leading-relaxed">
-          Terima kasih atas kontribusi Anda dalam mendukung sistem pertanian sirkular yang lebih berkelanjutan.
+        <h1 className="text-4xl md:text-5xl font-land-heading font-bold text-[#00662D] mb-3">Pembayaran Berhasil!</h1>
+        <p className="text-land-muted text-sm md:text-base mb-12 max-w-lg mx-auto leading-relaxed">
+          Kontribusi Anda membantu memicu pertumbuhan sirkular untuk masa depan bumi Nusantara yang bersih dan hijau.
         </p>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
+        {/* Info Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 text-left">
           
-          {/* Detail Pesanan */}
-          <div className="bg-white border border-[#E8E0D5] rounded-3xl p-8 shadow-sm relative overflow-hidden">
-            <div className="flex justify-between items-center mb-6 border-b border-[#E8E0D5] pb-4">
-              <h2 className="text-lg font-bold text-[#111111]">Detail Pesanan</h2>
-              <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold tracking-wider uppercase rounded-full">Lunas</span>
+          {/* Receipt Card */}
+          <div className="bg-white border border-[#E8E0D5]/80 rounded-[32px] p-6 md:p-8 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center mb-6 border-b border-[#E8E0D5] pb-4">
+                <h2 className="text-lg font-bold text-land-ink font-land-heading">Detail Transaksi</h2>
+                <span className="px-3.5 py-1 bg-[#E6F5EC] text-[#009A44] text-[10px] font-bold tracking-widest uppercase rounded-full border border-[#B2DFCB]">Lunas</span>
+              </div>
+              
+              <div className="space-y-4 text-xs md:text-sm">
+                <div className="flex justify-between">
+                  <span className="text-land-muted">ID Transaksi</span>
+                  <span className="font-bold text-land-ink font-mono">AGW-882910</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-land-muted">Waktu Pembayaran</span>
+                  <span className="font-bold text-land-ink font-tabular">24 Okt 2026, 14:30 WIB</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-land-muted">Metode Pembayaran</span>
+                  <span className="font-bold text-land-ink">QRIS Gopay</span>
+                </div>
+              </div>
             </div>
             
-            <div className="space-y-4 text-sm">
-              <div className="flex justify-between">
-                <span className="text-[#555555]">ID Pesanan</span>
-                <span className="font-bold text-[#111111] font-tabular">AGW-882910</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#555555]">Tanggal</span>
-                <span className="font-bold text-[#111111] font-tabular">24 Okt 2024, 14:30</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#555555]">Metode Bayar</span>
-                <span className="font-bold text-[#111111]">QRIS</span>
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center border-t border-[#E8E0D5] mt-6 pt-6">
-              <span className="font-bold text-[#111111]">Total</span>
-              <span className="text-xl font-bold text-[#009A44] font-tabular">Rp 425.000</span>
+            <div className="flex justify-between items-center border-t border-dashed border-[#E8E0D5] mt-6 pt-6">
+              <span className="font-bold text-land-ink text-base">Total Bayar</span>
+              <span className="text-2xl font-bold text-[#009A44] font-tabular">Rp 425.000</span>
             </div>
           </div>
 
-          {/* Estimasi Pengiriman */}
-          <div className="bg-white border border-[#E8E0D5] rounded-3xl p-8 shadow-sm">
-            <div className="flex items-center gap-2 mb-6 border-b border-[#E8E0D5] pb-4">
-              <svg className="w-5 h-5 text-[#F59E0B]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-              <h2 className="text-lg font-bold text-[#111111]">Estimasi Pengiriman</h2>
+          {/* Delivery Timeline Card */}
+          <div className="bg-white border border-[#E8E0D5]/80 rounded-[32px] p-6 md:p-8 shadow-sm">
+            <div className="flex items-center gap-2.5 mb-6 border-b border-[#E8E0D5] pb-4">
+              <Truck className="w-5 h-5 text-land-clay" />
+              <h2 className="text-lg font-bold text-land-ink font-land-heading">Estimasi Logistik</h2>
             </div>
             
             <div className="relative pl-6 space-y-6 mb-6">
-              <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-[#E8E0D5]"></div>
+              <div className="absolute left-[5px] top-2 bottom-2 w-0.5 bg-[#E8E0D5]"></div>
               
+              {/* Step 1: Active */}
               <div className="relative">
-                <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-[#F59E0B] border-2 border-white ring-2 ring-[#F59E0B]/20"></div>
-                <h4 className="text-xs font-bold text-[#111111] mb-1">Pesanan Sedang Disiapkan</h4>
-                <p className="text-[10px] text-[#555555] leading-relaxed">Produk sedang dikemas oleh mitra peternak.</p>
+                <div className="absolute -left-[25px] top-1 w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white ring-4 ring-amber-100"></div>
+                <h4 className="text-xs font-bold text-land-ink">Dalam Persiapan Mitra</h4>
+                <p className="text-[10px] text-land-muted leading-relaxed mt-0.5">Limbah organik sedang disiapkan dan dikemas oleh Peternak.</p>
               </div>
               
-              <div className="relative opacity-50">
-                <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-[#E8E0D5] border-2 border-white"></div>
-                <h4 className="text-xs font-bold text-[#111111] mb-1">Dijemput AgroWaste Logistics</h4>
-                <p className="text-[10px] text-[#555555] leading-relaxed">Estimasi: Besok, 09:00 - 12:00 WIB</p>
+              {/* Step 2: Inactive */}
+              <div className="relative opacity-55">
+                <div className="absolute -left-[25px] top-1 w-3.5 h-3.5 rounded-full bg-[#E8E0D5] border-2 border-white"></div>
+                <h4 className="text-xs font-bold text-land-ink">Dijemput Kurir Reguler</h4>
+                <p className="text-[10px] text-land-muted leading-relaxed mt-0.5">Estimasi penjemputan armada: Besok pagi pukul 09:00 WIB.</p>
               </div>
             </div>
 
-            <div className="bg-[#FFF4E5] border border-[#FFD8A8] rounded-xl p-4 flex gap-3 items-start">
-              <svg className="w-4 h-4 text-[#E67700] shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div className="bg-[#FFF4E5] border border-[#FFD8A8] rounded-2xl p-4 flex gap-3 items-start shadow-sm">
+              <Clock className="w-4 h-4 text-[#E67700] shrink-0 mt-0.5" />
               <p className="text-[10px] text-[#E67700] leading-relaxed">
-                Driver kami akan memastikan protokol kebersihan tetap terjaga selama proses pengangkutan limbah organik.
+                Armada AgroWaste memprioritaskan rute pengiriman rendah karbon melalui optimasi GIS untuk menghemat bahan bakar.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Sustainable Impact Banner */}
-        <div className="bg-[#009A44] rounded-3xl p-8 md:p-10 text-white shadow-xl relative overflow-hidden text-left mb-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="absolute right-0 top-0 w-64 h-64 bg-[#00B853] rounded-full blur-3xl opacity-40 -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          <div className="absolute left-0 bottom-0 w-40 h-40 bg-white rounded-full blur-3xl opacity-10 translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
+        {/* Environmental Impact Success Banner */}
+        <div className="bg-[#2C3930] rounded-[32px] p-6 md:p-10 text-white shadow-xl relative overflow-hidden text-left mb-12 flex flex-col md:flex-row items-center gap-8 group hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute right-0 top-0 w-80 h-80 bg-[#009A44] rounded-full blur-3xl opacity-35 -translate-y-1/2 translate-x-1/3 pointer-events-none group-hover:scale-105 transition-transform duration-700"></div>
+          <div className="absolute left-0 bottom-0 w-40 h-40 bg-white rounded-full blur-3xl opacity-5 translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
           
-          <div className="w-16 h-16 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center shrink-0">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+          <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+            <Sprout className="w-8 h-8 text-[#4ADE80]" />
           </div>
           
           <div className="relative z-10 flex-1">
-            <h2 className="text-xl font-bold mb-2">Ringkasan Dampak Lingkungan</h2>
-            <p className="text-sm text-white/90 leading-relaxed mb-4">
-              Selamat! Transaksi ini membantu mengurangi <strong className="text-white">12.5kg emisi CO2e</strong> dengan mengalihkan limbah pertanian dari pembuangan terbuka.
-            </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 text-[10px] font-bold tracking-wider uppercase">
-              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-              Capaian Anda: Top 5% Pembeli Hijau
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-[9px] font-bold tracking-widest uppercase mb-3 text-[#4ADE80]">
+              <Heart className="w-3 h-3 fill-[#4ADE80]" />
+              Eco Achievement: Top 5% Green Buyer
             </div>
+            <h2 className="text-xl md:text-2xl font-bold font-land-heading mb-2">Kontribusi Hijau Tercatat</h2>
+            <p className="text-sm text-white/70 leading-relaxed">
+              Transaksi ini berhasil mengalihkan <strong className="text-white">12.5 kg emisi gas metana/CO2e</strong> dari atmosfer bumi dengan mempercepat konversi limbah organik menjadi nutrisi tanah.
+            </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <Link href="/pesanan" className="w-full sm:w-auto px-8 py-3.5 bg-[#00662D] hover:bg-[#005224] text-white rounded-xl font-bold transition-colors shadow-md shadow-[#00662D]/20 flex items-center justify-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-lg mx-auto">
+          <Link href="/pesanan" className="btn-clay-primary py-3.5 w-full flex items-center justify-center gap-2 shadow-md">
             Lihat Status Pesanan
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link href="/" className="w-full sm:w-auto px-8 py-3.5 text-[#00662D] font-bold hover:bg-[#E6F5EC] rounded-xl transition-colors">
+          <Link href="/" className="btn-clay-secondary py-3.5 w-full flex items-center justify-center gap-2">
             Kembali ke Beranda
           </Link>
+        </div>
+
+        <div className="mt-12 text-center text-[10px] text-land-muted font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 opacity-80">
+          <ShieldCheck className="w-4 h-4 text-[#009A44]" />
+          Transaksi Terlindungi oleh AgroWaste Pay
         </div>
 
       </div>

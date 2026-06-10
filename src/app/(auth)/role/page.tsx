@@ -14,8 +14,8 @@ export default function RoleSelectionPage() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-10 -translate-x-1/2 translate-y-1/2"></div>
 
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 mb-16 hover:opacity-80 transition-opacity">
-        <svg className="w-8 h-8 text-[#009A44]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h14v-8h3L12 2zm0 3.8L16.2 10H14v8h-4v-8H7.8L12 5.8z"/></svg>
+      <Link href="/" className="flex items-center gap-2.5 mb-16 hover:opacity-80 transition-opacity">
+        <img src="/LOGO.png" alt="AgroWaste Logo" className="h-9 w-auto object-contain" />
         <span className="text-2xl font-bold text-[#009A44] tracking-tight">AgroWaste</span>
       </Link>
 

@@ -35,8 +35,8 @@ export default function LoginPage() {
         
         {/* Logo */}
         <div className="absolute top-8 md:top-12 left-8 md:left-16 lg:left-24 xl:left-32">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <svg className="w-6 h-6 text-[#00662D]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h14v-8h3L12 2zm0 3.8L16.2 10H14v8h-4v-8H7.8L12 5.8z"/></svg>
+          <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <img src="/LOGO.png" alt="AgroWaste Logo" className="h-7 w-auto object-contain" />
             <span className="text-xl font-bold text-[#00662D] tracking-tight">AgroWaste</span>
           </Link>
         </div>
