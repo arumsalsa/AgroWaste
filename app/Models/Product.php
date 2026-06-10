@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 // Tambahkan "implements HasMedia" di sini
 class Product extends Model implements HasMedia
@@ -23,11 +24,50 @@ class Product extends Model implements HasMedia
         'peternak_profile_id',
         'category_id',
         'name',
+        'slug',
         'description',
+        'jenis_ternak',
+        'kondisi',
         'price',
+        'unit',
         'stock_kg',
-        'status', // menunggu_review, aktif, ditolak
+        'min_order_kg',
+        'provinsi',
+        'kabupaten',
+        'kecamatan',
+        'status',
+        'rejection_reason',
     ];
+
+    protected $appends = ['image_url', 'image_urls'];
+
+    // ── Media collection ────────────────────────────────────────────────────
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('product_images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png']);
+    }
+
+    // ── Accessors (otomatis ikut JSON via $appends) ──────────────────────────
+
+    /** URL gambar pertama, atau null kalau belum ada gambar. */
+    public function getImageUrlAttribute(): ?string
+    {
+        $url = $this->getFirstMediaUrl('product_images');
+        return $url !== '' ? $url : null;
+    }
+
+    /** Array URL semua gambar di collection product_images. */
+    public function getImageUrlsAttribute(): array
+    {
+        return $this->getMedia('product_images')
+            ->map(fn(Media $m) => $m->getUrl())
+            ->values()
+            ->toArray();
+    }
+
+    // ── Relasi ──────────────────────────────────────────────────────────────
 
     public function peternakProfile(): BelongsTo
     {

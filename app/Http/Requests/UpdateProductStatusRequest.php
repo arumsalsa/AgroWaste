@@ -17,6 +17,7 @@ class UpdateProductStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', 'string', 'in:aktif,ditolak'],
+            'rejection_reason' => ['nullable', 'string', 'required_if:status,ditolak'],
         ];
     }
 }

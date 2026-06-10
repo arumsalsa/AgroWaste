@@ -13,6 +13,10 @@ class PeternakProfile extends Model
     // Mengizinkan semua kolom diisi secara massal (mass assignment)
     protected $guarded = [];
 
+    protected $casts = [
+        'jenis_ternak' => 'array',
+    ];
+
     // Relasi balik ke User
     public function user()
     {

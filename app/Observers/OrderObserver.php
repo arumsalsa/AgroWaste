@@ -28,8 +28,8 @@ class OrderObserver
             ImpactLog::create([
                 'id'          => Str::uuid()->toString(),
                 'order_id'    => $order->id,
-                'volume_kg'   => $totalKg,
-                'co2eq_saved' => $co2Saved,
+                'waste_managed_kg'   => $totalKg,
+                'co2eq_reduced_kg' => $co2Saved,
             ]);
 
             // 4. Update total penjualan dan Badge Peternak

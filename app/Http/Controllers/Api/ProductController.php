@@ -28,7 +28,7 @@ class ProductController extends Controller
     public function index(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
     {
         // Mulai query, pastikan hanya mengambil produk yang statusnya 'aktif'
-        $query = \App\Models\Product::with(['peternakProfile', 'category'])
+        $query = \App\Models\Product::with(['peternakProfile', 'category', 'media'])
             ->where('status', 'aktif');
 
         // 1. Fitur Search (Berdasarkan nama produk)
@@ -89,7 +89,7 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Produk berhasil didaftarkan dan menunggu persetujuan admin.',
-                'data'    => $product
+                'data'    => $product->load(['category', 'peternakProfile', 'media']),
             ], 201);
             
         } catch (\Exception $e) {
@@ -106,7 +106,7 @@ class ProductController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $product = \App\Models\Product::with(['category', 'peternakProfile'])->find($id);
+        $product = \App\Models\Product::with(['category', 'peternakProfile', 'media'])->find($id);
 
         if (!$product) {
             return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan.'], 404);
@@ -130,9 +130,9 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Akses ditolak. Anda bukan pemilik produk ini.'], 403);
         }
 
-        $product->update($request->all());
+        $product = $this->productService->updateProduct($product, $request->all());
 
-        return response()->json(['success' => true, 'message' => 'Produk berhasil diubah.', 'data' => $product], 200);
+        return response()->json(['success' => true, 'message' => 'Produk berhasil diubah.', 'data' => $product->load('media')], 200);
     }
 
     /**
@@ -184,13 +184,71 @@ class ProductController extends Controller
     }
 
     /**
+     * Endpoint untuk Peternak menghapus gambar produk tertentu
+     */
+    public function deleteImage(\Illuminate\Http\Request $request, string $id, string $mediaId): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        if ($product->peternakProfile->user_id !== $request->user()->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $media = $product->getMedia('product_images')->where('id', $mediaId)->first();
+
+        if (!$media) {
+            return response()->json(['success' => false, 'message' => 'Gambar tidak ditemukan.'], 404);
+        }
+
+        $media->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gambar produk berhasil dihapus.',
+            'data'    => $product->load('media')
+        ], 200);
+    }
+
+    /**
+     * Menampilkan semua produk untuk Admin
+     */
+    public function adminIndex(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $products = Product::with(['category', 'peternakProfile', 'media'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pendingCount = Product::where('status', 'menunggu_review')->count();
+        $approvedToday = Product::where('status', 'aktif')
+            ->whereDate('updated_at', \Carbon\Carbon::today())
+            ->count();
+        $rejectedWeekly = Product::where('status', 'ditolak')
+            ->where('updated_at', '>=', \Carbon\Carbon::now()->subDays(7))
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $products,
+            'meta'    => [
+                'pending_count' => $pendingCount,
+                'approved_today' => $approvedToday,
+                'rejected_weekly' => $rejectedWeekly,
+            ]
+        ], 200);
+    }
+
+    /**
      * Endpoint untuk Admin menyetujui / menolak produk
      */
     public function updateStatus(UpdateProductStatusRequest $request, string $id): JsonResponse
     {
         $product = Product::findOrFail($id);
         
-        $product = $this->productService->updateStatus($product, $request->validated('status'));
+        $product = $this->productService->updateStatus(
+            $product, 
+            $request->validated('status'),
+            $request->validated('rejection_reason')
+        );
 
         return response()->json([
             'success' => true,

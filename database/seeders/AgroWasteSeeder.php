@@ -76,6 +76,31 @@ class AgroWasteSeeder extends Seeder
             'kabupaten'=> 'Kota Malang',
         ]);
 
+        // 3.b Seed Akun Demo Admin
+        User::create([
+            'id'       => Str::uuid()->toString(),
+            'name'     => 'Admin AgroWaste',
+            'email'    => 'admin@agrowwaste.com',
+            'password' => Hash::make('password123'),
+            'role'     => 'admin',
+        ]);
+
+        // 3.c Seed Akun Demo Kurir (Logistik)
+        $userKurir = User::create([
+            'id'       => Str::uuid()->toString(),
+            'name'     => 'Agus Kurir',
+            'email'    => 'kurir@agrowwaste.com',
+            'password' => Hash::make('password123'),
+            'role'     => 'logistik',
+        ]);
+
+        \App\Models\LogistikProfile::create([
+            'id'            => Str::uuid()->toString(),
+            'user_id'       => $userKurir->id,
+            'company_name'  => 'AgroWaste Express Malang',
+            'vehicle_plate' => 'N 1234 AB',
+        ]);
+
         // 4. Seed Contoh Produk Aktif Realistis (Minimal 5 Produk untuk Demo)
         $peternakProfile = $userPeternak->peternakProfile;
 

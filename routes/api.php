@@ -12,9 +12,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
     });
 
-    // Katalog Produk (Public - Bisa dilihat tanpa login)
+    // Katalog Produk & Kategori (Public - Bisa dilihat tanpa login)
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']); // Detail produk
+    Route::get('/categories', [\App\Http\Controllers\Api\CategoryController::class, 'index']);
    
     // Edukasi Artikel (Public)
     Route::get('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'index']);
@@ -32,6 +33,7 @@ Route::prefix('v1')->group(function () {
 
             // Upload Images
             Route::post('/{id}/images', [\App\Http\Controllers\Api\ProductController::class, 'uploadImages']);
+            Route::delete('/{id}/images/{mediaId}', [\App\Http\Controllers\Api\ProductController::class, 'deleteImage']);
         });
 
         // Order Routes
@@ -61,11 +63,17 @@ Route::prefix('v1')->group(function () {
 
         // Admin Routes (Hanya Admin)
         Route::middleware('role:admin')->prefix('admin')->group(function () {
+            Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'adminIndex']);
             Route::put('/products/{id}/status', [\App\Http\Controllers\Api\ProductController::class, 'updateStatus']);
             Route::post('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'store']); // Artikel Edukasi
 
             Route::get('/dashboard', [\App\Http\Controllers\Api\AdminController::class, 'dashboard']);
+            Route::get('/users', [\App\Http\Controllers\Api\AdminController::class, 'usersIndex']);
             Route::put('/users/{id}/suspend', [\App\Http\Controllers\Api\AdminController::class, 'suspendUser']);
+            Route::get('/shipments', [\App\Http\Controllers\Api\AdminController::class, 'getShipments']);
+            Route::get('/couriers', [\App\Http\Controllers\Api\AdminController::class, 'getCouriers']);
+            Route::post('/shipments/assign', [\App\Http\Controllers\Api\AdminController::class, 'assignCourier']);
+            Route::get('/analytics', [\App\Http\Controllers\Api\AdminController::class, 'getAnalytics']);
         });
 
         // Notification Routes
@@ -89,6 +97,7 @@ Route::prefix('v1')->group(function () {
         // Seller Routes (Hanya Peternak)
         Route::middleware('role:peternak')->prefix('seller')->group(function () {
             Route::get('/dashboard', [\App\Http\Controllers\Api\SellerController::class, 'dashboard']);
+            Route::get('/products', [\App\Http\Controllers\Api\SellerController::class, 'myProducts']);
         });
         
     });

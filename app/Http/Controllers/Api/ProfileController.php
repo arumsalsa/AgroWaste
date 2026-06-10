@@ -32,25 +32,50 @@ class ProfileController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
-        
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // 1. Update nama dasar di tabel users
-        if ($request->has('name')) {
-            $user->update($request->only(['name']));
+        // 1. Update basic fields on users table
+        $userFields = $request->only(['name', 'email', 'phone', 'avatar_url']);
+        if (!empty($userFields)) {
+            $user->update($userFields);
         }
 
-        // 2. Update tabel relasi profil spesifik berdasarkan role
+        // 2. Update specific profile table based on role
         if ($user->role === 'logistik' && $user->logistikProfile) {
             $user->logistikProfile->update($request->only(['company_name', 'vehicle_plate']));
         } elseif ($user->role === 'peternak' && $user->peternakProfile) {
-            $user->peternakProfile->update($request->only(['alamat', 'no_telepon']));
+            $peternakData = $request->only([
+                'nama_peternakan',
+                'deskripsi',
+                'provinsi',
+                'kabupaten',
+                'kecamatan',
+                'lat',
+                'lng',
+                'jenis_ternak',
+                'kapasitas_ternak'
+            ]);
+
+            // If jenis_ternak is a JSON string from frontend, decode it so it stores correctly with array cast
+            if (isset($peternakData['jenis_ternak']) && is_string($peternakData['jenis_ternak'])) {
+                $decoded = json_decode($peternakData['jenis_ternak'], true);
+                if (is_array($decoded)) {
+                    $peternakData['jenis_ternak'] = $decoded;
+                }
+            }
+
+            $user->peternakProfile->update($peternakData);
         } elseif ($user->role === 'pembeli' && $user->buyerProfile) {
-            $user->buyerProfile->update($request->only(['alamat', 'no_telepon']));
+            $user->buyerProfile->update($request->only([
+                'nama_instansi',
+                'tipe_pembeli',
+                'provinsi',
+                'kabupaten'
+            ]));
         }
 
-        // Refresh dan muat ulang data terbaru untuk dikirim ke Frontend
+        // Refresh and load latest data
         $user->refresh();
         $user->load(['peternakProfile', 'buyerProfile', 'logistikProfile']);
 
