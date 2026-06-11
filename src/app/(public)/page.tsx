@@ -150,7 +150,7 @@ export default function LandingPage() {
             >
               Limbah ternak
               <br />
-              punya nilai.
+              punya <span className="text-[#009A44] italic">nilai.</span>
             </h1>
 
             {/* Solution — clay, Baloo 2 */}
@@ -201,78 +201,126 @@ export default function LandingPage() {
 
       {/* Mission Section (Redesigned Editorial) */}
       <section className="py-10 md:py-12 px-6 max-w-7xl mx-auto w-full">
-        <div className="bg-land-ink rounded-[32px] p-8 md:p-16 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center shadow-[0_8px_32px_rgba(44,57,48,0.15)] relative overflow-hidden">
+        <div className="bg-land-ink rounded-[32px] p-8 md:p-16 flex flex-col gap-12 shadow-[0_8px_32px_rgba(44,57,48,0.15)] relative overflow-hidden">
           {/* Decorative background element */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-land-secondary opacity-30 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Text Content */}
-          <div className="w-full lg:w-1/2 relative z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-land-bg text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/5">
-              <Leaf className="w-4 h-4 text-land-accent" />
-              Misi Kami
+          {/* Top Row: Mission Header & Description */}
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-8 w-full relative z-10">
+            <div className="w-full lg:w-[48%]">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-land-bg text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/5">
+                <Leaf className="w-4 h-4 text-land-accent" />
+                Misi Kami
+              </div>
+
+              <h2
+                className="font-land-heading font-bold text-land-bg text-3xl md:text-5xl leading-tight"
+                style={{ textWrap: "balance" }}
+              >
+                Merajut harmoni antara peternakan & alam.
+              </h2>
             </div>
 
-            <h2
-              className="font-land-heading font-bold text-land-bg text-3xl md:text-5xl leading-tight mb-6"
-              style={{ textWrap: "balance" }}
-            >
-              Merajut harmoni antara peternakan & alam.
-            </h2>
-
-            <p className="text-land-warm/80 text-base md:text-lg leading-relaxed mb-8">
-              Kami tidak sekadar platform jual-beli. AgroWaste lahir dari kegelisahan akan menumpuknya limbah organik yang mencemari lingkungan. Kami percaya, dengan sentuhan sirkular, apa yang tadinya sisa bisa menjadi nyawa baru bagi tanah Nusantara.
-            </p>
-
-            {/* Stats - Editorial horizontal list */}
-            <div className="flex flex-wrap gap-x-12 gap-y-6 pt-8 border-t border-white/10">
-              <div>
-                <div className="text-4xl font-bold text-land-accent font-land-heading mb-1">5.2k+</div>
-                <div className="text-[11px] font-bold text-land-warm/60 uppercase tracking-widest">Peternak Aktif</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-land-clay font-land-heading mb-1">12.4k</div>
-                <div className="text-[11px] font-bold text-land-warm/60 uppercase tracking-widest">Ton Diolah</div>
-              </div>
+            <div className="w-full lg:w-[48%] pt-2 lg:pt-14">
+              <p className="text-land-warm/80 text-base md:text-lg leading-relaxed">
+                Kami tidak sekadar platform jual-beli. AgroWaste lahir dari kegelisahan akan menumpuknya limbah organik yang mencemari lingkungan. Kami percaya, dengan sentuhan sirkular, apa yang tadinya sisa bisa menjadi nyawa baru bagi tanah Nusantara.
+              </p>
             </div>
           </div>
 
-          {/* Image & Cards Layout (Asymmetric) */}
-          <div className="w-full lg:w-1/2 relative z-10 flex flex-col sm:flex-row gap-6">
-            <div className="flex flex-col gap-6 w-full sm:w-1/2 translate-y-0 sm:translate-y-8">
-              <ImageSlider
-                images={[
-                  "https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=600&q=80",
-                  "https://images.unsplash.com/photo-1589923188900-85dae440047b?auto=format&fit=crop&w=600&q=80",
-                  "https://images.unsplash.com/photo-1500937386664-56d159f87b81?auto=format&fit=crop&w=600&q=80",
-                ]}
-                overlayClass="bg-land-ink/20"
-              />
-              <div className="bg-land-secondary/80 backdrop-blur-md rounded-[24px] p-6 border border-white/10">
-                <Recycle className="w-8 h-8 text-land-accent mb-4" />
-                <h3 className="text-land-bg font-bold text-lg mb-2">Konversi Efisien</h3>
-                <p className="text-land-warm/70 text-sm leading-relaxed">
-                  Sistem cerdas kami memastikan perpindahan pupuk dari kandang ke lahan dalam waktu 48 jam.
+          {/* Bottom Row: 5-Card Layout Flow */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10 mt-4">
+            
+            {/* Card 1: Logo Aksen */}
+            <div className="w-full h-[320px] rounded-[32px] bg-gradient-to-tr from-[#C8DACF] to-[#E5EFEA] flex items-center justify-center p-6 relative overflow-hidden shadow-sm">
+              <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M0,50 Q25,70 50,50 T100,50 L100,100 L0,100 Z" fill="currentColor" className="text-land-ink" />
+                </svg>
+              </div>
+              <div className="w-16 h-16 rounded-[20px] bg-white shadow-md flex items-center justify-center z-10 transition-transform duration-300 hover:scale-105">
+                <Leaf className="w-8 h-8 text-[#2E8A4E]" />
+              </div>
+            </div>
+
+            {/* Card 2: Stats (Dua blok bertumpuk) */}
+            <div className="w-full h-[320px] flex flex-col gap-4">
+              {/* Top Box */}
+              <div className="bg-white rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm">
+                <div className="text-3xl font-bold text-land-ink font-land-heading">+5.2k</div>
+                <div className="font-bold text-xs text-land-ink mt-0.5 uppercase tracking-wider">Mitra Peternak</div>
+                <p className="text-[10px] text-land-muted mt-1 leading-normal">
+                  Bergabung menyalurkan limbah ternak produktif.
+                </p>
+              </div>
+              {/* Bottom Box */}
+              <div className="bg-[#DCE6E1] rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm">
+                <div className="text-3xl font-bold text-[#1E3E2A] font-land-heading">12.4k</div>
+                <div className="font-bold text-xs text-[#1E3E2A] mt-0.5 uppercase tracking-wider">Ton Diolah</div>
+                <p className="text-[10px] text-land-muted mt-1 leading-normal">
+                  Berhasil dikonversi menjadi pupuk bernutrisi tinggi.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-6 w-full sm:w-1/2">
-              <div className="bg-land-clay/90 backdrop-blur-md rounded-[24px] p-6 border border-white/10">
-                <ShieldCheck className="w-8 h-8 text-land-bg mb-4" />
-                <h3 className="text-land-bg font-bold text-lg mb-2">Kualitas Terjamin</h3>
-                <p className="text-land-warm/80 text-sm leading-relaxed">
-                  Hanya pupuk organik terverifikasi yang sampai ke tangan petani, menekan risiko kegagalan panen.
-                </p>
-              </div>
-              <ImageSlider
-                images={[
-                  "https://images.unsplash.com/photo-1592982537447-6f2b6cb1e194?auto=format&fit=crop&w=600&q=80",
-                  "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=600&q=80",
-                  "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80",
-                ]}
-                overlayClass="bg-land-clay/20"
+            {/* Card 3: Aksi Nyata (Gambar Peternak + badge) */}
+            <div className="w-full h-[320px] rounded-[32px] overflow-hidden relative group shadow-sm">
+              <img
+                src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=600&q=80"
+                alt="Aksi Nyata"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center z-10">
+                <Recycle className="w-5 h-5 text-[#2E8A4E]" />
+              </div>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-land-ink font-bold text-xs px-5 py-2.5 rounded-full shadow-md whitespace-nowrap z-10">
+                Ekonomi Sirkular
+              </div>
             </div>
+
+            {/* Card 4: Nutrisi Lahan (Gambar Persawahan + tags + pill) */}
+            <div className="w-full h-[320px] rounded-[32px] overflow-hidden relative group shadow-sm">
+              <img
+                src="https://images.unsplash.com/photo-1500937386664-56d159f87b81?auto=format&fit=crop&w=600&q=80"
+                alt="Nutrisi Lahan"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+              <div className="absolute top-4 left-4 flex gap-1.5 z-10">
+                <span className="px-2.5 py-1 rounded-full border border-white/40 text-[9px] font-bold uppercase tracking-wider text-white bg-black/25 backdrop-blur-xs">
+                  Organik
+                </span>
+                <span className="px-2.5 py-1 rounded-full border border-white/40 text-[9px] font-bold uppercase tracking-wider text-white bg-black/25 backdrop-blur-xs">
+                  Sirkular
+                </span>
+              </div>
+              <div className="absolute bottom-4 left-4 right-4 bg-white p-3 rounded-2xl shadow-md z-10 flex items-center justify-between gap-2">
+                <span className="font-bold text-[11px] text-land-ink leading-tight">Nutrisi Lahan Kembali</span>
+                <svg className="w-3.5 h-3.5 text-land-muted shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Card 5: Aksen Grafis & Event (Concentric Graphic Card) */}
+            <div className="w-full h-[320px] rounded-[32px] bg-gradient-to-br from-[#DCE6E1] to-[#CAD7D2] relative overflow-hidden flex flex-col justify-center items-center p-6 text-center group shadow-sm">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.12]">
+                <div className="w-20 h-20 rounded-full border-2 border-land-ink absolute"></div>
+                <div className="w-36 h-36 rounded-full border-2 border-land-ink absolute"></div>
+                <div className="w-52 h-52 rounded-full border-2 border-land-ink absolute"></div>
+                <div className="w-68 h-68 rounded-full border-2 border-land-ink absolute"></div>
+              </div>
+              <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center z-10 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                <svg className="w-3.5 h-3.5 text-[#2E8A4E]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                </svg>
+              </div>
+              <div className="font-land-heading font-bold text-base text-land-ink max-w-[140px] leading-snug relative z-10">
+                Pertanian Sirkular Berkelanjutan
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
