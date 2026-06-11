@@ -340,21 +340,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                 User onboarding vs supply growth
               </p>
             </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#faf2ee] rounded-lg"
-              aria-label="Filter platform growth by Last 6 Months"
-            >
-              <span className="font-semibold text-[#1e1b19] text-xs tracking-[0.60px] leading-4 whitespace-nowrap">
-                Last 6 Months
-              </span>
-              <img
-                className="w-3 h-3"
-                alt=""
-                src={(vector as { src?: string })?.src ?? String(vector)}
-                aria-hidden="true"
-              />
-            </button>
+            {/* Last 6 Months filter hidden */}
           </div>
 
           {/* Chart area */}
@@ -437,14 +423,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                 Recent Activity
               </h3>
             </div>
-            <button
-              type="button"
-              className="all-[unset] box-border inline-flex flex-col items-center justify-center relative flex-[0_0_auto]"
-            >
-              <div className="relative flex items-center justify-center w-fit mt-[-1.00px] font-semibold text-purple-500 text-xs text-center tracking-[0.60px] leading-4 whitespace-nowrap">
-                View All
-              </div>
-            </button>
+            {/* View All hidden */}
           </div>
           <ol className="flex flex-col items-start gap-6 relative self-stretch w-full flex-[0_0_auto] list-none m-0 p-0">
             {activityItems.map((item, index) => (

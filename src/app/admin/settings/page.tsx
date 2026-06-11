@@ -139,12 +139,6 @@ export default function SettingsPage() {
                   <div className="relative">
                     <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Foto Profil" className="w-20 h-20 rounded-full object-cover shadow-sm border border-admin-hairline" />
                   </div>
-                  <div>
-                    <button type="button" className="px-4 py-2 bg-[#EBE7E0] hover:bg-admin-hairline text-admin-textprimary text-xs font-bold rounded-xl transition-colors">
-                      Ubah Foto
-                    </button>
-                    <p className="text-[10px] text-admin-textsecondary mt-2">JPG, GIF, atau PNG. Maksimal 2MB.</p>
-                  </div>
                 </div>
 
                 <div className="space-y-4">

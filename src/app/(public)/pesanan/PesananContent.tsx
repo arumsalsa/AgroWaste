@@ -91,6 +91,7 @@ export default function PesananContent() {
   // Local filter state
   const [searchInput,  setSearchInput]  = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [timeFilter,   setTimeFilter]   = useState("semua");
 
   useEffect(() => {
     if (!getToken()) {
@@ -112,7 +113,7 @@ export default function PesananContent() {
       });
   }, [router]);
 
-  // Frontend filter: search (order_number OR product name) + status
+  // Frontend filter: search (order_number OR product name) + status + time
   const visibleOrders = useMemo(() => {
     return orders.filter((order) => {
       // Status filter
@@ -129,9 +130,27 @@ export default function PesananContent() {
         if (!idText.includes(q) && !productNames.includes(q)) return false;
       }
 
+      // Time filter
+      if (timeFilter !== "semua") {
+        const orderDate = new Date(order.created_at).getTime();
+        const now = new Date().getTime();
+        const diffMs = now - orderDate;
+        if (timeFilter === "30days") {
+          const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+          if (diffMs > thirtyDaysMs || diffMs < 0) return false;
+        } else if (timeFilter === "3months") {
+          const threeMonthsMs = 90 * 24 * 60 * 60 * 1000;
+          if (diffMs > threeMonthsMs || diffMs < 0) return false;
+        } else if (timeFilter === "year") {
+          const orderYear = new Date(order.created_at).getFullYear();
+          const currentYear = new Date().getFullYear();
+          if (orderYear !== currentYear) return false;
+        }
+      }
+
       return true;
     });
-  }, [orders, searchInput, statusFilter]);
+  }, [orders, searchInput, statusFilter, timeFilter]);
 
   return (
     <div className="flex-1 animate-fade-in pb-20">
@@ -202,19 +221,31 @@ export default function PesananContent() {
                 </div>
               </div>
 
-              {/* Waktu Beli — UI only (filter frontend by date not yet wired) */}
+              {/* Waktu Beli */}
               <div className="mb-8">
                 <h3 className="font-bold text-sm text-land-ink mb-4 uppercase tracking-wider">Waktu Beli</h3>
                 <div className="space-y-4">
-                  {["Semua Waktu", "30 Hari Terakhir", "3 Bulan Terakhir", "Tahun Ini"].map((t, i) => (
-                    <label key={i} className="flex items-center gap-3 cursor-pointer group">
+                  {(
+                    [
+                      { label: "Semua Waktu", value: "semua" },
+                      { label: "30 Hari Terakhir", value: "30days" },
+                      { label: "3 Bulan Terakhir", value: "3months" },
+                      { label: "Tahun Ini", value: "year" },
+                    ] as { label: string; value: string }[]
+                  ).map((t) => (
+                    <label key={t.value} className="flex items-center gap-3 cursor-pointer group">
                       <input
                         type="radio"
                         name="time"
-                        defaultChecked={i === 0}
+                        checked={timeFilter === t.value}
+                        onChange={() => setTimeFilter(t.value)}
                         className="w-5 h-5 border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer"
                       />
-                      <span className="text-land-muted font-medium group-hover:text-land-ink transition-colors">{t}</span>
+                      <span className={`font-medium transition-colors group-hover:text-land-ink ${
+                        timeFilter === t.value ? "text-[#009A44] font-semibold" : "text-land-muted"
+                      }`}>
+                        {t.label}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -222,7 +253,7 @@ export default function PesananContent() {
 
               <button
                 type="button"
-                onClick={() => { setSearchInput(""); setStatusFilter(""); }}
+                onClick={() => { setSearchInput(""); setStatusFilter(""); setTimeFilter("semua"); }}
                 className="btn-clay-secondary w-full py-3.5"
               >
                 Terapkan Filter
@@ -276,7 +307,7 @@ export default function PesananContent() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setSearchInput(""); setStatusFilter(""); }}
+                  onClick={() => { setSearchInput(""); setStatusFilter(""); setTimeFilter("semua"); }}
                   className="btn-clay-secondary px-8 py-3 inline-flex"
                 >
                   Reset Filter

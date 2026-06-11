@@ -53,6 +53,8 @@ export default function ProductDetail() {
   const [cartLoading, setCartLoading] = useState(false);
   const [cartSuccess, setCartSuccess] = useState(false);
   const [cartError, setCartError]     = useState<string | null>(null);
+  const [buyNowLoading, setBuyNowLoading] = useState(false);
+  const [activeTab, setActiveTab]   = useState<"deskripsi" | "ulasan">("deskripsi");
 
   useEffect(() => {
     apiFetch(`/products/${id}`)
@@ -103,6 +105,32 @@ export default function ProductDetail() {
       setCartError("Tidak dapat terhubung ke server.");
     } finally {
       setCartLoading(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!getToken()) {
+      router.push(`/login?callbackUrl=/marketplace/${id}`);
+      return;
+    }
+    setCartError(null);
+    setBuyNowLoading(true);
+    try {
+      const res  = await apiFetch("/cart-items", {
+        method: "POST",
+        body: JSON.stringify({ product_id: product!.id, quantity_kg: qty }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setCartError(json.message ?? "Gagal menambahkan ke keranjang.");
+      } else {
+        window.dispatchEvent(new Event("cart-change"));
+        router.push("/checkout");
+      }
+    } catch {
+      setCartError("Tidak dapat terhubung ke server.");
+    } finally {
+      setBuyNowLoading(false);
     }
   };
 
@@ -214,32 +242,62 @@ export default function ProductDetail() {
 
             {/* Tabs */}
             <div className="flex border-b border-[#E8E0D5] mb-8">
-              <button className="px-6 py-3 font-bold text-sm text-[#009A44] border-b-2 border-[#009A44]">Deskripsi</button>
-              <button className="px-6 py-3 font-semibold text-sm text-[#555555] hover:text-[#111111] transition-colors">Ulasan ({product.review_count})</button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("deskripsi")}
+                className={`px-6 py-3 font-bold text-sm transition-colors ${
+                  activeTab === "deskripsi"
+                    ? "text-[#009A44] border-b-2 border-[#009A44]"
+                    : "text-[#555555] hover:text-[#111111]"
+                }`}
+              >
+                Deskripsi
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("ulasan")}
+                className={`px-6 py-3 font-bold text-sm transition-colors ${
+                  activeTab === "ulasan"
+                    ? "text-[#009A44] border-b-2 border-[#009A44]"
+                    : "text-[#555555] hover:text-[#111111]"
+                }`}
+              >
+                Ulasan ({product.review_count})
+              </button>
             </div>
 
-            {/* Description */}
-            <div className="space-y-8">
-              <p className="text-[#555555] text-sm leading-relaxed">
-                {product.description ?? "Belum ada deskripsi untuk produk ini."}
-              </p>
+            {/* Description/Reviews Content Area */}
+            {activeTab === "deskripsi" ? (
+              <div className="space-y-8 animate-fade-in">
+                <p className="text-[#555555] text-sm leading-relaxed">
+                  {product.description ?? "Belum ada deskripsi untuk produk ini."}
+                </p>
 
-              {/* Lab Test — static decorative section */}
-              <div className="bg-[#FFF8F5] border border-[#E8E0D5] rounded-2xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <svg className="w-5 h-5 text-[#009A44]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  <h3 className="font-bold text-[#111111] text-sm">Kandungan Nutrisi (Uji Lab)</h3>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {([["1.5%","Nitrogen (N)"],["0.8%","Fosfor (P)"],["1.2%","Kalium (K)"],["25%","C-Organik"]] as [string,string][]).map(([val, label]) => (
-                    <div key={label} className="bg-white border border-[#E8E0D5] p-4 rounded-xl text-center">
-                      <div className="font-bold text-lg text-[#009A44] mb-1">{val}</div>
-                      <div className="text-[10px] font-bold text-[#555555] uppercase">{label}</div>
-                    </div>
-                  ))}
+                {/* Lab Test — static decorative section */}
+                <div className="bg-[#FFF8F5] border border-[#E8E0D5] rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg className="w-5 h-5 text-[#009A44]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h3 className="font-bold text-[#111111] text-sm">Kandungan Nutrisi (Uji Lab)</h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {([["1.5%","Nitrogen (N)"],["0.8%","Fosfor (P)"],["1.2%","Kalium (K)"],["25%","C-Organik"]] as [string,string][]).map(([val, label]) => (
+                      <div key={label} className="bg-white border border-[#E8E0D5] p-4 rounded-xl text-center">
+                        <div className="font-bold text-lg text-[#009A44] mb-1">{val}</div>
+                        <div className="text-[10px] font-bold text-[#555555] uppercase">{label}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="py-12 text-center border border-dashed border-[#E8E0D5] rounded-3xl bg-[#FBFAF7]/50 animate-fade-in w-full">
+                <svg className="w-12 h-12 text-[#555555]/30 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                </svg>
+                <p className="text-sm font-semibold text-[#555555]">Belum ada ulasan</p>
+                <p className="text-xs text-[#555555]/75 mt-1">Jadilah yang pertama memberikan ulasan untuk produk ini setelah membeli!</p>
+              </div>
+            )}
           </div>
 
           {/* Right Column — Sticky Checkout Card */}
@@ -341,7 +399,15 @@ export default function ProductDetail() {
                       )}
                       Keranjang
                     </button>
-                    <button className="btn-clay-primary py-3 px-4 flex-1 text-sm">
+                    <button
+                      type="button"
+                      onClick={handleBuyNow}
+                      disabled={buyNowLoading || cartLoading}
+                      className="btn-clay-primary py-3 px-4 flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {buyNowLoading && (
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                      )}
                       Beli Sekarang
                     </button>
                   </div>

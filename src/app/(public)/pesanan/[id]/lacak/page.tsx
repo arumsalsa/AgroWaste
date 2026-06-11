@@ -74,10 +74,6 @@ export default function LacakPesananPage() {
                   </div>
                 </div>
               </div>
-              
-              <button className="btn-clay-primary px-8 py-4 w-full sm:w-auto relative z-10 flex items-center justify-center gap-3">
-                <Phone className="w-5 h-5" /> Hubungi Kurir
-              </button>
             </div>
             
           </div>

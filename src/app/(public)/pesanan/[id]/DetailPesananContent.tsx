@@ -237,9 +237,6 @@ export default function DetailPesananContent({ id }: { id: string }) {
                 <p className="text-sm text-land-ink/70">Terima kasih telah berbelanja pupuk sirkular di AgroWaste.</p>
               </div>
             </div>
-            <button type="button" className="btn-clay-secondary px-6 py-3.5 w-full sm:w-auto flex justify-center items-center gap-2">
-              <Receipt className="w-4 h-4" /> Unduh Invoice
-            </button>
           </div>
 
           {/* ── Daftar Produk ───────────────────────────────────────── */}

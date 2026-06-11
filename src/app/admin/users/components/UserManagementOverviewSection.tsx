@@ -276,42 +276,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
               );
             })}
           </div>
-          <div className="inline-flex items-center gap-3 relative flex-[0_0_auto]">
-            <button
-              type="button"
-              className="inline-flex gap-2 px-4 py-2 flex-[0_0_auto] rounded-lg border border-solid border-[#bdcaba] items-center relative"
-              aria-label="Open more filters"
-            >
-              <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
-                <img
-                  className="relative w-[13.5px] h-[9px]"
-                  alt=""
-                  src={(icon13 as { src?: string })?.src ?? String(icon13)}
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="justify-center font-semibold text-[#1e1b19] text-xs text-center tracking-[0.60px] leading-4 whitespace-nowrap relative flex items-center w-fit">
-                More Filters
-              </div>
-            </button>
-            <button
-              type="button"
-              className="inline-flex gap-2 px-4 py-2 flex-[0_0_auto] rounded-lg border border-solid border-[#bdcaba] items-center relative"
-              aria-label="Export users as CSV"
-            >
-              <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
-                <img
-                  className="relative w-3 h-3"
-                  alt=""
-                  src={(icon14 as { src?: string })?.src ?? String(icon14)}
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="relative flex items-center justify-center w-fit font-semibold text-[#1e1b19] text-xs text-center tracking-[0.60px] leading-4 whitespace-nowrap">
-                Export CSV
-              </div>
-            </button>
-          </div>
+          {/* More Filters & Export CSV hidden */}
         </div>
         <div
           id="user-management-table"
@@ -384,18 +349,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                     </div>
                   </div>
                   <div className="flex items-center justify-end px-6 py-4">
-                    <button
-                      type="button"
-                      className="p-2 rounded-full hover:bg-black/5 transition-colors"
-                      aria-label={`Open actions for ${user.name}`}
-                    >
-                      <img
-                        className="w-1 h-4"
-                        alt=""
-                        src={(user.menuIcon as { src?: string })?.src ?? (user.menuIcon as string)}
-                        aria-hidden="true"
-                      />
-                    </button>
+                    {/* Action menu 3-dot hidden */}
                   </div>
                 </div>
               ))}
@@ -408,75 +362,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
               Showing {filteredUsers.length} of 24,592 users
             </p>
           </div>
-          <nav
-            className="inline-flex items-start gap-2 relative flex-[0_0_auto]"
-            aria-label="Pagination"
-          >
-            <button
-              type="button"
-              className="flex w-8 h-8 justify-center rounded-lg border border-solid border-[#bdcaba] opacity-50 items-center relative"
-              aria-label="Previous page"
-              disabled
-            >
-              <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
-                <img
-                  className="relative w-[5.55px] h-[9px]"
-                  alt=""
-                  src={(icon20 as { src?: string })?.src ?? String(icon20)}
-                  aria-hidden="true"
-                />
-              </div>
-            </button>
-            {paginationItems.map((item) =>
-              item.type === "page" ? (
-                <button
-                  key={item.value}
-                  type="button"
-                  aria-current={item.active ? "page" : undefined}
-                  className={
-                    item.active
-                      ? "flex w-8 h-8 justify-center pt-[7.5px] pb-[8.5px] px-0 bg-purple-500 rounded-lg items-center relative"
-                      : "flex w-8 h-8 justify-center rounded-lg border border-solid border-[#bdcaba] items-center relative"
-                  }
-                >
-                  <div
-                    className={
-                      item.active
-                        ? "justify-center mt-[-1.00px] font-semibold text-white text-xs text-center tracking-[0.60px] leading-4 whitespace-nowrap relative flex items-center w-fit"
-                        : "justify-center font-normal text-[#6e7b6c] text-base text-center tracking-[0] leading-6 whitespace-nowrap relative flex items-center w-fit"
-                    }
-                  >
-                    {item.value}
-                  </div>
-                </button>
-              ) : (
-                <div
-                  key={item.value}
-                  className="inline-flex flex-col items-start px-2 py-0 self-stretch relative flex-[0_0_auto]"
-                  aria-hidden="true"
-                >
-                  <div className="mt-[-1.00px] font-normal text-[#6e7b6c] text-base tracking-[0] leading-6 whitespace-nowrap relative flex items-center w-fit">
-                    {item.value}
-                  </div>
-                </div>
-              ),
-            )}
-
-            <button
-              type="button"
-              className="flex w-8 h-8 justify-center rounded-lg border border-solid border-[#bdcaba] items-center relative"
-              aria-label="Next page"
-            >
-              <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
-                <img
-                  className="relative w-[5.55px] h-[9px]"
-                  alt=""
-                  src={(icon21 as { src?: string })?.src ?? String(icon21)}
-                  aria-hidden="true"
-                />
-              </div>
-            </button>
-          </nav>
+          {/* Pagination hidden */}
         </div>
       </div>
     </section>

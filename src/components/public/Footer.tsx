@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Globe, Mail, ArrowRight, Leaf } from "lucide-react";
+import { Mail, ArrowRight } from "lucide-react";
 
 export function Footer() {
   return (
@@ -24,9 +24,6 @@ export function Footer() {
                 Bergabung Sekarang
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link href="/contact" className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all hover:-translate-y-1">
-                Hubungi Kami
-              </Link>
             </div>
           </div>
 
@@ -45,15 +42,14 @@ export function Footer() {
               <h4 className="font-bold text-white tracking-widest text-xs uppercase mb-2">Perusahaan</h4>
               <Link href="/about" className="text-[#A0AAB2] hover:text-white transition-colors">Cerita Kami</Link>
               <Link href="/impact" className="text-[#A0AAB2] hover:text-white transition-colors">Laporan Dampak</Link>
-              <Link href="/blog" className="text-[#A0AAB2] hover:text-white transition-colors">Artikel & Jurnal</Link>
             </div>
 
             {/* Column 3 */}
             <div className="flex flex-col gap-6">
               <h4 className="font-bold text-white tracking-widest text-xs uppercase mb-2">Bantuan</h4>
-              <Link href="/help" className="text-[#A0AAB2] hover:text-white transition-colors">Pusat Bantuan</Link>
-              <Link href="/terms" className="text-[#A0AAB2] hover:text-white transition-colors">Syarat & Ketentuan</Link>
-              <Link href="/privacy" className="text-[#A0AAB2] hover:text-white transition-colors">Privasi</Link>
+              <span className="text-[#A0AAB2]">Pusat Bantuan</span>
+              <span className="text-[#A0AAB2]">Syarat & Ketentuan</span>
+              <span className="text-[#A0AAB2]">Privasi</span>
             </div>
           </div>
         </div>
@@ -64,9 +60,6 @@ export function Footer() {
             &copy; {new Date().getFullYear()} AgroWaste. Hak cipta dilindungi.
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" aria-label="Website" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#009A44] hover:border-[#009A44] transition-all hover:-translate-y-1">
-              <Globe className="w-5 h-5" />
-            </a>
             <a href="mailto:halo@agrowaste.id" aria-label="Email" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#009A44] hover:border-[#009A44] transition-all hover:-translate-y-1">
               <Mail className="w-5 h-5" />
             </a>

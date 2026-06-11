@@ -219,10 +219,6 @@ export default function ImpactPage() {
               <p className="text-white/60 mb-10 max-w-sm mx-auto text-sm md:text-base leading-relaxed">
                 Dapatkan laporan lengkap mengenai metodologi perhitungan jejak karbon, dampak ESG, dan tata kelola AgroWaste.
               </p>
-              
-              <button className="w-full sm:w-auto bg-land-accent hover:bg-land-accent-hover text-white rounded-xl font-bold py-3.5 px-8 transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer">
-                <Download className="w-5 h-5" /> Unduh PDF Laporan (4.2 MB)
-              </button>
             </div>
           </div>
           

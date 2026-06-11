@@ -101,7 +101,6 @@ function LoginPageContent() {
               <label className="block text-[10px] font-bold text-land-ink uppercase tracking-wider">
                 Kata Sandi
               </label>
-              <a href="#" className="text-[10px] font-bold text-land-clay hover:text-land-clay-hover">Lupa Password?</a>
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

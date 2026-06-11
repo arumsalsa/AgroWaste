@@ -337,12 +337,6 @@ export default function CartContent() {
                 <span className="text-base font-bold text-land-ink">Total Tagihan</span>
                 <span className="text-2xl font-bold text-[#009A44] font-tabular">{formatRupiah(subtotal + SHIPPING + ADMIN_FEE)}</span>
               </div>
-
-              <button className="btn-clay-secondary w-full py-3.5 mb-4 text-xs tracking-wider flex items-center justify-center gap-2">
-                <Ticket className="w-4 h-4 text-land-clay" />
-                MASUKKAN KODE PROMO
-              </button>
-
               <Link href="/checkout" className="btn-clay-primary py-4 w-full flex items-center justify-center gap-2 mb-4">
                 Lanjut ke Pembayaran
                 <ArrowRight className="w-5 h-5" />

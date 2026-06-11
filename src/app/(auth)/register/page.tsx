@@ -246,7 +246,7 @@ function RegisterPageContent() {
               </div>
             </div>
             <label htmlFor="terms" className="ml-2 text-xs text-land-muted leading-relaxed cursor-pointer select-none font-semibold">
-              Saya setuju dengan <a href="#" className="font-bold text-land-clay hover:text-land-clay-hover">Syarat & Ketentuan</a> serta <a href="#" className="font-bold text-land-clay hover:text-land-clay-hover">Kebijakan Privasi</a> AgroWaste.
+              Saya setuju dengan <span className="font-bold text-land-clay">Syarat & Ketentuan</span> serta <span className="font-bold text-land-clay">Kebijakan Privasi</span> AgroWaste.
             </label>
           </div>
 

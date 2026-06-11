@@ -323,7 +323,7 @@ export default function CourierPayments() {
                     className="w-full px-4 py-2.5 bg-courier-warmbg border border-courier-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
                   />
                 </div>
-                <div className="flex gap-3 pt-4 justify-end">
+                <div className="flex gap-3 pt-4 justify-end items-center">
                   <button
                     type="button"
                     onClick={() => setShowWithdrawModal(false)}
@@ -332,10 +332,11 @@ export default function CourierPayments() {
                     Batal
                   </button>
                   <button
-                    type="submit"
-                    className="px-5 py-2 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+                    type="button"
+                    disabled
+                    className="px-5 py-2 bg-gray-200 text-gray-400 border border-gray-300 rounded-xl text-xs font-bold cursor-not-allowed"
                   >
-                    Tarik Sekarang
+                    Fitur penarikan dana dalam pengembangan
                   </button>
                 </div>
               </form>

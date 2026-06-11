@@ -20,10 +20,6 @@ export default function OrderDetails() {
             <span className="w-2 h-2 rounded-full bg-admin-semamber animate-pulse"></span>
             Sedang Dikirim
           </div>
-          <button className="px-4 py-2 text-sm font-bold text-white bg-admin-primary hover:bg-admin-primary-hover rounded-xl flex items-center gap-2 transition-colors shadow-md shadow-admin-primary/20">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            Unduh Manifest
-          </button>
         </div>
       </div>
 
@@ -143,20 +139,7 @@ export default function OrderDetails() {
                   <div className="text-xs text-admin-textsecondary mt-0.5 font-tabular">ID Mitra: LGW-882</div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  aria-label="Hubungi kurir via telepon"
-                  className="w-10 h-10 rounded-full border border-admin-hairline flex items-center justify-center text-admin-textsecondary hover:text-admin-primary hover:border-admin-primary hover:bg-admin-primary-light transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                </button>
-                <button
-                  aria-label="Kirim pesan ke kurir"
-                  className="w-10 h-10 rounded-full border border-admin-hairline flex items-center justify-center text-admin-textsecondary hover:text-admin-primary hover:border-admin-primary hover:bg-admin-primary-light transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                </button>
-              </div>
+              {/* Phone/Message icons hidden */}
             </div>
           </div>
         </div>
@@ -215,12 +198,7 @@ export default function OrderDetails() {
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-admin-hairline">
-              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-admin-hairline rounded-xl text-sm font-semibold text-admin-textsecondary hover:bg-admin-warmbg hover:border-admin-primary hover:text-admin-primary transition-all">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                Tambah Catatan Admin
-              </button>
-            </div>
+            {/* Tambah Catatan Admin hidden */}
           </div>
         </div>
 

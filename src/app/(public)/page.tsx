@@ -3,12 +3,21 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Leaf, Recycle, ShieldCheck } from "lucide-react";
+import { Leaf, Recycle, ShieldCheck, ArrowUpRight, Sprout } from "lucide-react";
 import ImpactCalculator from "@/components/public/ImpactCalculator";
 import { Marquee } from "@/components/public/Marquee";
 import ImageSlider from "@/components/public/ImageSlider";
 import FeaturedProducts from "@/components/public/FeaturedProducts";
 import MapCn, { SellerInfo } from "@/components/public/MapCn";
+import { apiFetch } from "@/lib/api";
+
+interface ImpactData {
+  total_waste_managed_kg: number;
+  total_co2eq_reduced_kg: number;
+  equivalent_trees: number;
+  active_sellers_count: number;
+  total_transactions: number;
+}
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Earth radius in km
@@ -29,6 +38,37 @@ export default function LandingPage() {
   const [activeSellerId, setActiveSellerId] = useState<string | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "prompting" | "granted" | "denied">("idle");
   const [loadingSellers, setLoadingSellers] = useState(true);
+  const [impactData, setImpactData] = useState<ImpactData | null>(null);
+  const [loadingImpact, setLoadingImpact] = useState(true);
+
+  // Fetch impact statistics from API using apiFetch
+  useEffect(() => {
+    apiFetch("/dashboard/impact")
+      .then((res) => (res.ok ? res.json() : { data: null }))
+      .then((json) => {
+        if (json.success && json.data) {
+          setImpactData(json.data);
+        }
+        setLoadingImpact(false);
+      })
+      .catch(() => setLoadingImpact(false));
+  }, []);
+
+  // Format statistics for display in the bento section
+  const wasteMetric = impactData ? (impactData.total_waste_managed_kg >= 1000 ? {
+    value: (impactData.total_waste_managed_kg / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 }),
+    unit: "Ton"
+  } : {
+    value: impactData.total_waste_managed_kg.toLocaleString("id-ID"),
+    unit: "kg"
+  }) : { value: "—", unit: "Ton" };
+
+  const treesCount = impactData ? impactData.equivalent_trees.toLocaleString("id-ID") : "—";
+  const activeSellers = impactData ? (impactData.active_sellers_count >= 1000 ? {
+    value: (impactData.active_sellers_count / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "k",
+  } : {
+    value: impactData.active_sellers_count.toLocaleString("id-ID"),
+  }) : { value: "—" };
 
   // Set page title client-side since this is a Client Component
   useEffect(() => {
@@ -229,10 +269,10 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Row: 5-Card Layout Flow */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10 mt-4">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10 mt-4 lg:items-center">
             
-            {/* Card 1: Logo Aksen */}
-            <div className="w-full h-[320px] rounded-[32px] bg-gradient-to-tr from-[#C8DACF] to-[#E5EFEA] flex items-center justify-center p-6 relative overflow-hidden shadow-sm">
+            {/* Card 1: Logo Aksen (Blob/Organik Lembut - Surface Tenang) */}
+            <div className="w-full h-[280px] rounded-[32px] bg-[#DCD7C9] bg-gradient-to-tr from-[#D5CFC0] to-[#E3DEC3] flex items-center justify-center p-6 relative overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
                 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
                   <path d="M0,50 Q25,70 50,50 T100,50 L100,100 L0,100 Z" fill="currentColor" className="text-land-ink" />
@@ -244,67 +284,78 @@ export default function LandingPage() {
             </div>
 
             {/* Card 2: Stats (Dua blok bertumpuk) */}
-            <div className="w-full h-[320px] flex flex-col gap-4">
+            <div className="w-full h-[340px] flex flex-col gap-4">
               {/* Top Box */}
-              <div className="bg-white rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm">
-                <div className="text-3xl font-bold text-land-ink font-land-heading">+5.2k</div>
+              <div className="bg-white border border-land-cream rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div className="text-3xl font-bold text-land-ink font-land-heading font-tabular flex items-center">
+                  {loadingImpact ? (
+                    <span className="w-16 h-8 bg-land-cream/40 animate-pulse rounded inline-block"></span>
+                  ) : (
+                    `+${activeSellers.value}`
+                  )}
+                </div>
                 <div className="font-bold text-xs text-land-ink mt-0.5 uppercase tracking-wider">Mitra Peternak</div>
-                <p className="text-[10px] text-land-muted mt-1 leading-normal">
+                <p className="text-[10px] text-land-muted mt-1 leading-normal font-medium">
                   Bergabung menyalurkan limbah ternak produktif.
                 </p>
               </div>
               {/* Bottom Box */}
-              <div className="bg-[#DCE6E1] rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm">
-                <div className="text-3xl font-bold text-[#1E3E2A] font-land-heading">12.4k</div>
+              <div className="bg-[#DCE6E1] border border-[#C8DACF] rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div className="text-3xl font-bold text-[#1E3E2A] font-land-heading font-tabular flex items-center">
+                  {loadingImpact ? (
+                    <span className="w-20 h-8 bg-black/10 animate-pulse rounded inline-block"></span>
+                  ) : (
+                    `${wasteMetric.value} ${wasteMetric.unit}`
+                  )}
+                </div>
                 <div className="font-bold text-xs text-[#1E3E2A] mt-0.5 uppercase tracking-wider">Ton Diolah</div>
-                <p className="text-[10px] text-land-muted mt-1 leading-normal">
-                  Berhasil dikonversi menjadi pupuk bernutrisi tinggi.
+                <p className="text-[10px] text-land-muted mt-1 leading-normal font-medium">
+                  Berhasil dikonversi menjadi pupuk berkualitas.
                 </p>
               </div>
             </div>
 
-            {/* Card 3: Aksi Nyata (Gambar Peternak + badge) */}
-            <div className="w-full h-[320px] rounded-[32px] overflow-hidden relative group shadow-sm">
+            {/* Card 3: Foto Besar Portrait dengan Caption Overlay */}
+            <div className="w-full h-[400px] rounded-[32px] overflow-hidden relative group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <img
                 src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=600&q=80"
-                alt="Aksi Nyata"
+                alt="Aktivitas pertanian sirkular AgroWaste"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
               <div className="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center z-10">
                 <Recycle className="w-5 h-5 text-[#2E8A4E]" />
               </div>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-land-ink font-bold text-xs px-5 py-2.5 rounded-full shadow-md whitespace-nowrap z-10">
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-[#FBFAF7] text-land-ink font-bold text-xs px-5 py-2.5 rounded-full shadow-md whitespace-nowrap z-10 border border-land-cream">
                 Ekonomi Sirkular
               </div>
             </div>
 
-            {/* Card 4: Nutrisi Lahan (Gambar Persawahan + tags + pill) */}
-            <div className="w-full h-[320px] rounded-[32px] overflow-hidden relative group shadow-sm">
-              <img
-                src="https://images.unsplash.com/photo-1500937386664-56d159f87b81?auto=format&fit=crop&w=600&q=80"
-                alt="Nutrisi Lahan"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-              <div className="absolute top-4 left-4 flex gap-1.5 z-10">
-                <span className="px-2.5 py-1 rounded-full border border-white/40 text-[9px] font-bold uppercase tracking-wider text-white bg-black/25 backdrop-blur-xs">
-                  Organik
+            {/* Card 4: Kartu Gelap dengan Badge Pill */}
+            <div className="w-full h-[340px] rounded-[32px] bg-land-ink p-6 flex flex-col justify-between relative overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group cursor-pointer border border-white/5">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+              <div className="relative z-10">
+                <span className="px-3 py-1 bg-white/10 border border-white/5 rounded-full text-[10px] font-bold text-white/90 uppercase tracking-widest w-max">
+                  Misi Ekologis
                 </span>
-                <span className="px-2.5 py-1 rounded-full border border-white/40 text-[9px] font-bold uppercase tracking-wider text-white bg-black/25 backdrop-blur-xs">
-                  Sirkular
-                </span>
+                <h3 className="font-land-heading font-bold text-xl text-white mt-6 leading-tight flex items-center">
+                  {loadingImpact ? (
+                    <span className="w-32 h-6 bg-white/20 animate-pulse rounded inline-block"></span>
+                  ) : (
+                    `Setara ${treesCount} Pohon Tumbuh`
+                  )}
+                </h3>
+                <p className="text-[12px] text-white/70 mt-2.5 leading-relaxed font-medium">
+                  Reduksi karbon dari pengolahan limbah organik sebanding dengan penyerapan emisi oleh belasan ribu pohon.
+                </p>
               </div>
-              <div className="absolute bottom-4 left-4 right-4 bg-white p-3 rounded-2xl shadow-md z-10 flex items-center justify-between gap-2">
-                <span className="font-bold text-[11px] text-land-ink leading-tight">Nutrisi Lahan Kembali</span>
-                <svg className="w-3.5 h-3.5 text-land-muted shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
+              <div className="relative z-10 self-end">
+                <ArrowUpRight className="w-5 h-5 text-emerald-400 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </div>
             </div>
 
-            {/* Card 5: Aksen Grafis & Event (Concentric Graphic Card) */}
-            <div className="w-full h-[320px] rounded-[32px] bg-gradient-to-br from-[#DCE6E1] to-[#CAD7D2] relative overflow-hidden flex flex-col justify-center items-center p-6 text-center group shadow-sm">
+            {/* Card 5: Kartu Lingkaran Konsentris (Rings) */}
+            <div className="w-full h-[280px] rounded-[32px] bg-gradient-to-br from-[#DCE6E1] to-[#CAD7D2] relative overflow-hidden flex flex-col justify-center items-center p-6 text-center group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.12]">
                 <div className="w-20 h-20 rounded-full border-2 border-land-ink absolute"></div>
                 <div className="w-36 h-36 rounded-full border-2 border-land-ink absolute"></div>
@@ -312,9 +363,7 @@ export default function LandingPage() {
                 <div className="w-68 h-68 rounded-full border-2 border-land-ink absolute"></div>
               </div>
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center z-10 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                <svg className="w-3.5 h-3.5 text-[#2E8A4E]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
+                <ArrowUpRight className="w-4 h-4 text-[#2E8A4E]" />
               </div>
               <div className="font-land-heading font-bold text-base text-land-ink max-w-[140px] leading-snug relative z-10">
                 Pertanian Sirkular Berkelanjutan
