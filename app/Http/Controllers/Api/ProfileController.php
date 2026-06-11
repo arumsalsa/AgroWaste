@@ -85,4 +85,43 @@ class ProfileController extends Controller
             'data'    => $user
         ], 200);
     }
+
+    /**
+     * Mengunggah foto profil pengguna
+     */
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $path = $file->store('avatars', 'public');
+            
+            // Hapus avatar lama jika ada di storage lokal
+            if ($user->avatar_url && str_contains($user->avatar_url, 'storage/avatars')) {
+                $oldPath = str_replace(asset('storage/'), '', $user->avatar_url);
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
+
+            $user->update([
+                'avatar_url' => asset('storage/' . $path)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil diperbarui.',
+                'data' => $user->fresh()
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengunggah foto profil.'
+        ], 400);
+    }
 }

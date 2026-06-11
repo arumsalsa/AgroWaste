@@ -87,6 +87,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('profile')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\ProfileController::class, 'show']);
             Route::put('/', [\App\Http\Controllers\Api\ProfileController::class, 'update']);
+            Route::post('/avatar', [\App\Http\Controllers\Api\ProfileController::class, 'uploadAvatar']);
         });
 
         // Logistik Routes (Hanya Mitra Logistik)
