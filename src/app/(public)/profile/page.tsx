@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken, logout, saveAuth } from "@/lib/auth";
 import { 
   User as UserIcon, 
@@ -266,14 +266,14 @@ export default function ProfilePage() {
         setIsEditing(false);
         setUser(json.data);
         
-        // Sync local storage
         const token = getToken();
         if (token && json.data) {
           saveAuth(token, {
             id: json.data.id,
             name: json.data.name,
             email: json.data.email,
-            role: json.data.role
+            role: json.data.role,
+            avatar_url: json.data.avatar_url
           });
         }
         
@@ -284,6 +284,57 @@ export default function ProfilePage() {
       }
     } catch {
       setErrorMsg("Tidak dapat terhubung ke server untuk menyimpan perubahan.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran berkas maksimal 2MB.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    setSubmitting(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await apiFetch("/profile/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setSuccessMsg("Foto profil berhasil diperbarui!");
+        setUser(json.data);
+        
+        // Sync local storage
+        const token = getToken();
+        if (token && json.data) {
+          saveAuth(token, {
+            id: json.data.id,
+            name: json.data.name,
+            email: json.data.email,
+            role: json.data.role,
+            avatar_url: json.data.avatar_url
+          });
+        }
+        
+        // Force header refresh
+        window.dispatchEvent(new Event("auth-change"));
+      } else {
+        setErrorMsg(json.message || "Gagal mengunggah foto profil.");
+      }
+    } catch {
+      setErrorMsg("Tidak dapat terhubung ke server untuk mengunggah foto.");
     } finally {
       setSubmitting(false);
     }
@@ -375,12 +426,30 @@ export default function ProfilePage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#009A44] rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/3"></div>
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-6 relative z-10">
           
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#FFF8F5] bg-gray-200 overflow-hidden shrink-0 shadow-xl">
-            <img 
-              src={user?.avatar_url || "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=300&q=80"} 
-              alt="Foto Pengguna" 
-              className="w-full h-full object-cover" 
-            />
+          <div className="relative group w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#FFF8F5] bg-gray-200 overflow-hidden shrink-0 shadow-xl flex items-center justify-center">
+            {user?.avatar_url ? (
+              <img 
+                src={getProductImageUrl(user.avatar_url)} 
+                alt="Foto Pengguna" 
+                className="w-full h-full object-cover animate-fade-in" 
+              />
+            ) : (
+              <div className="w-full h-full bg-[#009A44]/10 text-[#009A44] flex items-center justify-center font-bold text-4xl md:text-5xl">
+                <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+              </div>
+            )}
+            
+            {/* Overlay to change/add photo */}
+            <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[10px] md:text-xs font-bold cursor-pointer transition-opacity duration-200">
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={handleAvatarUpload}
+              />
+              <Edit2 className="w-4 h-4 md:w-6 md:h-6 mb-1" />
+              Ganti Foto
+            </label>
           </div>
           
           <div className="flex-1 text-center md:text-left">

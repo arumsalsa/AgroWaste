@@ -189,7 +189,7 @@ function LoginPageContent() {
       <div className="hidden lg:flex lg:w-1/2 relative bg-land-secondary overflow-hidden">
         {/* Background Image with Dark Green Overlay */}
         <div className="absolute inset-0 bg-land-secondary mix-blend-multiply opacity-85 z-10"></div>
-        <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1200&q=80" alt="Pertanian" className="absolute inset-0 w-full h-full object-cover" />
+        <img src="/auth-bg.jpeg" alt="Pertanian" className="absolute inset-0 w-full h-full object-cover" />
 
         {/* Content Overlay */}
         <div className="relative z-20 flex flex-col justify-center px-16 xl:px-24 w-full h-full text-white">

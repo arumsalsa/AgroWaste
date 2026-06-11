@@ -318,7 +318,7 @@ export default function LandingPage() {
             {/* Card 3: Foto Besar Portrait dengan Caption Overlay */}
             <div className="w-full h-[400px] rounded-[32px] overflow-hidden relative group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <img
-                src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=600&q=80"
+                src="/auth-bg.jpeg"
                 alt="Aktivitas pertanian sirkular AgroWaste"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

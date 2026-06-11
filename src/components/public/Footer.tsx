@@ -24,11 +24,14 @@ export function Footer() {
                 Bergabung Sekarang
                 <ArrowRight className="w-5 h-5" />
               </Link>
+              <a href="mailto:arumsalsabila027@gmail.com" className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all hover:-translate-y-1">
+                Hubungi Kami
+              </a>
             </div>
           </div>
 
           {/* Right: Link Columns */}
-          <div className="lg:w-6/12 grid grid-cols-2 sm:grid-cols-3 gap-10">
+          <div className="lg:w-6/12 grid grid-cols-2 gap-10">
             {/* Column 1 */}
             <div className="flex flex-col gap-6">
               <h4 className="font-bold text-white tracking-widest text-xs uppercase mb-2">Platform</h4>
@@ -43,14 +46,6 @@ export function Footer() {
               <Link href="/about" className="text-[#A0AAB2] hover:text-white transition-colors">Cerita Kami</Link>
               <Link href="/impact" className="text-[#A0AAB2] hover:text-white transition-colors">Laporan Dampak</Link>
             </div>
-
-            {/* Column 3 */}
-            <div className="flex flex-col gap-6">
-              <h4 className="font-bold text-white tracking-widest text-xs uppercase mb-2">Bantuan</h4>
-              <span className="text-[#A0AAB2]">Pusat Bantuan</span>
-              <span className="text-[#A0AAB2]">Syarat & Ketentuan</span>
-              <span className="text-[#A0AAB2]">Privasi</span>
-            </div>
           </div>
         </div>
 
@@ -60,7 +55,7 @@ export function Footer() {
             &copy; {new Date().getFullYear()} AgroWaste. Hak cipta dilindungi.
           </p>
           <div className="flex items-center gap-4">
-            <a href="mailto:halo@agrowaste.id" aria-label="Email" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#009A44] hover:border-[#009A44] transition-all hover:-translate-y-1">
+            <a href="mailto:arumsalsabila027@gmail.com" aria-label="Email" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#009A44] hover:border-[#009A44] transition-all hover:-translate-y-1">
               <Mail className="w-5 h-5" />
             </a>
           </div>

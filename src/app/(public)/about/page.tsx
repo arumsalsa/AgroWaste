@@ -27,7 +27,7 @@ export default function AboutPage() {
             } as React.CSSProperties}
           >
             <img
-              src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1500&q=80"
+              src="/auth-bg.jpeg"
               alt=""
               className="w-full h-full object-cover object-center"
               loading="eager"
@@ -221,7 +221,7 @@ export default function AboutPage() {
       <section className="py-24 px-6 max-w-[1400px] mx-auto w-full mb-12">
         <div className="bg-[#1C231F] rounded-[48px] p-12 md:p-20 text-center relative overflow-hidden flex flex-col items-center">
           <div className="absolute top-0 left-0 w-full h-full opacity-30 mix-blend-overlay">
-             <img src="https://images.unsplash.com/photo-1592982537447-6f2b6cb1e194?auto=format&fit=crop&w=1500&q=80" alt="Texture" className="w-full h-full object-cover" />
+             <img src="/about-texture.jpeg" alt="Texture" className="w-full h-full object-cover" />
           </div>
           
           <div className="relative z-10">

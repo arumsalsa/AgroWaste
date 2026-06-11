@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getProductImageUrl } from "@/lib/api";
+import { getUser, type AuthUser } from "@/lib/auth";
 
 export function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mounted, setMounted] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
@@ -26,8 +28,13 @@ export function Header() {
     const checkAuth = () => {
       const loggedIn = document.cookie.includes('auth=1');
       setIsLoggedIn(loggedIn);
-      if (loggedIn) fetchCartCount();
-      else setCartCount(0);
+      if (loggedIn) {
+        setUser(getUser());
+        fetchCartCount();
+      } else {
+        setUser(null);
+        setCartCount(0);
+      }
     };
     checkAuth();
 
@@ -129,8 +136,12 @@ export function Header() {
               className="flex items-center gap-2 pl-4 border-l border-neutral-200 cursor-pointer group"
               title="Profil Pengguna"
             >
-              <div className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-land-cream/30">
-                <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80" alt="Pengguna" className="w-full h-full object-cover" />
+              <div className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-land-cream/30 flex items-center justify-center bg-[#009A44]/10 text-[#009A44] font-bold text-sm">
+                {user?.avatar_url ? (
+                  <img src={getProductImageUrl(user.avatar_url)} alt="Pengguna" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                )}
               </div>
             </Link>
           )}
