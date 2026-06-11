@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  Globe2, 
-  Recycle, 
-  Sparkles, 
-  TrendingUp, 
-  TreePine, 
-  Download, 
-  ArrowUpRight, 
-  Leaf, 
-  Sprout, 
+import {
+  Globe2,
+  Recycle,
+  Sparkles,
+  TrendingUp,
+  TreePine,
+  ArrowUpRight,
+  Leaf,
+  Sprout,
   Users
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -223,17 +222,64 @@ export default function ImpactPage() {
             )}
           </div>
           
-          {/* Laporan CSR Card */}
-          <div className="bg-land-ink rounded-2xl p-8 md:p-12 shadow-clay flex flex-col justify-center items-center text-center relative overflow-hidden hover:-translate-y-1 transition-transform duration-500">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-land-accent rounded-full filter blur-[100px] opacity-15 pointer-events-none"></div>
-            
-            <div className="relative z-10 flex flex-col items-center w-full">
-              <div className="w-20 h-20 bg-white/5 backdrop-blur-md rounded-full flex items-center justify-center text-white mb-8 border border-white/10">
-                <Sprout className="w-10 h-10 text-emerald-300" />
+          {/* Ringkasan Dampak Card */}
+          <div className="bg-land-ink rounded-2xl p-8 md:p-12 shadow-clay flex flex-col justify-between relative overflow-hidden hover:-translate-y-1 transition-transform duration-500">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-land-accent rounded-full filter blur-[100px] opacity-10 pointer-events-none translate-x-1/4 -translate-y-1/4"></div>
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 shrink-0">
+                  <Sprout className="w-6 h-6 text-emerald-300" />
+                </div>
+                <h3 className="font-land-heading text-2xl font-bold text-white">Kontribusi Nyata untuk Bumi</h3>
               </div>
-              <h3 className="font-land-heading text-3xl font-bold text-white mb-4">Unduh Laporan CSR</h3>
-              <p className="text-white/60 mb-10 max-w-sm mx-auto text-sm md:text-base leading-relaxed">
-                Dapatkan laporan lengkap mengenai metodologi perhitungan jejak karbon, dampak ESG, dan tata kelola AgroWaste.
+
+              <div className="space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
+                    <Recycle className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-0.5">Limbah Terkelola</p>
+                    <p className="text-white font-bold text-xl font-tabular">
+                      {data ? `${wasteMetric.value} ${wasteMetric.unit}` : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
+                    <Globe2 className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-0.5">CO₂e Tereduksi</p>
+                    <p className="text-white font-bold text-xl font-tabular">
+                      {data ? `${co2Metric.value} ${co2Metric.unit}` : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
+                    <TreePine className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-0.5">Setara Pohon</p>
+                    <p className="text-white font-bold text-xl font-tabular">
+                      {data ? `${treesCount}+` : "—"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-10 mt-8 pt-8 border-t border-white/10">
+              <p className="text-white/50 text-sm leading-relaxed">
+                Setiap transaksi di AgroWaste mendukung{" "}
+                <span className="text-emerald-300 font-semibold">SDG 12</span>{" "}
+                (Konsumsi &amp; Produksi Bertanggung Jawab) dan{" "}
+                <span className="text-emerald-300 font-semibold">SDG 13</span>{" "}
+                (Aksi Iklim).
               </p>
             </div>
           </div>
