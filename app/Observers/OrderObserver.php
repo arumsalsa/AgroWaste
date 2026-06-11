@@ -10,18 +10,27 @@ class OrderObserver
 {
     public function updated(Order $order): void
     {
-        if ($order->isDirty('status') && $order->status === 'selesai') {
+        if ($order->wasChanged('status') && $order->status === 'selesai') {
             
-            // 1. Hitung total Kg dari relasi orderItems 
-            $totalKg = $order->orderItems->sum('quantity_kg'); 
+            // Ensure relation 'items' (with products and peternakProfiles) is loaded
+            $order->load(['items.product.peternakProfile']);
             
-            // 2. Kalkulasi CO2eq menggunakan faktor dari config
-            $factors = config('impact.co2eq_factors', []);
+            // 1. Hitung total Kg dari relasi items 
+            $totalKg = $order->items->sum('quantity_kg'); 
+            
+            // 2. Kalkulasi CO2eq menggunakan faktor dari config/impact.php
+            $factors  = config('impact.co2_factors', []);
             $co2Saved = 0;
-            
-            foreach ($order->orderItems as $item) {
-                $factor = $factors['sapi'] ?? 0.98; 
-                $co2Saved += ($item->quantity_kg * $factor);
+
+            foreach ($order->items as $item) {
+                $factor    = $factors['sapi'] ?? 0.98; // default sapi; faktor per kg limbah (IPCC)
+                $co2Saved += $item->quantity_kg * $factor;
+            }
+
+            // Fallback jika order menggunakan alur lama (tanpa OrderItems)
+            if ($co2Saved === 0 && $order->quantity_kg > 0) {
+                $co2Saved = $order->quantity_kg * ($factors['sapi'] ?? 0.98);
+                $totalKg  = $order->quantity_kg;
             }
 
             // 3. Catat di ImpactLog agar muncul di Green Dashboard
@@ -33,7 +42,7 @@ class OrderObserver
             ]);
 
             // 4. Update total penjualan dan Badge Peternak
-            $firstItem = $order->orderItems->first();
+            $firstItem = $order->items->first();
             
             if ($firstItem && $firstItem->product && $firstItem->product->peternakProfile) {
                 $peternakProfile = $firstItem->product->peternakProfile;
