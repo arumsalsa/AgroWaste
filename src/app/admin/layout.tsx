@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/admin/Sidebar";
 import { Topbar } from "@/components/admin/Topbar";
+import AdminGuard from "@/components/admin/AdminGuard";
 import { ReactNode, useState } from "react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -29,7 +30,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         <main className="flex-1 p-8 overflow-y-auto pb-14">
           <div className="max-w-7xl mx-auto">
-            {children}
+            <AdminGuard>{children}</AdminGuard>
           </div>
         </main>
       </div>

@@ -1,75 +1,282 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 
-const mockShipments = [
-  {
-    id: "#AW-90214",
-    date: "24 Okt 2023 • 14:30 WIB",
-    status: "In Transit",
-    statusColor: "bg-orange-100 text-orange-700",
-    pickup: "Peternak Berkah Jaya",
-    pickupLoc: "Kab. Bogor, Jawa Barat",
-    delivery: "Koperasi Tani Makmur",
-    deliveryLoc: "Kec. Caringin, Bogor",
-    product: "250kg Pupuk Organik Cair",
-    productDesc: "Limbah Sapi Murni (Olahan)",
-    btnPrimary: "Lihat Detail",
-    btnSecondary: "Update Status"
-  },
-  {
-    id: "#AW-90192",
-    date: "24 Okt 2023 • 09:15 WIB",
-    status: "Pending",
-    statusColor: "bg-gray-200 text-gray-700",
-    pickup: "Farm Hijau Lestari",
-    pickupLoc: "Sukabumi, Jawa Barat",
-    delivery: "Ibu Siti Rahma",
-    deliveryLoc: "Nagrak, Sukabumi",
-    product: "500kg Pupuk Kandang Ayam",
-    productDesc: "Kompos Alami (Bulk)",
-    btnPrimary: "Konfirmasi Penjemputan",
-    btnSecondary: null
-  },
-  {
-    id: "#AW-89943",
-    date: "23 Okt 2023 • 16:45 WIB",
-    status: "Delivered",
-    statusColor: "bg-green-100 text-green-700",
-    pickup: "Kandang Ayam Modern",
-    pickupLoc: "Bandung, Jawa Barat",
-    delivery: "Kebun Bunga Indah",
-    deliveryLoc: "Lembang, Bandung",
-    product: "100kg Bio-Fermenter",
-    productDesc: "Pupuk Organik Padat",
-    btnPrimary: "Unduh Bukti",
-    btnPrimaryOutline: true,
-    btnSecondary: null
+interface OrderItem {
+  id: string;
+  product?: {
+    name: string;
+  };
+}
+
+interface Shipment {
+  id: string;
+  status: string;
+  tracking_notes: string | null;
+  created_at: string;
+  order?: {
+    id: string;
+    order_number: string | null;
+    alamat_pengiriman: string | null;
+    total_price: string | number;
+    user?: {
+      name: string;
+    };
+    peternak?: {
+      name: string;
+      peternak_profile?: {
+        nama_peternakan: string;
+        lat: string | number | null;
+        lng: string | number | null;
+        kecamatan?: string | null;
+        kabupaten?: string | null;
+        provinsi?: string | null;
+      };
+    };
+    order_items?: OrderItem[];
+  };
+}
+
+function formatRupiah(n: string | number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(Number(n));
+}
+
+function formatDate(d: string) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(d));
+}
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "dijadwalkan":
+      return { label: "Dijadwalkan", cls: "bg-gray-100 text-gray-700" };
+    case "dalam_perjalanan":
+      return { label: "Dalam Perjalanan", cls: "bg-orange-100 text-orange-700" };
+    case "terkirim":
+      return { label: "Selesai / Terkirim", cls: "bg-green-100 text-green-700" };
+    default:
+      return { label: status, cls: "bg-[#EAE6E1] text-[#555555]" };
   }
-];
+}
 
 export default function ShipmentsPage() {
-  const [activeTab, setActiveTab] = useState("Semua (24)");
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("Semua");
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
 
-  const tabs = ["Semua (24)", "Sedang Berjalan (8)", "Selesai (14)", "Dibatalkan (2)"];
+  // Leaflet state
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [mapInstance, setMapInstance] = useState<any>(null);
+
+  // Status updating states
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [trackingNotes, setTrackingNotes] = useState("");
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{ id: string; status: string } | null>(null);
+
+  const fetchShipments = async () => {
+    try {
+      const res = await apiFetch("/logistik/shipments");
+      const json = await res.json();
+      if (res.ok && json.success) {
+        const list = (json.data as Shipment[]) || [];
+        setShipments(list);
+        if (list.length > 0) {
+          // Keep selection or default to first
+          setSelectedShipment((prev) => {
+            const found = list.find((s) => s.id === prev?.id);
+            return found || list[0];
+          });
+        }
+      }
+    } catch {
+      console.error("Gagal memuat data pengiriman.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 1. Fetch Shipments on mount
+  useEffect(() => {
+    fetchShipments();
+  }, []);
+
+  // 2. Load Leaflet CDN script & stylesheet
+  useEffect(() => {
+    const cssId = "leaflet-css";
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement("link");
+      link.id = cssId;
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+
+    const jsId = "leaflet-js";
+    if (!document.getElementById(jsId)) {
+      const script = document.createElement("script");
+      script.id = jsId;
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload = () => setLeafletLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      if ((window as any).L) {
+        setLeafletLoaded(true);
+      }
+    }
+  }, []);
+
+  // 3. Initialize/Update Leaflet Map
+  useEffect(() => {
+    if (!leafletLoaded || !selectedShipment) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    // Get pickup coords (Bogor fallback)
+    let pLat = -6.5971;
+    let pLng = 106.7973;
+    const peternakProfile = selectedShipment.order?.peternak?.peternak_profile;
+    if (peternakProfile?.lat && peternakProfile?.lng) {
+      pLat = Number(peternakProfile.lat);
+      pLng = Number(peternakProfile.lng);
+    }
+
+    // Offset for mock delivery destination
+    const dLat = pLat + 0.015;
+    const dLng = pLng + 0.025;
+
+    let map = mapInstance;
+    if (!map) {
+      map = L.map("gis-map").setView([pLat, pLng], 12);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+      setMapInstance(map);
+    } else {
+      // Clear markers and lines
+      map.eachLayer((layer: any) => {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+          map.removeLayer(layer);
+        }
+      });
+    }
+
+    // Add Markers
+    const pickupMarker = L.marker([pLat, pLng]).addTo(map)
+      .bindPopup(`<b>Titik Penjemputan (Peternak):</b><br/>${peternakProfile?.nama_peternakan || "Peternak"}`)
+      .openPopup();
+
+    const deliveryMarker = L.marker([dLat, dLng]).addTo(map)
+      .bindPopup(`<b>Titik Pengiriman (Pembeli):</b><br/>${selectedShipment.order?.alamat_pengiriman || "Alamat Pembeli"}`);
+
+    // Draw Route Line
+    const routeLine = L.polyline([[pLat, pLng], [dLat, dLng]], {
+      color: "#2F5A28",
+      weight: 4,
+      opacity: 0.8,
+      dashArray: "5, 10"
+    }).addTo(map);
+
+    const bounds = L.latLngBounds([[pLat, pLng], [dLat, dLng]]);
+    map.fitBounds(bounds, { padding: [40, 40] });
+
+  }, [leafletLoaded, selectedShipment, mapInstance]);
+
+  // Tab Filtering & Search
+  const visibleShipments = useMemo(() => {
+    return shipments.filter((s) => {
+      // Tab filter
+      if (activeTab === "Sedang Berjalan" && s.status !== "dalam_perjalanan") return false;
+      if (activeTab === "Selesai" && s.status !== "terkirim") return false;
+      if (activeTab === "Dijadwalkan" && s.status !== "dijadwalkan") return false;
+
+      // Search filter
+      const num = s.order?.order_number || s.id;
+      const dest = s.order?.alamat_pengiriman || "";
+      const query = search.toLowerCase();
+      return num.toLowerCase().includes(query) || dest.toLowerCase().includes(query);
+    });
+  }, [shipments, activeTab, search]);
+
+  const countByStatus = (status: string) => {
+    return shipments.filter((s) => s.status === status).length;
+  };
+
+  const tabs = [
+    { label: "Semua", count: shipments.length },
+    { label: "Dijadwalkan", count: countByStatus("dijadwalkan") },
+    { label: "Sedang Berjalan", count: countByStatus("dalam_perjalanan") },
+    { label: "Selesai", count: countByStatus("terkirim") },
+  ];
+
+  // Update Status handler
+  const handleUpdateStatus = async (id: string, newStatus: string, notes = "") => {
+    setUpdatingId(id);
+    try {
+      const res = await apiFetch(`/logistik/shipments/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status: newStatus,
+          tracking_notes: notes || null,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        await fetchShipments();
+      }
+    } catch (e) {
+      console.error("Gagal memperbarui status pengiriman.", e);
+    } finally {
+      setUpdatingId(null);
+      setShowNotesModal(false);
+      setPendingStatusUpdate(null);
+      setTrackingNotes("");
+    }
+  };
+
+  const openStatusConfirm = (id: string, status: string) => {
+    setPendingStatusUpdate({ id, status });
+    setTrackingNotes("");
+    setShowNotesModal(true);
+  };
 
   return (
     <div className="space-y-8 animate-fade-in pb-20">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-courier-textprimary mb-1">Daftar Pengiriman</h2>
-        <p className="text-sm text-courier-textsecondary">Kelola dan pantau status pengiriman pupuk Anda.</p>
+        <p className="text-sm text-courier-textsecondary">Kelola rute, navigasi GPS, dan laporkan status pengiriman Anda.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Shipment List */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-6">
-          
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-courier-textsecondary">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
               </span>
-              <input type="text" placeholder="Cari ID Pesanan atau nama pembeli..." className="w-full pl-9 pr-4 py-2 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-courier-primary text-courier-textprimary shadow-sm" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari ID Pesanan atau kota tujuan..."
+                className="w-full pl-9 pr-4 py-2 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-courier-primary text-courier-textprimary shadow-sm"
+              />
             </div>
           </div>
 
@@ -77,150 +284,228 @@ export default function ShipmentsPage() {
           <div className="flex border-b border-courier-hairline overflow-x-auto">
             {tabs.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 font-semibold text-sm whitespace-nowrap transition-colors border-b-2 ${
-                  activeTab === tab
+                key={tab.label}
+                onClick={() => setActiveTab(tab.label)}
+                className={`px-6 py-3 font-semibold text-sm whitespace-nowrap transition-colors border-b-2 flex items-center gap-2 ${
+                  activeTab === tab.label
                     ? "border-courier-primary text-courier-primary"
                     : "border-transparent text-courier-textsecondary hover:text-courier-textprimary hover:border-courier-hairline"
                 }`}
               >
-                {tab}
+                {tab.label}
+                <span className={`px-1.5 py-0.5 text-[10px] rounded-full font-bold ${
+                  activeTab === tab.label ? "bg-courier-primary text-white" : "bg-[#EAE6E1] text-courier-textsecondary"
+                }`}>
+                  {tab.count}
+                </span>
               </button>
             ))}
           </div>
 
           {/* Shipment Cards */}
           <div className="space-y-4">
-            {mockShipments.map((shipment) => (
-              <div key={shipment.id} className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                {/* Card Header */}
-                <div className="flex justify-between items-start mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-courier-warmbg text-courier-primary rounded-xl flex items-center justify-center border border-courier-hairline shrink-0">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-courier-textprimary text-lg">{shipment.id}</h3>
-                      <p className="text-xs text-courier-textsecondary mt-0.5">{shipment.date}</p>
-                    </div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 ${shipment.statusColor}`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                    {shipment.status}
-                  </span>
-                </div>
+            {loading && (
+              <div className="p-12 text-center text-courier-textsecondary text-sm animate-pulse">Memuat daftar pengiriman...</div>
+            )}
+            {!loading && visibleShipments.length === 0 && (
+              <div className="p-12 text-center text-courier-textsecondary text-sm">Tidak ada jadwal pengiriman ditemukan.</div>
+            )}
+            {!loading && visibleShipments.map((shipment) => {
+              const { label, cls } = getStatusBadge(shipment.status);
+              const orderNo = shipment.order?.order_number || shipment.id.slice(0, 8).toUpperCase();
+              const peternak = shipment.order?.peternak?.peternak_profile;
+              const productTitle = shipment.order?.order_items?.[0]?.product?.name || "Limbah Organik AgroWaste";
+              const isSelected = selectedShipment?.id === shipment.id;
 
-                {/* Tracking Path & Product Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                  <div className="relative pl-6">
-                    {/* Vertical dotted line */}
-                    <div className="absolute left-1.5 top-2 bottom-2 w-0.5 border-l-2 border-dotted border-courier-hairline"></div>
-                    
-                    {/* Pickup Node */}
-                    <div className="relative mb-6">
-                      <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
-                      <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">PICKUP</span>
-                      <h4 className="text-sm font-bold text-courier-textprimary">{shipment.pickup}</h4>
-                      <p className="text-xs text-courier-textsecondary">{shipment.pickupLoc}</p>
+              return (
+                <div
+                  key={shipment.id}
+                  onClick={() => setSelectedShipment(shipment)}
+                  className={`bg-courier-surfacewhite border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                    isSelected ? "border-courier-primary ring-1 ring-courier-primary" : "border-courier-hairline"
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-courier-warmbg text-courier-primary rounded-xl flex items-center justify-center border border-courier-hairline shrink-0">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-courier-textprimary text-lg">#{orderNo}</h3>
+                        <p className="text-xs text-courier-textsecondary mt-0.5">{formatDate(shipment.created_at)}</p>
+                      </div>
                     </div>
-
-                    {/* Delivery Node */}
-                    <div className="relative">
-                      <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
-                      <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">DELIVERY</span>
-                      <h4 className="text-sm font-bold text-courier-textprimary">{shipment.delivery}</h4>
-                      <p className="text-xs text-courier-textsecondary">{shipment.deliveryLoc}</p>
-                    </div>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 ${cls}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                      {label}
+                    </span>
                   </div>
 
-                  <div className="bg-courier-warmbg/50 p-4 rounded-xl border border-courier-hairline/50">
-                    <span className="text-[10px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-2">Detail Produk</span>
-                    <h5 className="text-sm font-bold text-courier-primary mb-1">{shipment.product}</h5>
-                    <p className="text-xs text-courier-textsecondary">{shipment.productDesc}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div className="relative pl-6">
+                      <div className="absolute left-1.5 top-2 bottom-2 w-0.5 border-l-2 border-dotted border-courier-hairline"></div>
+                      
+                      <div className="relative mb-6">
+                        <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
+                        <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">PICKUP (PETERNAK)</span>
+                        <h4 className="text-sm font-bold text-courier-textprimary">{peternak?.nama_peternakan || shipment.order?.peternak?.name || "Peternak"}</h4>
+                        <p className="text-xs text-courier-textsecondary">
+                          {peternak?.kecamatan || ""}, {peternak?.kabupaten || ""}, {peternak?.provinsi || ""}
+                        </p>
+                      </div>
+
+                      <div className="relative">
+                        <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
+                        <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">DELIVERY (PEMBELI)</span>
+                        <h4 className="text-sm font-bold text-courier-textprimary">{shipment.order?.user?.name || "Pembeli"}</h4>
+                        <p className="text-xs text-courier-textsecondary truncate" title={shipment.order?.alamat_pengiriman || ""}>
+                          {shipment.order?.alamat_pengiriman || "Alamat tidak lengkap"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-courier-warmbg/50 p-4 rounded-xl border border-courier-hairline/50">
+                      <span className="text-[10px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-2">Item Pesanan</span>
+                      <h5 className="text-sm font-bold text-courier-primary mb-1">{productTitle}</h5>
+                      <p className="text-xs text-courier-textsecondary">Total Nilai: {formatRupiah(shipment.order?.total_price || 0)}</p>
+                      {shipment.tracking_notes && (
+                        <div className="mt-2 pt-2 border-t border-courier-hairline/50 text-[11px] text-courier-textsecondary">
+                          <span className="font-bold text-courier-textprimary block">Catatan Terakhir:</span>
+                          "{shipment.tracking_notes}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions buttons */}
+                  <div className="mt-6 pt-5 border-t border-courier-hairline flex justify-end items-center gap-4">
+                    {shipment.status === "dijadwalkan" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openStatusConfirm(shipment.id, "dalam_perjalanan");
+                        }}
+                        disabled={updatingId === shipment.id}
+                        className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
+                      >
+                        Mulai Pengiriman
+                      </button>
+                    )}
+                    {shipment.status === "dalam_perjalanan" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openStatusConfirm(shipment.id, "terkirim");
+                        }}
+                        disabled={updatingId === shipment.id}
+                        className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
+                      >
+                        Konfirmasi Sampai Tujuan
+                      </button>
+                    )}
+                    {shipment.status === "terkirim" && (
+                      <span className="text-xs text-seller-semgreen font-bold flex items-center gap-1">
+                        ✓ Pengiriman Selesai
+                      </span>
+                    )}
                   </div>
                 </div>
-
-                {/* Card Actions */}
-                <div className="mt-6 pt-5 border-t border-courier-hairline flex justify-end items-center gap-4">
-                  {shipment.btnSecondary && (
-                    <button className="text-sm font-bold text-courier-primary hover:text-courier-primary-hover transition-colors">
-                      {shipment.btnSecondary}
-                    </button>
-                  )}
-                  {shipment.btnPrimaryOutline ? (
-                    <button className="px-6 py-2.5 bg-transparent border border-courier-hairline hover:bg-courier-warmbg text-courier-textprimary rounded-xl text-sm font-bold transition-colors">
-                      {shipment.btnPrimary}
-                    </button>
-                  ) : (
-                    <button className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20">
-                      {shipment.btnPrimary}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Column: Map & Analytics */}
+        {/* Right Column: Map & GIS */}
         <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-          
-          {/* Active Tracking Map Card */}
-          <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm">
-            <div className="p-4 flex justify-between items-center border-b border-courier-hairline">
+          <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm sticky top-24">
+            <div className="p-4 flex justify-between items-center border-b border-courier-hairline bg-white">
               <h3 className="font-bold text-courier-textprimary text-sm">GIS Active Tracking</h3>
               <span className="bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider animate-pulse">LIVE</span>
             </div>
             
-            <div className="h-64 bg-gray-900 relative">
-              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80" alt="Map View" className="w-full h-full object-cover opacity-50" />
-              <div className="absolute inset-0 bg-courier-primary/20 mix-blend-multiply"></div>
-              
-              {/* Mock Route Lines */}
-              <svg className="absolute inset-0 w-full h-full drop-shadow-[0_0_8px_rgba(47,90,40,0.8)]" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M10 80 Q 30 60, 50 70 T 80 30" fill="none" stroke="#2F5A28" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M10 80 Q 30 60, 50 70 T 80 30" fill="none" stroke="#4ade80" strokeWidth="0.5" strokeLinecap="round" />
-              </svg>
+            {/* Real GIS Leaflet map div */}
+            <div id="gis-map" className="h-80 w-full bg-[#EAE6E1]" style={{ zIndex: 1 }} />
 
-              {/* Mock Delivery Truck Pin */}
-              <div className="absolute top-[60%] left-[45%] w-8 h-8 bg-courier-primary border-2 border-white rounded-full shadow-lg flex items-center justify-center text-white">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            {selectedShipment ? (
+              <div className="p-5 space-y-4 bg-white">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-courier-textsecondary">Rute ID</span>
+                  <span className="font-bold text-courier-textprimary">#{selectedShipment.order?.order_number || selectedShipment.id.slice(0, 8).toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-courier-textsecondary">Penerima</span>
+                  <span className="font-bold text-courier-textprimary">{selectedShipment.order?.user?.name || "Mitra Pembeli"}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-courier-textsecondary">Status GPS</span>
+                  <span className="font-bold text-courier-primary">Terhubung</span>
+                </div>
+                <div className="h-1.5 bg-courier-warmbg rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-courier-primary rounded-full transition-all duration-300"
+                    style={{
+                      width:
+                        selectedShipment.status === "terkirim"
+                          ? "100%"
+                          : selectedShipment.status === "dalam_perjalanan"
+                          ? "50%"
+                          : "10%",
+                    }}
+                  ></div>
+                </div>
               </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-courier-textsecondary">Kendaraan Aktif</span>
-                <span className="font-bold text-courier-textprimary font-tabular">03 Unit</span>
+            ) : (
+              <div className="p-5 text-center text-xs text-courier-textsecondary bg-white">
+                Pilih pengiriman untuk melihat detail pelacakan rute.
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-courier-textsecondary">Estimasi Tiba (Terdekat)</span>
-                <span className="font-bold text-courier-primary font-tabular">14 Menit</span>
-              </div>
-              <div className="h-1.5 bg-courier-warmbg rounded-full overflow-hidden">
-                <div className="h-full bg-courier-primary rounded-full" style={{ width: '85%' }}></div>
-              </div>
-            </div>
+            )}
           </div>
-
-          {/* Additional Bento Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-courier-primary p-5 rounded-2xl text-white shadow-md shadow-courier-primary/20">
-              <span className="text-[9px] font-bold opacity-80 tracking-wider uppercase block mb-1">Efisiensi</span>
-              <div className="text-3xl font-bold font-tabular mb-1">98%</div>
-              <span className="text-[10px] font-bold opacity-90">+2% bln lalu</span>
-            </div>
-            
-            <div className="bg-[#EBC7A5] p-5 rounded-2xl text-courier-textprimary shadow-sm border border-[#E2B78E]">
-              <span className="text-[9px] font-bold text-courier-primary tracking-wider uppercase block mb-1">Jarak Total</span>
-              <div className="text-3xl font-bold font-tabular mb-1">1.2k km</div>
-              <span className="text-[10px] font-bold text-courier-textsecondary">Bulan ini</span>
-            </div>
-          </div>
-
         </div>
       </div>
+
+      {/* Modal Catatan & Konfirmasi Status */}
+      {showNotesModal && pendingStatusUpdate && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-courier-surfacewhite w-full max-w-sm rounded-2xl border border-courier-hairline overflow-hidden p-6 text-center space-y-4 animate-fade-in shadow-xl">
+            <h3 className="text-lg font-bold text-courier-textprimary">
+              {pendingStatusUpdate.status === "dalam_perjalanan" ? "Mulai Pengantaran" : "Pengantaran Selesai"}
+            </h3>
+            <p className="text-xs text-courier-textsecondary">
+              Beri catatan pelacakan tambahan (misal: "Barang sudah dimuat di pickup" atau "Diterima oleh Bpk. Ahmad di kebun").
+            </p>
+            <textarea
+              value={trackingNotes}
+              onChange={(e) => setTrackingNotes(e.target.value)}
+              placeholder="Catatan tambahan (opsional)..."
+              rows={3}
+              className="w-full px-3 py-2 bg-courier-warmbg border border-courier-hairline rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-courier-primary resize-none text-courier-textprimary"
+            />
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNotesModal(false);
+                  setPendingStatusUpdate(null);
+                }}
+                className="px-4 py-2 text-xs font-bold text-courier-textsecondary hover:text-courier-textprimary transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleUpdateStatus(pendingStatusUpdate.id, pendingStatusUpdate.status, trackingNotes)
+                }
+                className="px-5 py-2 bg-courier-primary hover:bg-green-800 text-white rounded-lg text-xs font-bold transition-colors"
+              >
+                Konfirmasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,28 +1,195 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
+import { getUser } from "@/lib/auth";
+import Link from "next/link";
+
+interface Shipment {
+  id: string;
+  status: string;
+  tracking_notes: string | null;
+  created_at: string;
+  order?: {
+    id: string;
+    order_number: string | null;
+    alamat_pengiriman: string | null;
+    total_price: string | number;
+    user?: {
+      name: string;
+    };
+    peternak?: {
+      name: string;
+      peternak_profile?: {
+        nama_peternakan: string;
+        lat: string | number | null;
+        lng: string | number | null;
+      };
+    };
+    order_items?: Array<{
+      id: string;
+      product?: {
+        name: string;
+      };
+    }>;
+  };
+}
+
+function formatDate(d: string) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(d));
+}
 
 export default function CourierDashboard() {
+  const [courierName, setCourierName] = useState("Kurir");
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [todayStr, setTodayStr] = useState("");
+
+  // Leaflet states
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [mapInstance, setMapInstance] = useState<any>(null);
+
+  useEffect(() => {
+    setCourierName(getUser()?.name || "Kurir");
+    setTodayStr(
+      new Intl.DateTimeFormat("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(new Date())
+    );
+
+    // Fetch shipments
+    apiFetch("/logistik/shipments")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.success && json?.data) {
+          setShipments((json.data as Shipment[]) || []);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Load Leaflet CDN script & style
+  useEffect(() => {
+    const cssId = "leaflet-css";
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement("link");
+      link.id = cssId;
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+
+    const jsId = "leaflet-js";
+    if (!document.getElementById(jsId)) {
+      const script = document.createElement("script");
+      script.id = jsId;
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload = () => setLeafletLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      if ((window as any).L) {
+        setLeafletLoaded(true);
+      }
+    }
+  }, []);
+
+  // Render all active/scheduled routes on the overview map
+  useEffect(() => {
+    if (!leafletLoaded || shipments.length === 0) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    const activeShipments = shipments.filter(
+      (s) => s.status === "dalam_perjalanan" || s.status === "dijadwalkan"
+    );
+
+    let map = mapInstance;
+    if (!map) {
+      map = L.map("overview-map").setView([-6.5971, 106.7973], 11);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+      setMapInstance(map);
+    } else {
+      // Clear markers and lines
+      map.eachLayer((layer: any) => {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+          map.removeLayer(layer);
+        }
+      });
+    }
+
+    const boundsPoints: any[] = [];
+
+    activeShipments.forEach((shipment, index) => {
+      let pLat = -6.5971 + index * 0.01; // distribute fallbacks a bit
+      let pLng = 106.7973 - index * 0.01;
+      const peternak = shipment.order?.peternak?.peternak_profile;
+      if (peternak?.lat && peternak?.lng) {
+        pLat = Number(peternak.lat);
+        pLng = Number(peternak.lng);
+      }
+
+      const dLat = pLat + 0.015;
+      const dLng = pLng + 0.025;
+
+      boundsPoints.push([pLat, pLng]);
+      boundsPoints.push([dLat, dLng]);
+
+      const isTransit = shipment.status === "dalam_perjalanan";
+
+      // Add pins
+      L.marker([pLat, pLng]).addTo(map)
+        .bindPopup(`<b>Pickup #${index + 1}:</b> ${peternak?.nama_peternakan || "Peternak"}`);
+
+      L.marker([dLat, dLng]).addTo(map)
+        .bindPopup(`<b>Kirim #${index + 1}:</b> ${shipment.order?.user?.name || "Pembeli"}`);
+
+      // Draw polyline
+      L.polyline([[pLat, pLng], [dLat, dLng]], {
+        color: isTransit ? "#FF8A00" : "#2F5A28",
+        weight: 3,
+        opacity: 0.7,
+      }).addTo(map);
+    });
+
+    if (boundsPoints.length > 0) {
+      map.fitBounds(L.latLngBounds(boundsPoints), { padding: [30, 30] });
+    }
+  }, [leafletLoaded, shipments, mapInstance]);
+
+  // Derived metrics
+  const totalCount = shipments.length;
+  const successCount = shipments.filter((s) => s.status === "terkirim").length;
+  const activeRoutesCount = shipments.filter((s) => s.status === "dalam_perjalanan").length;
+  const scheduledCount = shipments.filter((s) => s.status === "dijadwalkan").length;
+
+  const todayTasks = shipments.filter((s) => s.status !== "terkirim");
+
   return (
     <div className="space-y-8 animate-fade-in pb-20 relative">
       {/* Header Section */}
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-courier-primary mb-1">Halo, Pak Agus!</h2>
-          <p className="text-sm text-courier-textsecondary">Siap untuk pengiriman pupuk hari ini?</p>
+          <h2 className="text-3xl font-bold tracking-tight text-courier-primary mb-1">
+            Halo, {courierName}!
+          </h2>
+          <p className="text-sm text-courier-textsecondary">Siap untuk pengiriman pupuk AgroWaste hari ini?</p>
         </div>
         <div className="px-4 py-2 bg-courier-warmbg border border-courier-hairline rounded-lg text-sm font-bold text-courier-textprimary flex items-center gap-2 shadow-sm">
-          <svg className="w-4 h-4 text-courier-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          Selasa, 24 Okt 2023
+          <svg className="w-4 h-4 text-courier-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          {todayStr}
         </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="max-w-md relative">
-        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-courier-textsecondary">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </span>
-        <input type="text" placeholder="Cari ID pengiriman..." className="w-full pl-9 pr-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-courier-primary text-courier-textprimary" />
       </div>
 
       {/* KPI Cards */}
@@ -30,39 +197,48 @@ export default function CourierDashboard() {
         <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-courier-warmbg text-courier-textsecondary flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+              </svg>
             </div>
-            <span className="text-xs font-bold text-courier-textprimary flex items-center gap-1">+12% <svg className="w-3 h-3 text-courier-primary" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></span>
           </div>
           <div>
-            <span className="text-xs text-courier-textsecondary block mb-1">Total Pengiriman</span>
-            <div className="text-4xl font-bold font-tabular text-courier-textprimary">142</div>
+            <span className="text-xs text-courier-textsecondary block mb-1">Total Pengiriman Saya</span>
+            <div className="text-4xl font-bold font-tabular text-courier-textprimary">
+              {loading ? "..." : totalCount}
+            </div>
           </div>
         </div>
 
         <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-courier-primary/10 text-courier-primary flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
             </div>
-            <span className="text-xs font-bold text-courier-primary">98% Berhasil</span>
           </div>
           <div>
             <span className="text-xs text-courier-textsecondary block mb-1">Pengiriman Berhasil</span>
-            <div className="text-4xl font-bold font-tabular text-courier-textprimary">138</div>
+            <div className="text-4xl font-bold font-tabular text-courier-textprimary">
+              {loading ? "..." : `${successCount} Selesai`}
+            </div>
           </div>
         </div>
 
         <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-courier-warmbg text-courier-textsecondary flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+              </svg>
             </div>
-            <span className="text-xs font-medium text-courier-textsecondary">4 Wilayah</span>
           </div>
           <div>
-            <span className="text-xs text-courier-textsecondary block mb-1">Rute Aktif</span>
-            <div className="text-4xl font-bold font-tabular text-courier-textprimary">05</div>
+            <span className="text-xs text-courier-textsecondary block mb-1">Rute Aktif & Terjadwal</span>
+            <div className="text-4xl font-bold font-tabular text-courier-textprimary">
+              {loading ? "..." : `${activeRoutesCount} Aktif / ${scheduledCount} Antrean`}
+            </div>
           </div>
         </div>
       </div>
@@ -73,78 +249,76 @@ export default function CourierDashboard() {
         {/* Tugas Hari Ini */}
         <div>
           <div className="flex justify-between items-end mb-4">
-            <h3 className="text-xl font-bold text-courier-textprimary">Tugas Hari Ini</h3>
-            <button className="text-xs font-bold text-courier-primary hover:underline">Lihat Semua</button>
+            <h3 className="text-xl font-bold text-courier-textprimary">Tugas Pengantaran Aktif</h3>
+            <Link href="/courier/shipments" className="text-xs font-bold text-courier-primary hover:underline">
+              Buka Manajemen Pengiriman →
+            </Link>
           </div>
           <div className="space-y-4">
-            {/* Task 1 */}
-            <div className="bg-courier-surfacewhite border border-courier-hairline p-5 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-courier-textprimary">250kg Pupuk Organik Cair</h4>
-                  <p className="text-xs font-medium text-courier-textsecondary mt-0.5">Lembang, Jawa Barat • <span className="text-courier-primary">Jemput: 14:00</span></p>
-                </div>
+            {loading && (
+              <div className="p-8 text-center text-xs text-courier-textsecondary animate-pulse">Memuat daftar tugas...</div>
+            )}
+            {!loading && todayTasks.length === 0 && (
+              <div className="p-8 border border-dashed border-courier-hairline rounded-2xl text-center text-xs text-courier-textsecondary bg-white">
+                Hari ini tidak ada tugas pengiriman aktif yang tertunda.
               </div>
-              <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">Dalam Perjalanan</span>
-            </div>
+            )}
+            {!loading && todayTasks.map((task, index) => {
+              const orderNo = task.order?.order_number || task.id.slice(0, 8).toUpperCase();
+              const peternak = task.order?.peternak?.peternak_profile;
+              const productTitle = task.order?.order_items?.[0]?.product?.name || "Limbah Organik AgroWaste";
+              const isTransit = task.status === "dalam_perjalanan";
 
-            {/* Task 2 */}
-            <div className="bg-courier-surfacewhite border border-courier-hairline p-5 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100/50 text-green-700 rounded-xl flex items-center justify-center shrink-0">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-courier-textprimary">500kg Kompos Padat</h4>
-                  <p className="text-xs font-medium text-courier-textsecondary mt-0.5">Sumedang, Jawa Barat • <span className="text-courier-semred font-bold">Penjemputan Mendesak</span></p>
-                </div>
-              </div>
-              <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">Menunggu</span>
-            </div>
-
-            {/* Task 3 */}
-            <div className="bg-courier-surfacewhite border border-courier-hairline p-5 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 text-green-700 rounded-xl flex items-center justify-center shrink-0">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-courier-textprimary">100kg Bio-Fermenter</h4>
-                  <p className="text-xs font-medium text-courier-textsecondary mt-0.5">Cimahi Utara • <span className="text-courier-textsecondary">Jemput: 16:30</span></p>
-                </div>
-              </div>
-              <span className="bg-courier-hairline text-courier-textsecondary px-3 py-1 rounded-full text-xs font-bold">Terjadwal</span>
-            </div>
+              return (
+                <Link
+                  key={task.id}
+                  href={`/courier/shipments`}
+                  className="bg-courier-surfacewhite border border-courier-hairline p-5 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer block"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 ${isTransit ? "bg-orange-100 text-orange-600" : "bg-green-100 text-green-700"} rounded-xl flex items-center justify-center shrink-0`}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-courier-textprimary text-sm">#{orderNo} — {productTitle}</h4>
+                      <p className="text-xs font-medium text-courier-textsecondary mt-0.5">
+                        Jemput: <span className="text-courier-primary font-bold">{peternak?.nama_peternakan || "Peternak"}</span> • Kirim ke: <span className="font-semibold text-courier-textprimary">{task.order?.user?.name || "Pembeli"}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+                    isTransit ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-700"
+                  }`}>
+                    {isTransit ? "Dalam Perjalanan" : "Dijadwalkan"}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
 
         {/* Visual Rute */}
-        <div>
-          <h3 className="text-xl font-bold text-courier-textprimary mb-4">Visual Rute</h3>
-          <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm flex flex-col">
-            <div className="h-48 bg-gray-800 relative group cursor-pointer overflow-hidden flex-1">
-              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80" alt="Peta Rute" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" />
-              {/* Overlay Green Tint & Route Mock */}
-              <div className="absolute inset-0 bg-courier-primary/20 mix-blend-multiply"></div>
-              
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                <button className="px-4 py-2 bg-courier-primary text-white text-sm font-bold rounded-lg shadow-lg flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                  Buka Navigasi
-                </button>
-              </div>
-            </div>
-            <div className="p-5 flex justify-between items-center bg-courier-surfacewhite text-sm">
+        <div className="flex flex-col">
+          <h3 className="text-xl font-bold text-courier-textprimary mb-4">Peta Rute Aktif</h3>
+          <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm flex flex-col flex-1">
+            
+            {/* GIS Overview map */}
+            <div id="overview-map" className="h-64 bg-gray-900 w-full" style={{ zIndex: 1 }} />
+
+            <div className="p-5 flex justify-between items-center bg-courier-surfacewhite text-sm border-t border-courier-hairline">
               <div>
-                <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block mb-1">Estimasi Waktu</span>
-                <span className="font-bold text-courier-textprimary font-tabular">4j 15m</span>
+                <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block mb-1">RUTE AKTIF</span>
+                <span className="font-bold text-courier-textprimary font-tabular">
+                  {activeRoutesCount} Rute Sedang Berjalan
+                </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block mb-1">Jarak Tempuh</span>
-                <span className="font-bold text-courier-textprimary font-tabular">124.5 km</span>
+                <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block mb-1">RUTE ANTRIAN</span>
+                <span className="font-bold text-courier-textprimary font-tabular">
+                  {scheduledCount} Menunggu Konfirmasi
+                </span>
               </div>
             </div>
           </div>
@@ -152,10 +326,12 @@ export default function CourierDashboard() {
       </div>
 
       {/* Floating Action Button */}
-      <button className="fixed bottom-8 right-8 w-14 h-14 bg-courier-primary text-white rounded-2xl shadow-xl shadow-courier-primary/30 flex items-center justify-center hover:-translate-y-1 transition-transform z-30">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      </button>
-
+      <Link href="/courier/shipments" className="fixed bottom-8 right-8 w-14 h-14 bg-courier-primary text-white rounded-2xl shadow-xl shadow-courier-primary/30 flex items-center justify-center hover:-translate-y-1 transition-transform z-30">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </Link>
     </div>
   );
 }

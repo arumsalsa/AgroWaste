@@ -19,6 +19,8 @@ interface ProfileResponse {
       provinsi: string;
       kabupaten: string;
       kecamatan: string;
+      lat: string | number | null;
+      lng: string | number | null;
     };
   };
 }
@@ -39,6 +41,13 @@ export default function SettingsPage() {
   const [kabupaten, setKabupaten] = useState("");
   const [kecamatan, setKecamatan] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [lat, setLat] = useState<number | string>("");
+  const [lng, setLng] = useState<number | string>("");
+
+  // Leaflet states
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [markerInstance, setMarkerInstance] = useState<any>(null);
 
   useEffect(() => {
     apiFetch("/profile")
@@ -57,6 +66,8 @@ export default function SettingsPage() {
             setProvinsi(u.peternak_profile.provinsi || "");
             setKabupaten(u.peternak_profile.kabupaten || "");
             setKecamatan(u.peternak_profile.kecamatan || "");
+            setLat(u.peternak_profile.lat !== null && u.peternak_profile.lat !== undefined ? u.peternak_profile.lat : "");
+            setLng(u.peternak_profile.lng !== null && u.peternak_profile.lng !== undefined ? u.peternak_profile.lng : "");
           }
         } else {
           setErrorMsg("Gagal memuat profil.");
@@ -67,6 +78,94 @@ export default function SettingsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Load Leaflet CDN script & style
+  useEffect(() => {
+    const cssId = "leaflet-css";
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement("link");
+      link.id = cssId;
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+
+    const jsId = "leaflet-js";
+    if (!document.getElementById(jsId)) {
+      const script = document.createElement("script");
+      script.id = jsId;
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload = () => setLeafletLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      if ((window as any).L) {
+        setLeafletLoaded(true);
+      }
+    }
+  }, []);
+
+  // Initialize Leaflet Map
+  useEffect(() => {
+    if (!leafletLoaded || loading) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    let initialLat = -7.8924;
+    let initialLng = 112.6563;
+    if (lat && lng) {
+      initialLat = Number(lat);
+      initialLng = Number(lng);
+    }
+
+    const map = L.map("seller-gis-map").setView([initialLat, initialLng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
+
+    const marker = L.marker([initialLat, initialLng], {
+      draggable: true,
+    }).addTo(map);
+
+    // Update lat/lng states when marker is dragged
+    marker.on("dragend", () => {
+      const position = marker.getLatLng();
+      setLat(position.lat.toFixed(6));
+      setLng(position.lng.toFixed(6));
+    });
+
+    // Update lat/lng states when map is clicked
+    map.on("click", (e: any) => {
+      const coords = e.latlng;
+      marker.setLatLng(coords);
+      setLat(coords.lat.toFixed(6));
+      setLng(coords.lng.toFixed(6));
+    });
+
+    setMapInstance(map);
+    setMarkerInstance(marker);
+
+    return () => {
+      map.remove();
+    };
+  }, [leafletLoaded, loading]);
+
+  const handleLatChange = (val: string) => {
+    setLat(val);
+    const num = Number(val);
+    if (!isNaN(num) && num >= -90 && num <= 90 && mapInstance && markerInstance) {
+      markerInstance.setLatLng([num, markerInstance.getLatLng().lng]);
+      mapInstance.panTo([num, markerInstance.getLatLng().lng]);
+    }
+  };
+
+  const handleLngChange = (val: string) => {
+    setLng(val);
+    const num = Number(val);
+    if (!isNaN(num) && num >= -180 && num <= 180 && mapInstance && markerInstance) {
+      markerInstance.setLatLng([markerInstance.getLatLng().lat, num]);
+      mapInstance.panTo([markerInstance.getLatLng().lat, num]);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +183,8 @@ export default function SettingsPage() {
         provinsi: provinsi,
         kabupaten: kabupaten,
         kecamatan: kecamatan,
+        lat: lat !== "" ? Number(lat) : null,
+        lng: lng !== "" ? Number(lng) : null,
       };
 
       const res = await apiFetch("/profile", {
@@ -289,6 +390,46 @@ export default function SettingsPage() {
                       className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary font-tabular focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
+                </div>
+
+                {/* Peta GIS */}
+                <div className="pt-6 border-t border-seller-hairline mt-6">
+                  <h4 className="text-sm font-bold text-seller-textprimary mb-1">Koordinat Titik Lokasi GIS Peternakan</h4>
+                  <p className="text-xs text-seller-textsecondary mb-4">
+                    Tentukan titik presisi lokasi peternakan Anda di peta bawah. Anda dapat menyeret (drag) pin pada peta atau mengeklik lokasi mana pun untuk mengubah koordinat secara instan.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-xs font-bold text-seller-textsecondary mb-1">Latitude (Lintang)</label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: -7.892400"
+                        value={lat}
+                        onChange={(e) => handleLatChange(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-seller-textsecondary mb-1">Longitude (Bujur)</label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: 112.656300"
+                        value={lng}
+                        onChange={(e) => handleLngChange(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div 
+                    id="seller-gis-map" 
+                    className="w-full h-80 rounded-2xl border border-seller-hairline overflow-hidden relative z-10"
+                    style={{ minHeight: "320px" }}
+                  />
+                  <p className="text-[10px] text-seller-textsecondary mt-2">
+                    * Koordinat ini akan dibaca secara real-time oleh mitra kurir untuk merencanakan rute pengiriman dan penjemputan limbah.
+                  </p>
                 </div>
               </div>
             </div>

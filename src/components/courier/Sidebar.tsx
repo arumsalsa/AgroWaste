@@ -1,18 +1,73 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
+import { logout } from "@/lib/auth";
+
+interface UserProfile {
+  id: string;
+  name: string;
+  avatar_url?: string;
+  logistik_profile?: {
+    company_name: string | null;
+  };
+}
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const [courierName, setCourierName] = useState("Kurir Logistik");
+  const [courierId, setCourierId] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    // 1. Fetch courier profile
+    apiFetch("/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.success && json?.data) {
+          const user = json.data as UserProfile;
+          setCourierName(user.name);
+          setCourierId(user.id.slice(0, 8).toUpperCase());
+          if (user.avatar_url) {
+            setAvatarUrl(user.avatar_url);
+          }
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch shipments count
+    apiFetch("/logistik/shipments")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.success && json?.data) {
+          const list = json.data || [];
+          // Count active shipments (dijadwalkan or dalam_perjalanan)
+          const active = list.filter((s: any) => s.status !== "terkirim").length;
+          setPendingCount(active);
+        }
+      })
+      .catch(() => {});
+  }, [pathname]);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   const menuItems = [
     { name: "Dashboard", path: "/courier", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
-    { name: "Shipments", path: "/courier/shipments", icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" },
+    { name: "Shipments", path: "/courier/shipments", badge: pendingCount > 0 ? pendingCount : undefined, icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" },
     { name: "Impact Tracker", path: "/courier/impact", icon: "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" },
     { name: "Payments", path: "/courier/payments", icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" },
     { name: "Settings", path: "/courier/settings", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   ];
+
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(courierName)}&background=2F5A28&color=fff&rounded=true`;
 
   return (
     <aside className="w-64 h-screen fixed left-0 top-0 border-r border-courier-hairline bg-courier-warmbg flex flex-col z-20">
@@ -51,6 +106,12 @@ export const Sidebar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
               </svg>
               <span className={`text-sm flex-1 ${isActive ? "font-bold" : "font-semibold"}`}>{item.name}</span>
+
+              {item.badge !== undefined && (
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? "bg-white text-courier-primary" : "bg-amber-500 text-white"}`}>
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -59,13 +120,13 @@ export const Sidebar = () => {
       {/* Profile & Logout Button */}
       <div className="p-4 border-t border-courier-hairline bg-courier-warmbg">
         <div className="flex items-center gap-3 mb-4 px-2">
-          <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80" alt="Arjun Sharma" className="w-10 h-10 rounded-full border border-courier-hairline object-cover" />
-          <div>
-            <h4 className="text-sm font-bold text-courier-textprimary">Arjun Sharma</h4>
-            <span className="text-[10px] text-courier-textsecondary">ID: Mitra-4421</span>
+          <img src={avatarUrl || fallbackAvatar} alt={courierName} className="w-10 h-10 rounded-full border border-courier-hairline object-cover" />
+          <div className="min-w-0 flex-1">
+            <h4 className="text-sm font-bold text-courier-textprimary truncate" title={courierName}>{courierName}</h4>
+            <span className="text-[10px] text-courier-textsecondary block truncate">ID: {courierId || "..."}</span>
           </div>
         </div>
-        <button className="flex justify-center items-center gap-2 text-courier-textsecondary hover:text-courier-textprimary bg-courier-surfacewhite border border-courier-hairline hover:bg-courier-hairline font-semibold text-xs transition-colors w-full py-2.5 rounded-lg shadow-sm">
+        <button onClick={handleLogout} className="flex justify-center items-center gap-2 text-courier-textsecondary hover:text-courier-textprimary bg-courier-surfacewhite border border-courier-hairline hover:bg-courier-hairline font-semibold text-xs transition-colors w-full py-2.5 rounded-lg shadow-sm">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>

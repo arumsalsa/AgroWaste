@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/courier/Sidebar";
 import { Topbar } from "@/components/courier/Topbar";
+import CourierGuard from "@/components/courier/CourierGuard";
 import { ReactNode } from "react";
 
 export default function CourierLayout({ children }: { children: ReactNode }) {
@@ -16,7 +17,7 @@ export default function CourierLayout({ children }: { children: ReactNode }) {
         {/* Page Content */}
         <main className="flex-1 p-8 overflow-y-auto bg-courier-surfacewhite">
           <div className="max-w-7xl mx-auto">
-            {children}
+            <CourierGuard>{children}</CourierGuard>
           </div>
         </main>
       </div>
