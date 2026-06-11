@@ -100,6 +100,34 @@ export default function DetailPesananContent({ id }: { id: string }) {
   const [order,   setOrder]   = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmSuccess, setConfirmSuccess] = useState<string | null>(null);
+  const [confirmError, setConfirmError]     = useState<string | null>(null);
+
+  const handleConfirmReceipt = async () => {
+    if (!window.confirm("Yakin barang sudah diterima?")) {
+      return;
+    }
+    setConfirmLoading(true);
+    setConfirmError(null);
+    setConfirmSuccess(null);
+    try {
+      const res = await apiFetch(`/orders/${id}/complete`, {
+        method: "PUT",
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setConfirmError(json.message ?? "Gagal mengonfirmasi penerimaan barang.");
+      } else {
+        setConfirmSuccess(json.message ?? "Pesanan berhasil diselesaikan.");
+        setOrder((prev) => (prev ? { ...prev, status: "selesai" } : null));
+      }
+    } catch {
+      setConfirmError("Tidak dapat terhubung ke server.");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!getToken()) {
@@ -346,9 +374,35 @@ export default function DetailPesananContent({ id }: { id: string }) {
 
           </div>
 
-          {/* ── Beli Lagi ───────────────────────────────────────────── */}
-          <div className="flex justify-end mt-4">
-            <Link href="/marketplace" className="btn-clay-primary px-8 py-4">
+          {/* ── Beli Lagi & Konfirmasi Terima Barang ───────────────────────────────────────────── */}
+          {confirmSuccess && (
+            <div className="mt-4 px-4 py-3 rounded-2xl bg-[#E6F5EC] border border-[#B2DFCB] text-[#009A44] text-sm font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              {confirmSuccess}
+            </div>
+          )}
+          {confirmError && (
+            <div className="mt-4 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-bold flex items-center gap-2">
+              <XCircle className="w-5 h-5" />
+              {confirmError}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-4 mt-4">
+            {(order.status === "dikonfirmasi" || order.status === "dikirim") && (
+              <button
+                type="button"
+                onClick={handleConfirmReceipt}
+                disabled={confirmLoading}
+                className="btn-clay-primary bg-[#009A44] hover:bg-[#008139] px-8 py-4 flex items-center gap-2 text-white disabled:opacity-60"
+              >
+                {confirmLoading && (
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                )}
+                Konfirmasi Terima Barang
+              </button>
+            )}
+            <Link href="/marketplace" className="btn-clay-secondary px-8 py-4">
               Beli Lagi Pesanan Ini
             </Link>
           </div>

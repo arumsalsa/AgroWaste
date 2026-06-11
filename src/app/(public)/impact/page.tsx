@@ -16,13 +16,36 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
+interface WasteDistributionItem {
+  jenis_ternak: string;
+  total_kg: number;
+  percentage: number;
+}
+
 interface ImpactData {
   total_waste_managed_kg: number;
   total_co2eq_reduced_kg: number;
   equivalent_trees: number;
   active_sellers_count: number;
   total_transactions: number;
+  waste_distribution: WasteDistributionItem[];
 }
+
+const JENIS_LABELS: Record<string, string> = {
+  sapi:   "Kotoran Sapi",
+  ayam:   "Kotoran Ayam",
+  kambing:"Kotoran Kambing",
+  domba:  "Kotoran Domba",
+  babi:   "Kotoran Babi",
+  kuda:   "Kotoran Kuda",
+};
+
+const BAR_COLORS = [
+  { bg: "bg-land-accent",    text: "text-land-accent" },
+  { bg: "bg-land-clay",      text: "text-land-clay" },
+  { bg: "bg-land-secondary", text: "text-land-secondary" },
+  { bg: "bg-land-muted",     text: "text-land-muted" },
+];
 
 export default function ImpactPage() {
   const [data, setData] = useState<ImpactData | null>(null);
@@ -168,43 +191,36 @@ export default function ImpactPage() {
               <h3 className="font-land-heading text-2xl font-bold text-land-ink">Distribusi Limbah</h3>
             </div>
             
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <div className="flex justify-between items-end text-sm font-bold">
-                  <span className="text-land-ink flex items-center gap-3 text-base">
-                    <div className="w-4 h-4 rounded-[6px] bg-land-accent shadow-sm" /> Kotoran Sapi
-                  </span>
-                  <span className="text-land-accent text-xl font-tabular">50%</span>
-                </div>
-                <div className="w-full h-6 bg-land-warm rounded-full overflow-hidden p-1">
-                  <div className="h-full bg-land-accent w-[50%] rounded-full shadow-sm" />
-                </div>
+            {data?.waste_distribution && data.waste_distribution.length > 0 ? (
+              <div className="space-y-8">
+                {data.waste_distribution.map((item, index) => {
+                  const color = BAR_COLORS[index % BAR_COLORS.length];
+                  const label = JENIS_LABELS[item.jenis_ternak] ?? item.jenis_ternak;
+                  return (
+                    <div key={item.jenis_ternak} className="space-y-3">
+                      <div className="flex justify-between items-end text-sm font-bold">
+                        <span className="text-land-ink flex items-center gap-3 text-base">
+                          <div className={`w-4 h-4 rounded-[6px] ${color.bg} shadow-sm`} />
+                          {label}
+                        </span>
+                        <span className={`${color.text} text-xl font-tabular`}>{item.percentage}%</span>
+                      </div>
+                      <div className="w-full h-6 bg-land-warm rounded-full overflow-hidden p-1">
+                        <div
+                          className={`h-full ${color.bg} rounded-full shadow-sm transition-all duration-700`}
+                          style={{ width: `${item.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-end text-sm font-bold">
-                  <span className="text-land-ink flex items-center gap-3 text-base">
-                    <div className="w-4 h-4 rounded-[6px] bg-land-clay shadow-sm" /> Kotoran Ayam
-                  </span>
-                  <span className="text-land-clay text-xl font-tabular">30%</span>
-                </div>
-                <div className="w-full h-6 bg-land-warm rounded-full overflow-hidden p-1">
-                  <div className="h-full bg-land-clay w-[30%] rounded-full shadow-sm" />
-                </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-land-muted">
+                <Leaf className="w-12 h-12 opacity-20 mb-4" />
+                <p className="text-sm font-medium">Belum ada data distribusi limbah</p>
               </div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-end text-sm font-bold">
-                  <span className="text-land-ink flex items-center gap-3 text-base">
-                    <div className="w-4 h-4 rounded-[6px] bg-land-secondary shadow-sm" /> Kambing & Lainnya
-                  </span>
-                  <span className="text-land-secondary text-xl font-tabular">20%</span>
-                </div>
-                <div className="w-full h-6 bg-land-warm rounded-full overflow-hidden p-1">
-                  <div className="h-full bg-land-secondary w-[20%] rounded-full shadow-sm" />
-                </div>
-              </div>
-            </div>
+            )}
           </div>
           
           {/* Laporan CSR Card */}

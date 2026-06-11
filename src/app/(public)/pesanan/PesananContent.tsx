@@ -92,6 +92,32 @@ export default function PesananContent() {
   const [searchInput,  setSearchInput]  = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [timeFilter,   setTimeFilter]   = useState("semua");
+  const [confirmLoadingId, setConfirmLoadingId] = useState<string | null>(null);
+
+  const handleConfirmReceipt = async (orderId: string) => {
+    if (!window.confirm("Yakin barang sudah diterima?")) {
+      return;
+    }
+    setConfirmLoadingId(orderId);
+    try {
+      const res = await apiFetch(`/orders/${orderId}/complete`, {
+        method: "PUT",
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        alert(json.message ?? "Gagal mengonfirmasi penerimaan barang.");
+      } else {
+        alert("Pesanan berhasil diselesaikan.");
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: "selesai" } : o))
+        );
+      }
+    } catch {
+      alert("Tidak dapat terhubung ke server.");
+    } finally {
+      setConfirmLoadingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!getToken()) {
@@ -327,6 +353,7 @@ export default function PesananContent() {
 
               const orderId    = order.order_number ?? order.id.slice(0, 8).toUpperCase();
               const isShipping = order.status === "dikirim";
+              const isConfirmable = order.status === "dikonfirmasi" || order.status === "dikirim";
 
               return (
                 <div
@@ -377,7 +404,20 @@ export default function PesananContent() {
                     <span className="text-xs font-bold text-land-muted">
                       Dipesan pada: <span className="text-land-ink">{formatDate(order.created_at)}</span>
                     </span>
-                    <div className="flex gap-3 w-full sm:w-auto">
+                    <div className="flex gap-3 w-full sm:w-auto flex-wrap">
+                      {isConfirmable && (
+                        <button
+                          type="button"
+                          onClick={() => handleConfirmReceipt(order.id)}
+                          disabled={confirmLoadingId === order.id}
+                          className="btn-clay-primary bg-[#009A44] hover:bg-[#008139] px-6 py-3 text-sm flex items-center justify-center gap-2 text-white disabled:opacity-60"
+                        >
+                          {confirmLoadingId === order.id && (
+                            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                          )}
+                          Pesanan Diterima
+                        </button>
+                      )}
                       {isShipping ? (
                         <Link
                           href={`/pesanan/${order.id}/lacak`}
