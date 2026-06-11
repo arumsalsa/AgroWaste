@@ -256,4 +256,40 @@ class ProductController extends Controller
             'data'    => $product
         ], 200);
     }
+
+    /**
+     * Menampilkan profil peternak beserta produk-produk aktifnya (Public)
+     */
+    public function sellerProfile(string $id): JsonResponse
+    {
+        $user = \App\Models\User::with('peternakProfile')->find($id);
+
+        if (!$user || $user->role !== 'peternak' || !$user->peternakProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profil peternak tidak ditemukan.'
+            ], 404);
+        }
+
+        $products = \App\Models\Product::with(['category', 'media'])
+            ->where('peternak_profile_id', $user->peternakProfile->id)
+            ->where('status', 'aktif')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'avatar_url' => $user->avatar_url,
+                ],
+                'profile' => $user->peternakProfile,
+                'products' => $products
+            ]
+        ], 200);
+    }
 }

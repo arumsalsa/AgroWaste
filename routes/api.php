@@ -16,6 +16,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']); // Detail produk
     Route::get('/categories', [\App\Http\Controllers\Api\CategoryController::class, 'index']);
+    Route::get('/sellers/{id}', [ProductController::class, 'sellerProfile']);
    
     // Edukasi Artikel (Public)
     Route::get('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'index']);
