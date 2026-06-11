@@ -8,6 +8,9 @@ use App\Models\Category;
 use App\Models\PeternakProfile;
 use App\Models\BuyerProfile;
 use App\Models\Product;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Shipment;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -15,7 +18,7 @@ class AgroWasteSeeder extends Seeder
 {
     public function run(): void
     {
-       // 1. Seed Master Kategori Limbah lengkap dengan SLUG sesuai struktur DB
+        // 1. Seed Master Kategori Limbah lengkap dengan SLUG sesuai struktur DB
         $kategoriPadat = Category::create([
             'id' => Str::uuid()->toString(), 
             'name' => 'kotoran_padat',
@@ -47,6 +50,7 @@ class AgroWasteSeeder extends Seeder
             'email'    => 'peternak@agrowwaste.com',
             'password' => Hash::make('password123'),
             'role'     => 'peternak',
+            'phone'    => '081234567890',
         ]);
 
         PeternakProfile::create([
@@ -57,7 +61,10 @@ class AgroWasteSeeder extends Seeder
             'provinsi'        => 'Jawa Timur',
             'kabupaten'       => 'Kabupaten Malang',
             'kecamatan'       => 'Singosari',
-            'badge'           => 'none',
+            'lat'             => -7.892400,
+            'lng'             => 112.656300,
+            'badge'           => 'peternak_hijau',
+            'total_sold_kg'   => 850.00,
         ]);
 
         // 3. Seed Akun Demo Pembeli (Buyer)
@@ -67,6 +74,7 @@ class AgroWasteSeeder extends Seeder
             'email'    => 'pembeli@agrowwaste.com',
             'password' => Hash::make('password123'),
             'role'     => 'pembeli',
+            'phone'    => '089876543210',
         ]);
 
         BuyerProfile::create([
@@ -92,20 +100,21 @@ class AgroWasteSeeder extends Seeder
             'email'    => 'kurir@agrowwaste.com',
             'password' => Hash::make('password123'),
             'role'     => 'logistik',
+            'phone'    => '081298765432',
         ]);
 
-        \App\Models\LogistikProfile::create([
+        $logistikProfile = \App\Models\LogistikProfile::create([
             'id'            => Str::uuid()->toString(),
             'user_id'       => $userKurir->id,
             'company_name'  => 'AgroWaste Express Malang',
             'vehicle_plate' => 'N 1234 AB',
         ]);
 
-        // 4. Seed Contoh Produk Aktif Realistis (Minimal 5 Produk untuk Demo)
+        // 4. Seed Contoh Produk Aktif Realistis
         $peternakProfile = $userPeternak->peternakProfile;
 
-        Product::create([
-            'id'                  => '147d1c5f-1150-4dcd-8630-3f3cf6fa60c7', // Lock UUID yang dipakai tes tadi pagi
+        $productPadat = Product::create([
+            'id'                  => '147d1c5f-1150-4dcd-8630-3f3cf6fa60c7',
             'peternak_profile_id' => $peternakProfile->id,
             'category_id'         => $kategoriPadat->id,
             'name'                => 'Pupuk Kandang Sapi Kualitas Premium',
@@ -120,10 +129,10 @@ class AgroWasteSeeder extends Seeder
             'provinsi'            => 'Jawa Timur',
             'kabupaten'           => 'Kabupaten Malang',
             'kecamatan'           => 'Singosari',
-            'status'              => 'aktif', // Approved otomatis untuk data awal demo
+            'status'              => 'aktif',
         ]);
 
-        Product::create([
+        $productCair = Product::create([
             'id'                  => Str::uuid()->toString(),
             'peternak_profile_id' => $peternakProfile->id,
             'category_id'         => $kategoriCair->id,
@@ -140,6 +149,98 @@ class AgroWasteSeeder extends Seeder
             'kabupaten'           => 'Kabupaten Malang',
             'kecamatan'           => 'Singosari',
             'status'              => 'aktif',
+        ]);
+
+        // 5. Seed Realistis Pesanan & Pengiriman Kurir untuk Demo Peta GIS
+        
+        // Pesanan 1 (Status: dikirim / shipment: dalam_perjalanan)
+        $order1 = Order::create([
+            'id'                => Str::uuid()->toString(),
+            'order_number'      => 'AW-90214',
+            'user_id'           => $userPembeli->id,
+            'peternak_id'       => $userPeternak->id,
+            'metode_pengiriman' => 'Kargo Hijau',
+            'metode_pembayaran' => 'Transfer Bank',
+            'alamat_pengiriman' => 'Jl. Kawi No. 45, Klojen, Kota Malang, Jawa Timur 65116',
+            'status'            => 'dikirim',
+            'total_price'       => 375000.00,
+            'quantity_kg'       => 250.00,
+        ]);
+
+        OrderItem::create([
+            'id'           => Str::uuid()->toString(),
+            'order_id'     => $order1->id,
+            'product_id'   => $productPadat->id,
+            'quantity_kg'  => 250,
+            'price_per_kg' => 1500.00,
+        ]);
+
+        Shipment::create([
+            'id'                  => Str::uuid()->toString(),
+            'order_id'            => $order1->id,
+            'logistik_profile_id' => $logistikProfile->id,
+            'status'              => 'dalam_perjalanan',
+            'tracking_notes'      => 'Kurir sedang memuat barang dari peternakan Jonathan.',
+        ]);
+
+        // Pesanan 2 (Status: dikonfirmasi / shipment: dijadwalkan)
+        $order2 = Order::create([
+            'id'                => Str::uuid()->toString(),
+            'order_number'      => 'AW-90192',
+            'user_id'           => $userPembeli->id,
+            'peternak_id'       => $userPeternak->id,
+            'metode_pengiriman' => 'Kargo Hijau',
+            'metode_pembayaran' => 'Transfer Bank',
+            'alamat_pengiriman' => 'Kec. Caringin, Kab. Bogor, Jawa Barat 16730',
+            'status'            => 'dikonfirmasi',
+            'total_price'       => 1000000.00,
+            'quantity_kg'       => 500.00,
+        ]);
+
+        OrderItem::create([
+            'id'           => Str::uuid()->toString(),
+            'order_id'     => $order2->id,
+            'product_id'   => $productCair->id,
+            'quantity_kg'  => 500,
+            'price_per_kg' => 2000.00,
+        ]);
+
+        Shipment::create([
+            'id'                  => Str::uuid()->toString(),
+            'order_id'            => $order2->id,
+            'logistik_profile_id' => $logistikProfile->id,
+            'status'              => 'dijadwalkan',
+            'tracking_notes'      => 'Pengiriman dijadwalkan kurir.',
+        ]);
+
+        // Pesanan 3 (Status: selesai / shipment: terkirim)
+        $order3 = Order::create([
+            'id'                => Str::uuid()->toString(),
+            'order_number'      => 'AW-89943',
+            'user_id'           => $userPembeli->id,
+            'peternak_id'       => $userPeternak->id,
+            'metode_pengiriman' => 'Logistik Mandiri',
+            'metode_pembayaran' => 'Transfer Bank',
+            'alamat_pengiriman' => 'Lembang, Bandung, Jawa Barat 40391',
+            'status'            => 'selesai',
+            'total_price'       => 150000.00,
+            'quantity_kg'       => 100.00,
+        ]);
+
+        OrderItem::create([
+            'id'           => Str::uuid()->toString(),
+            'order_id'     => $order3->id,
+            'product_id'   => $productPadat->id,
+            'quantity_kg'  => 100,
+            'price_per_kg' => 1500.00,
+        ]);
+
+        Shipment::create([
+            'id'                  => Str::uuid()->toString(),
+            'order_id'            => $order3->id,
+            'logistik_profile_id' => $logistikProfile->id,
+            'status'              => 'terkirim',
+            'tracking_notes'      => 'Diterima oleh Pak Budi di lokasi.',
         ]);
     }
 }

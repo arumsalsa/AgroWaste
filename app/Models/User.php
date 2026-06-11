@@ -43,5 +43,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(BuyerProfile::class);
     }
+
+    public function logistikProfile()
+    {
+        return $this->hasOne(LogistikProfile::class);
+    }
 }
 

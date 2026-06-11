@@ -16,7 +16,11 @@ class ShipmentService
     {
         $logistikProfileId = Auth::user()->logistikProfile->id;
 
-        return Shipment::with('order.orderItems.product', 'order.user')
+        return Shipment::with([
+            'order.items.product.peternakProfile',
+            'order.user',
+            'order.peternak.peternakProfile'
+        ])
             ->where('logistik_profile_id', $logistikProfileId)
             ->orderBy('created_at', 'desc')
             ->get();
