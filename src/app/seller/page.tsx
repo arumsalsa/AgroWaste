@@ -85,9 +85,9 @@ export default function OverviewPage() {
   const bars = stats ? buildChartBars(stats.chart_data) : [];
 
   const skeletonCard = (
-    <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl animate-pulse">
-      <div className="h-10 w-10 rounded-lg bg-[#EAE6E1] mb-4" />
-      <div className="h-3 w-24 bg-[#EAE6E1] rounded mb-2" />
+    <div className="bg-seller-surfacewhite border border-seller-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl animate-pulse">
+      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#EAE6E1] mb-2 sm:mb-4" />
+      <div className="h-3 w-24 bg-[#EAE6E1] rounded mb-1.5 sm:mb-2" />
       <div className="h-7 w-32 bg-[#EAE6E1] rounded" />
     </div>
   );
@@ -95,14 +95,14 @@ export default function OverviewPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">
             Selamat Datang, {userName}!
           </h2>
           <p className="text-sm text-seller-textsecondary">Berikut ringkasan operasional AgroWaste hari ini.</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 border border-seller-hairline rounded-xl bg-seller-surfacewhite text-sm font-semibold text-seller-textsecondary">
+        <div className="flex items-center gap-2 px-4 py-2 border border-seller-hairline rounded-xl bg-seller-surfacewhite text-sm font-semibold text-seller-textsecondary self-start sm:self-auto">
           <svg className="w-4 h-4 text-seller-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
@@ -112,54 +112,54 @@ export default function OverviewPage() {
 
       {/* Top Metrik */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           {skeletonCard}{skeletonCard}{skeletonCard}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           {/* Total Pendapatan */}
-          <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-lg bg-seller-primary-light text-seller-primary flex items-center justify-center">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div className="bg-seller-surfacewhite border border-seller-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-2 sm:mb-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-seller-primary-light text-seller-primary flex items-center justify-center">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">TOTAL PENDAPATAN</span>
-              <h3 className="text-2xl font-bold tracking-tight text-seller-textprimary">
+              <span className="text-[9px] sm:text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">TOTAL PENDAPATAN</span>
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-seller-textprimary">
                 {stats ? formatRupiah(stats.total_pendapatan) : "—"}
               </h3>
             </div>
           </div>
 
           {/* Pesanan Baru */}
-          <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+          <div className="bg-seller-surfacewhite border border-seller-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-2 sm:mb-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
               </div>
               {stats && stats.pesanan_baru > 0 && (
-                <span className="text-xs font-bold text-amber-500">{stats.pesanan_baru} Perlu Diproses</span>
+                <span className="text-[10px] sm:text-xs font-bold text-amber-500">{stats.pesanan_baru} Perlu Diproses</span>
               )}
             </div>
             <div>
-              <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">PESANAN BARU</span>
-              <h3 className="text-2xl font-bold tracking-tight text-seller-textprimary">
+              <span className="text-[9px] sm:text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">PESANAN BARU</span>
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-seller-textprimary">
                 {stats ? `${stats.pesanan_baru} Pesanan` : "—"}
               </h3>
             </div>
           </div>
 
           {/* Total Produk */}
-          <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+          <div className="bg-seller-surfacewhite border border-seller-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-2 sm:mb-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
               </div>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">TOTAL PRODUK</span>
-              <h3 className="text-2xl font-bold tracking-tight text-seller-textprimary">
+              <span className="text-[9px] sm:text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">TOTAL PRODUK</span>
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-seller-textprimary">
                 {stats ? `${stats.total_produk} Produk` : "—"}
               </h3>
             </div>

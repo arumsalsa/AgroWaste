@@ -53,91 +53,91 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       {/* Header Section */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Ringkasan Platform</h2>
           <p className="text-sm text-admin-textsecondary">Metrik performa dan aktivitas ekosistem AgroWaste dalam 30 hari terakhir.</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/admin/users" className="px-4 py-2 bg-admin-primary text-white text-sm font-bold rounded-xl hover:bg-admin-primary-hover transition-colors shadow-md shadow-admin-primary/20">
+          <Link href="/admin/users" className="px-4 py-2 bg-admin-primary text-white text-sm font-bold rounded-xl hover:bg-admin-primary-hover transition-colors shadow-md shadow-admin-primary/20 w-full sm:w-auto text-center">
             Kelola Pengguna
           </Link>
         </div>
       </div>
 
       {/* Row 1: 4 Column KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* KPI 1 */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline p-6 rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
+              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
               {loading ? "..." : "12%"}
             </span>
           </div>
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Total Pengguna</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Total Pengwarna</span>
+            <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
               {loading ? "..." : (stats?.total_users.toLocaleString("id-ID") ?? "0")}
             </h3>
           </div>
         </div>
 
         {/* KPI 2 */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline p-6 rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
+              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
               {loading ? "..." : "5%"}
             </span>
           </div>
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Listing Aktif</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Listing Aktif</span>
+            <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
               {loading ? "..." : (stats?.total_produk_aktif.toLocaleString("id-ID") ?? "0")}
             </h3>
           </div>
         </div>
 
         {/* KPI 3 */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline p-6 rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
+              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
               {loading ? "..." : "100%"}
             </span>
           </div>
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Nilai Transaksi</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Nilai Transaksi</span>
+            <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
               {loading ? "..." : formatRupiah(stats?.total_pendapatan ?? 0)}
             </h3>
           </div>
         </div>
 
         {/* KPI 4 */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline p-6 rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             </div>
-            <span className="text-xs font-bold text-admin-semgreen bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
+              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
               {loading ? "..." : "100%"}
             </span>
           </div>
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Dampak Lingkungan</span>
-            <h3 className="text-2xl font-bold text-admin-textprimary font-tabular">
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Dampak Lingkungan</span>
+            <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
               {loading ? "..." : stats?.total_limbah_kg ? `${(Number(stats.total_limbah_kg) / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Ton` : "0 Ton"}
             </h3>
           </div>
@@ -244,38 +244,38 @@ export default function AdminDashboard() {
       </div>
 
       {/* Row 3: Server Health Statuses */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 flex items-center justify-between group transition-colors hover:border-admin-primary/20">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between group transition-colors hover:border-admin-primary/20">
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Status Database</span>
-            <div className="text-xl font-bold text-admin-semgreen">Sehat</div>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Status Database</span>
+            <div className="text-lg sm:text-xl font-bold text-admin-semgreen">Sehat</div>
           </div>
-          <div className="relative w-10 h-10 flex items-center justify-center">
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
             <span className="absolute inline-flex h-full w-full rounded-full bg-admin-semgreen opacity-20 animate-radar"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-admin-semgreen"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-admin-semgreen"></span>
           </div>
         </div>
 
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 flex items-center justify-between group transition-colors hover:border-admin-primary/20">
+        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between group transition-colors hover:border-admin-primary/20">
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Beban Server</span>
-            <div className="text-xl font-bold text-admin-textprimary font-tabular">24%</div>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Beban Server</span>
+            <div className="text-lg sm:text-xl font-bold text-admin-textprimary font-tabular">24%</div>
           </div>
-          <div className="flex items-end gap-1 h-8">
-            <div className="w-2 bg-admin-primary h-3 rounded-sm opacity-60"></div>
-            <div className="w-2 bg-admin-primary h-6 rounded-sm opacity-80"></div>
-            <div className="w-2 bg-admin-primary h-4 rounded-sm opacity-50"></div>
-            <div className="w-2 bg-admin-primary h-8 rounded-sm"></div>
+          <div className="flex items-end gap-1 h-6 sm:h-8">
+            <div className="w-1.5 sm:w-2 bg-admin-primary h-2 sm:h-3 rounded-sm opacity-60"></div>
+            <div className="w-1.5 sm:w-2 bg-admin-primary h-4 sm:h-6 rounded-sm opacity-80"></div>
+            <div className="w-1.5 sm:w-2 bg-admin-primary h-3 sm:h-4 rounded-sm opacity-50"></div>
+            <div className="w-1.5 sm:w-2 bg-admin-primary h-5 sm:h-8 rounded-sm"></div>
           </div>
         </div>
 
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 flex items-center justify-between group transition-colors hover:border-admin-primary/20">
+        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between group transition-colors hover:border-admin-primary/20">
           <div>
-            <span className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-1">Catatan Log Aktif</span>
-            <div className="text-xl font-bold text-admin-textprimary font-tabular">1.2k/hr</div>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Catatan Log Aktif</span>
+            <div className="text-lg sm:text-xl font-bold text-admin-textprimary font-tabular">1.2k/hr</div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-admin-warmbg text-admin-textsecondary flex items-center justify-center group-hover:bg-admin-primary-light group-hover:text-admin-primary transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-admin-warmbg text-admin-textsecondary flex items-center justify-center group-hover:bg-admin-primary-light group-hover:text-admin-primary transition-colors">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           </div>
         </div>
       </div>

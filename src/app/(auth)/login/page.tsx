@@ -59,24 +59,24 @@ function LoginPageContent() {
     <div className="flex min-h-screen bg-land-bg font-land-body">
 
       {/* Left Form Side */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 xl:px-32 relative animate-fade-in py-12">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-8 md:px-16 lg:px-24 xl:px-32 relative animate-fade-in py-12">
 
         {/* Logo */}
-        <div className="absolute top-8 left-8 md:left-16 lg:left-24 xl:left-32">
+        <div className="absolute top-8 left-4 sm:left-8 md:left-16 lg:left-24 xl:left-32">
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-85 transition-opacity">
             <img src="/LOGO.png" alt="AgroWaste Logo" className="h-8 w-auto object-contain" />
             <span className="text-xl font-bold text-land-secondary font-land-heading tracking-tight">AgroWaste</span>
           </Link>
         </div>
 
-        <div className="mt-16 mb-8">
+        <div className="mt-16 mb-8 max-w-sm w-full mx-auto lg:mx-0">
           <h1 className="text-3xl font-bold text-land-ink font-land-heading mb-2">Masuk ke Akun Anda</h1>
           <p className="text-land-muted text-sm leading-relaxed max-w-sm">
             Selamat datang kembali di portal manajemen AgroWaste.
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6 max-w-sm w-full mb-8">
+        <form onSubmit={handleLogin} className="space-y-6 max-w-sm w-full mb-8 mx-auto lg:mx-0">
           <div>
             <label className="block text-[10px] font-bold text-land-ink uppercase tracking-wider mb-2">
               Alamat Email
@@ -158,14 +158,14 @@ function LoginPageContent() {
           </button>
         </form>
 
-        <div className="max-w-sm w-full text-center mb-8 border-b border-land-cream pb-8">
+        <div className="max-w-sm w-full text-center mb-8 border-b border-land-cream pb-8 mx-auto lg:mx-0">
           <p className="text-sm text-land-muted">
             Belum punya akun? <Link href="/role" className="font-bold text-land-clay hover:text-land-clay-hover">Daftar di sini</Link>
           </p>
         </div>
 
         {/* Mitra Selection (Decorative Links matching design) */}
-        <div className="max-w-sm w-full">
+        <div className="max-w-sm w-full mx-auto lg:mx-0">
           <p className="text-[10px] font-bold text-land-muted uppercase tracking-wider text-center mb-4">Masuk Sebagai Mitra</p>
           <div className="grid grid-cols-3 gap-3">
             <Link href="/role" className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-land-cream bg-white hover:border-land-secondary hover:bg-land-warm/10 transition-all group">

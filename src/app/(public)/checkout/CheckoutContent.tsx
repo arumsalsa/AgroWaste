@@ -167,11 +167,11 @@ export default function CheckoutContent() {
     return (
       <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
         <div className="bg-[#F0EDE6]/30 border-b border-[#E8E0D5]/60 py-6">
-          <div className="max-w-3xl mx-auto px-6">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="h-10 bg-[#E8E0D5] rounded-full animate-pulse" />
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 pt-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-6">
               {[1, 2, 3].map((i) => (
@@ -208,33 +208,33 @@ export default function CheckoutContent() {
 
       {/* Progress Bar Header */}
       <div className="bg-[#F0EDE6]/30 border-b border-[#E8E0D5]/60 py-6">
-        <div className="max-w-3xl mx-auto px-6 flex justify-between items-center relative">
-          <div className="absolute left-[15%] right-[15%] top-5 h-[2px] bg-[#E8E0D5]/70 -z-10"></div>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 flex justify-between items-center relative">
+          <div className="absolute left-[15%] right-[15%] top-4 sm:top-5 h-[2px] bg-[#E8E0D5]/70 -z-10"></div>
 
           <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-[#009A44] text-white flex items-center justify-center font-bold shadow-sm ring-4 ring-[#E6F5EC]">
-              <Check className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#009A44] text-white flex items-center justify-center font-bold shadow-sm ring-4 ring-[#E6F5EC]">
+              <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xs font-bold text-[#009A44]">Keranjang</span>
+            <span className="text-[10px] sm:text-xs font-bold text-[#009A44]">Keranjang</span>
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-[#009A44] text-white flex items-center justify-center font-bold shadow-sm ring-4 ring-[#E6F5EC]">
-              <Check className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#009A44] text-white flex items-center justify-center font-bold shadow-sm ring-4 ring-[#E6F5EC]">
+              <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xs font-bold text-[#009A44]">Pengiriman</span>
+            <span className="text-[10px] sm:text-xs font-bold text-[#009A44]">Pengiriman</span>
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-white border-2 border-[#009A44] text-[#009A44] flex items-center justify-center font-bold shadow-sm ring-4 ring-white">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-[#009A44] text-[#009A44] flex items-center justify-center font-bold shadow-sm ring-4 ring-white">
               3
             </div>
-            <span className="text-xs font-bold text-land-ink">Pembayaran</span>
+            <span className="text-[10px] sm:text-xs font-bold text-land-ink">Pembayaran</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pt-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
           {/* Left Column */}

@@ -51,9 +51,9 @@ export default function EarthyCard({
   ctaErrorIcon: CtaErrorIcon,
   decorativeIcon: DecorativeIcon,
   className = "",
-  imageHeightClass = "h-56",
+  imageHeightClass = "h-28 sm:h-44 md:h-56",
 }: EarthyCardProps) {
-  const wrapperClass = `w-full bg-land-bg rounded-2xl p-4 border border-land-cream shadow-clay hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-clay-hover hover:border-land-accent/30 transition-all duration-300 flex flex-col group relative overflow-hidden cursor-pointer z-10 ${className}`;
+  const wrapperClass = `w-full bg-land-bg rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-land-cream shadow-clay hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-clay-hover hover:border-land-accent/30 transition-all duration-300 flex flex-col group relative overflow-hidden cursor-pointer z-10 ${className}`;
 
   const inner = (<>
       {/* decorative background icon */}
@@ -65,7 +65,7 @@ export default function EarthyCard({
       )}
 
       {/* Image container */}
-      <div className={`w-full rounded-xl overflow-hidden relative mb-4 bg-land-warm flex items-center justify-center border border-land-cream/40 shrink-0 z-10 ${imageHeightClass}`}>
+      <div className={`w-full rounded-xl overflow-hidden relative mb-3 sm:mb-4 bg-land-warm flex items-center justify-center border border-land-cream/40 shrink-0 z-10 ${imageHeightClass}`}>
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -78,53 +78,53 @@ export default function EarthyCard({
         ) : null}
 
         {FallbackIcon && (
-          <FallbackIcon className="w-16 h-16 text-land-secondary/20 relative z-10" />
+          <FallbackIcon className="w-10 h-10 sm:w-16 sm:h-16 text-land-secondary/20 relative z-10" />
         )}
 
         {/* badges overlay */}
         {badgeText && (
-          <div className="absolute top-3 left-3 bg-land-bg/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1.5 z-20">
-            <span className={`w-1.5 h-1.5 rounded-full ${badgeDotColorClass} shrink-0`} />
-            <span>{badgeText}</span>
+          <div className="absolute top-2 left-2 bg-land-bg/95 backdrop-blur-sm px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1 z-20">
+            <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${badgeDotColorClass} shrink-0`} />
+            <span className="truncate max-w-[50px] sm:max-w-none">{badgeText}</span>
           </div>
         )}
 
         {rating && Number(rating) > 0 && (
-          <div className="absolute top-3 right-3 bg-land-bg/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1 z-20">
-            <Star className="w-3.5 h-3.5 text-[#F59E0B] fill-[#F59E0B]" />
+          <div className="absolute top-2 right-2 bg-land-bg/95 backdrop-blur-sm px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-0.5 sm:gap-1 z-20">
+            <Star className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-[#F59E0B] fill-[#F59E0B]" />
             <span className="font-tabular">{Number(rating).toFixed(1)}</span>
           </div>
         )}
 
         {locationText && (
-          <div className="absolute bottom-3 left-3 bg-land-bg/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1.5 z-20">
-            <MapPin className="w-3.5 h-3.5 text-land-accent" />
-            <span>{locationText}</span>
+          <div className="absolute bottom-2 left-2 bg-land-bg/95 backdrop-blur-sm px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1 z-20">
+            <MapPin className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-land-accent" />
+            <span className="truncate max-w-[50px] sm:max-w-none">{locationText}</span>
           </div>
         )}
       </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 relative z-10">
-        <h3 className="font-land-heading text-lg md:text-xl font-bold text-land-ink mb-2 line-clamp-2 leading-tight">
+        <h3 className="font-land-heading text-sm sm:text-lg md:text-xl font-bold text-land-ink mb-1 sm:mb-2 line-clamp-2 leading-tight">
           {title}
         </h3>
         
         {description && (
-          <p className="text-land-muted text-sm mb-4 line-clamp-3 leading-relaxed">
+          <p className="text-land-muted text-[11px] sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 leading-relaxed">
             {description}
           </p>
         )}
 
         {/* Bottom / Action area */}
-        <div className="mt-auto pt-4 border-t border-land-cream/30 flex items-end justify-between">
+        <div className="mt-auto pt-3 sm:pt-4 border-t border-land-cream/30 flex items-end justify-between">
           {price && (
             <div>
-              <div className="text-lg md:text-xl font-bold text-land-accent font-tabular leading-none mb-1">
+              <div className="text-sm sm:text-lg md:text-xl font-bold text-land-accent font-tabular leading-none mb-1">
                 {price}
               </div>
               {unit && (
-                <div className="text-xs font-bold text-land-muted">{unit}</div>
+                <div className="text-[10px] sm:text-xs font-bold text-land-muted">{unit}</div>
               )}
             </div>
           )}
@@ -134,7 +134,7 @@ export default function EarthyCard({
             <button
               onClick={onCtaClick}
               disabled={ctaLoading}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed z-20 ${
+              className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed z-20 ${
                 ctaSuccess
                   ? "bg-land-accent text-white"
                   : ctaError
@@ -143,12 +143,12 @@ export default function EarthyCard({
               }`}
             >
               {ctaSuccess ? (
-                CtaSuccessIcon ? <CtaSuccessIcon className="w-5 h-5" /> : <span>✓</span>
+                CtaSuccessIcon ? <CtaSuccessIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : <span>✓</span>
               ) : ctaError ? (
-                CtaErrorIcon ? <CtaErrorIcon className="w-5 h-5" /> : <span>✗</span>
+                CtaErrorIcon ? <CtaErrorIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : <span>✗</span>
               ) : (
                 CtaIcon ? (
-                  <CtaIcon className={`w-5 h-5 ${ctaLoading ? "animate-pulse" : ""}`} />
+                  <CtaIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${ctaLoading ? "animate-pulse" : ""}`} />
                 ) : (
                   <span>+</span>
                 )
@@ -159,9 +159,9 @@ export default function EarthyCard({
 
         {/* arrow CTA */}
         {ctaText && (
-          <div className="mt-4 flex items-center gap-1.5 text-sm font-bold text-land-accent transition-colors group-hover:text-land-accent-hover">
+          <div className="mt-3 flex items-center gap-1 text-xs sm:text-sm font-bold text-land-accent transition-colors group-hover:text-land-accent-hover">
             <span>{ctaText}</span>
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1.5" />
+            <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
           </div>
         )}
       </div>

@@ -119,17 +119,17 @@ function RegisterPageContent() {
       </div>
 
       {/* Right Form Side */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 xl:px-32 relative animate-fade-in py-12 overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-8 md:px-16 lg:px-24 xl:px-32 relative animate-fade-in py-12 overflow-y-auto">
 
         {/* Logo */}
-        <div className="mb-12">
+        <div className="mb-12 mx-auto lg:mx-0">
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-85 transition-opacity w-max">
             <img src="/LOGO.png" alt="AgroWaste Logo" className="h-8 w-auto object-contain" />
             <span className="text-xl font-bold text-land-secondary font-land-heading tracking-tight">AgroWaste</span>
           </Link>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 max-w-sm w-full mx-auto lg:mx-0">
           <h1 className="text-3xl font-bold text-land-ink font-land-heading mb-4">Daftar Akun Baru</h1>
           <div className="inline-flex items-center gap-2 bg-land-warm px-4 py-2 rounded-full">
             <div className="w-2 h-2 rounded-full bg-land-clay"></div>
@@ -137,7 +137,7 @@ function RegisterPageContent() {
           </div>
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-5 max-w-sm w-full mb-8">
+        <form onSubmit={handleRegister} className="space-y-5 max-w-sm w-full mb-8 mx-auto lg:mx-0">
 
           <div>
             <label className="block text-[10px] font-bold text-land-ink uppercase tracking-wider mb-2">
@@ -193,7 +193,7 @@ function RegisterPageContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-land-ink uppercase tracking-wider mb-2">
                 Kata Sandi
@@ -275,7 +275,7 @@ function RegisterPageContent() {
           </button>
         </form>
 
-        <div className="max-w-sm w-full text-center pb-8">
+        <div className="max-w-sm w-full text-center pb-8 mx-auto lg:mx-0">
           <p className="text-sm text-land-muted">
             Sudah punya akun? <Link href="/login" className="font-bold text-land-clay hover:text-land-clay-hover">Masuk</Link>
           </p>

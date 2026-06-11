@@ -92,7 +92,7 @@ export default function AdminAnalytics() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 bg-admin-semgreen/10 text-admin-semgreen rounded-xl flex items-center justify-center">
@@ -134,9 +134,9 @@ export default function AdminAnalytics() {
       </div>
 
       {/* Chart + Regional */}
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Category Bar Chart */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 md:w-3/5 flex flex-col justify-between">
+        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:w-3/5 flex flex-col justify-between">
           <div>
             <h3 className="text-lg font-bold text-admin-textprimary">Distribusi Limbah berdasarkan Kategori</h3>
             <p className="text-xs text-admin-textsecondary mt-1">Perbandingan volume total limbah tani yang terkelola berdasarkan kategorinya.</p>
@@ -187,7 +187,7 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Regional Growth */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 md:w-2/5 flex flex-col justify-between">
+        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:w-2/5 flex flex-col justify-between">
           <h3 className="text-lg font-bold text-admin-textprimary mb-6">Pertumbuhan Regional</h3>
 
           <div className="space-y-5 flex-1">
@@ -229,7 +229,7 @@ export default function AdminAnalytics() {
       </div>
 
       {/* SDG Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* SDG 12 */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
           <div className="flex gap-3 items-start mb-6">

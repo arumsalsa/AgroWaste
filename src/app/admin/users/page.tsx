@@ -97,7 +97,7 @@ export default function AdminUserManagement() {
 
   return (
     <div className="space-y-8 animate-fade-in pb-10">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Manajemen Pengguna</h2>
           <p className="text-sm text-admin-textsecondary">Kelola data seluruh pelaku ekosistem AgroWaste.</p>
@@ -112,7 +112,7 @@ export default function AdminUserManagement() {
       )}
 
       {/* Row 1: KPI Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
@@ -145,8 +145,8 @@ export default function AdminUserManagement() {
       {/* User Table Surface */}
       <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl overflow-hidden">
         {/* Table Filter Controls */}
-        <div className="p-6 border-b border-admin-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-max">
+        <div className="p-6 border-b border-admin-hairline flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-full overflow-x-auto w-full lg:w-auto">
             {Object.keys(filterMap).map((filter) => (
               <button
                 key={filter}

@@ -165,13 +165,13 @@ export default function MarketplaceProducts({
     return (
       <>
         {countBar}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6 mb-16">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border border-[#E8E0D5] rounded-[28px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.04)] animate-pulse"
+              className="bg-white border border-[#E8E0D5] rounded-2xl p-2.5 sm:p-3 shadow-[0_8px_24px_rgba(44,57,48,0.04)] animate-pulse"
             >
-              <div className="w-full aspect-[4/3] rounded-[20px] bg-[#E8E0D5] mb-5" />
+              <div className="w-full h-28 sm:h-44 rounded-xl bg-[#E8E0D5] mb-3 sm:mb-5" />
               <div className="px-2 pb-2 flex flex-col gap-3">
                 <div className="h-3 bg-[#E8E0D5] rounded-full w-1/3" />
                 <div className="h-5 bg-[#E8E0D5] rounded-full w-4/5" />
@@ -221,7 +221,7 @@ export default function MarketplaceProducts({
     <>
       {countBar}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6 mb-16">
         {products.map((product) => {
           const badge      = product.peternak_profile?.badge;
           const showBadge  = badge && badge !== "none";

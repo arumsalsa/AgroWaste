@@ -159,7 +159,7 @@ export default function DetailPesananContent({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex-1 animate-fade-in bg-[#F8FAF9] min-h-screen pb-20">
-        <div className="max-w-4xl mx-auto px-6 pt-10 space-y-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 space-y-6">
           <div className="h-12 w-64 bg-[#E8E0D5] rounded-full animate-pulse" />
           <div className="h-24 bg-[#E8E0D5] rounded-[32px] animate-pulse" />
           <div className="h-48 bg-[#E8E0D5] rounded-[32px] animate-pulse" />
@@ -219,7 +219,7 @@ export default function DetailPesananContent({ id }: { id: string }) {
 
   return (
     <div className="flex-1 animate-fade-in bg-[#F8FAF9] min-h-screen pb-20">
-      <div className="max-w-4xl mx-auto px-6 pt-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-10">
 
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
@@ -279,22 +279,27 @@ export default function DetailPesananContent({ id }: { id: string }) {
             ) : (
               <div className="flex flex-col gap-6">
                 {displayItems.map((item, index) => (
-                  <div key={index} className="flex gap-6 items-center">
+                  <div key={index} className="flex gap-4 items-start sm:items-center">
                     {/* Placeholder gambar produk */}
-                    <div className="w-20 h-20 rounded-[16px] bg-[#F0F5F1] shrink-0 border border-[#E8E0D5] flex items-center justify-center">
-                      <Leaf className="w-8 h-8 text-[#009A44]/20" />
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[16px] bg-[#F0F5F1] shrink-0 border border-[#E8E0D5] flex items-center justify-center">
+                      <Leaf className="w-7 h-7 sm:w-8 sm:h-8 text-[#009A44]/20" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-land-ink text-base mb-1">{item.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-land-ink text-sm sm:text-base mb-1 truncate sm:whitespace-normal">{item.name}</h3>
                       {item.pricePerKg !== null ? (
-                        <p className="text-sm text-land-muted mb-1">
+                        <p className="text-xs sm:text-sm text-land-muted mb-1">
                           {item.qty} {item.unit} × {formatRupiah(item.pricePerKg)}/{item.unit}
                         </p>
                       ) : (
-                        <p className="text-sm text-land-muted mb-1">{item.qty} {item.unit}</p>
+                        <p className="text-xs sm:text-sm text-land-muted mb-1">{item.qty} {item.unit}</p>
                       )}
+                      {/* Mobile Only Price */}
+                      <div className="sm:hidden mt-2">
+                        <span className="text-[10px] font-bold text-land-muted uppercase tracking-wider block">Total Harga</span>
+                        <span className="font-bold text-[#009A44] text-base">{formatRupiah(item.subtotal)}</span>
+                      </div>
                     </div>
-                    <div className="text-right">
+                    <div className="hidden sm:block text-right shrink-0">
                       <span className="text-[10px] font-bold text-land-muted uppercase tracking-wider block mb-1">Total Harga</span>
                       <span className="font-bold text-land-ink text-lg">{formatRupiah(item.subtotal)}</span>
                     </div>

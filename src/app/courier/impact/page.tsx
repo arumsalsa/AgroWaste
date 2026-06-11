@@ -95,7 +95,7 @@ export default function CourierImpactTracker() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         
         {/* CO2 Reduced */}
         <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
@@ -243,7 +243,7 @@ export default function CourierImpactTracker() {
       {/* Insights Row */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-courier-primary">Wawasan Dampak Terkini</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 shadow-sm flex gap-4">
             <div className="w-12 h-12 bg-green-100 text-green-700 rounded-xl flex items-center justify-center shrink-0">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>

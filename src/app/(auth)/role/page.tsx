@@ -14,22 +14,22 @@ export default function RoleSelectionPage() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-land-clay/5 rounded-full blur-3xl -z-10 -translate-x-1/2 translate-y-1/2"></div>
 
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2.5 mb-16 hover:opacity-85 transition-all w-max">
+      <Link href="/" className="flex items-center gap-2.5 mb-8 md:mb-16 hover:opacity-85 transition-all w-max">
         <img src="/LOGO.png" alt="AgroWaste Logo" className="h-8 w-auto object-contain" />
         <span className="text-2xl font-bold text-land-secondary font-land-heading tracking-tight">AgroWaste</span>
       </Link>
 
       {/* Header */}
-      <div className="text-center mb-12 animate-fade-up">
+      <div className="text-center mb-8 md:mb-12 animate-fade-up">
         <h1 className="text-3xl font-bold text-land-ink font-land-heading mb-3">Selamat Datang di AgroWaste</h1>
         <p className="text-land-muted text-sm max-w-md mx-auto">Silakan pilih peran Anda untuk memulai perjalanan dalam ekosistem perdagangan limbah pertanian organik.</p>
       </div>
 
       {/* Role Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full mb-16 animate-fade-in" style={{ "--animation-delay": "100ms" } as React.CSSProperties}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full mb-8 md:mb-16 animate-fade-in" style={{ "--animation-delay": "100ms" } as React.CSSProperties}>
         
         {/* Penjual (Peternak) */}
-        <div className="bg-land-surface border border-land-cream hover:border-land-secondary hover:shadow-lg hover:shadow-land-secondary/5 rounded-2xl p-8 flex flex-col items-center text-center transition-all duration-300 group">
+        <div className="bg-land-surface border border-land-cream hover:border-land-secondary hover:shadow-lg hover:shadow-land-secondary/5 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center transition-all duration-300 group">
           <div className="w-16 h-16 bg-land-warm/60 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg className="w-8 h-8 text-land-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
           </div>
@@ -44,7 +44,7 @@ export default function RoleSelectionPage() {
         </div>
 
         {/* Pembeli (Petani) */}
-        <div className="bg-land-surface border border-land-cream hover:border-land-clay hover:shadow-lg hover:shadow-land-clay/5 rounded-2xl p-8 flex flex-col items-center text-center transition-all duration-300 group">
+        <div className="bg-land-surface border border-land-cream hover:border-land-clay hover:shadow-lg hover:shadow-land-clay/5 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center transition-all duration-300 group">
           <div className="w-16 h-16 bg-land-clay/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg className="w-8 h-8 text-land-clay" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
@@ -59,7 +59,7 @@ export default function RoleSelectionPage() {
         </div>
 
         {/* Mitra Logistik */}
-        <div className="bg-land-surface border border-land-cream hover:border-land-ink hover:shadow-lg hover:shadow-land-ink/5 rounded-2xl p-8 flex flex-col items-center text-center transition-all duration-300 group">
+        <div className="bg-land-surface border border-land-cream hover:border-land-ink hover:shadow-lg hover:shadow-land-ink/5 rounded-2xl p-6 md:p-8 flex flex-col items-center text-center transition-all duration-300 group">
           <div className="w-16 h-16 bg-land-warm rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg className="w-8 h-8 text-land-ink" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
           </div>

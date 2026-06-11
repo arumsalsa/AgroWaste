@@ -15,7 +15,12 @@ interface UserProfile {
   };
 }
 
-export const Sidebar = () => {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -68,16 +73,36 @@ export const Sidebar = () => {
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(courierName)}&background=2F5A28&color=fff&rounded=true`;
 
   return (
-    <aside className="w-64 h-screen fixed left-0 top-0 border-r border-courier-hairline bg-courier-warmbg flex flex-col z-20">
+    <aside
+      className={`
+        w-64 h-screen fixed left-0 top-0 border-r border-courier-hairline bg-courier-warmbg
+        flex flex-col z-30 transition-transform duration-300 ease-in-out
+        ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}
+      aria-label="Navigasi kurir"
+    >
       {/* Brand Header */}
-      <div className="h-24 flex items-center px-6 pt-4 gap-3 mb-4">
-        <div className="w-10 h-10 rounded-lg bg-courier-primary text-white flex items-center justify-center shadow-md shadow-courier-primary/30">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10M13 16h4l4 4V10h-8z"/></svg>
+      <div className="h-24 flex items-center justify-between px-6 pt-4 gap-3 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-courier-primary text-white flex items-center justify-center shadow-md shadow-courier-primary/30">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10M13 16h4l4 4V10h-8z"/></svg>
+          </div>
+          <div>
+            <h1 className="font-bold text-lg text-courier-primary leading-tight">Mitra<br/>Logistik</h1>
+            <p className="text-[10px] text-courier-textsecondary mt-0.5 tracking-wider">Courier Portal</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-lg text-courier-primary leading-tight">Mitra<br/>Logistik</h1>
-          <p className="text-[10px] text-courier-textsecondary mt-0.5 tracking-wider">Courier Portal</p>
-        </div>
+        {/* Mobile close button */}
+        <button
+          type="button"
+          aria-label="Tutup navigasi"
+          onClick={onClose}
+          className="lg:hidden p-2 -mr-1 rounded-lg hover:bg-courier-primary/10 text-courier-textsecondary transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Navigation */}
@@ -88,6 +113,7 @@ export const Sidebar = () => {
             <Link
               key={item.name}
               href={item.path}
+              onClick={onClose}
               className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
                   ? "bg-courier-primary text-white shadow-md shadow-courier-primary/20" 
@@ -124,11 +150,11 @@ export const Sidebar = () => {
             <span className="text-[10px] text-courier-textsecondary block truncate">ID: {courierId || "..."}</span>
           </div>
         </div>
-        <button onClick={handleLogout} className="flex justify-center items-center gap-2 text-courier-textsecondary hover:text-courier-textprimary bg-courier-surfacewhite border border-courier-hairline hover:bg-courier-hairline font-semibold text-xs transition-colors w-full py-2.5 rounded-lg shadow-sm">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <button onClick={handleLogout} className="flex items-center gap-3 text-courier-semred hover:text-red-700 font-semibold text-sm transition-colors w-full px-2 mt-2">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          Logout
+          Keluar
         </button>
       </div>
     </aside>

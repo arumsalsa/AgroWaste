@@ -154,13 +154,13 @@ export default function AdminLogistics() {
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       {/* Header Section */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Manajemen Logistik</h2>
           <p className="text-sm text-admin-textsecondary">Pantau jadwal pengiriman dan penugasan kurir di lapangan.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => fetchData()} className="px-4 py-2.5 bg-admin-surfacewhite text-admin-textsecondary font-bold text-sm border border-admin-hairline rounded-xl hover:bg-admin-warmbg flex items-center gap-2 transition-colors shadow-sm">
+          <button onClick={() => fetchData()} className="px-4 py-2.5 bg-admin-surfacewhite text-admin-textsecondary font-bold text-sm border border-admin-hairline rounded-xl hover:bg-admin-warmbg flex items-center gap-2 transition-colors shadow-sm w-full sm:w-auto justify-center">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18v3z"/></svg>
             Segarkan Data
           </button>
@@ -168,7 +168,7 @@ export default function AdminLogistics() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* KPI 1 */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 relative group overflow-hidden">
           <div className="absolute right-0 top-0 w-24 h-24 bg-admin-primary/5 rounded-bl-full -mr-4 -mt-4"></div>
@@ -222,7 +222,7 @@ export default function AdminLogistics() {
       <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl overflow-hidden">
         {/* Tab Filters */}
         <div className="p-6 border-b border-admin-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-max">
+          <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-full overflow-x-auto w-full sm:w-auto">
             {tabs.map((tab) => (
               <button
                 key={tab}

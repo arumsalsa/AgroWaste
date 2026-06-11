@@ -116,7 +116,7 @@ export default function CartContent() {
   if (loading) {
     return (
       <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
-        <div className="max-w-7xl mx-auto px-6 pt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12">
           <div className="h-12 w-72 bg-[#E8E0D5] rounded-xl mb-10 animate-pulse" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-6">
@@ -163,7 +163,7 @@ export default function CartContent() {
   if (items.length === 0) {
     return (
       <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
-        <div className="max-w-7xl mx-auto px-6 pt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12">
           <div className="mb-10 pb-6 border-b border-[#E8E0D5]/60">
             <h1 className="text-4xl md:text-5xl font-land-heading font-bold text-land-ink tracking-tight mb-2">Keranjang Belanja</h1>
             <p className="text-land-muted text-sm">Dukung keberlanjutan pertanian dengan memanfaatkan limbah ternak.</p>
@@ -185,7 +185,7 @@ export default function CartContent() {
 
   return (
     <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
-      <div className="max-w-7xl mx-auto px-6 pt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-10 pb-6 border-b border-[#E8E0D5]/60">
@@ -238,29 +238,29 @@ export default function CartContent() {
                   </div>
 
                   {/* Product details */}
-                  <div className="p-6 flex flex-col sm:flex-row gap-6">
+                  <div className="p-4 sm:p-6 flex gap-4 sm:gap-6 items-start">
                     {/* Photo placeholder */}
-                    <div className="w-24 h-24 rounded-2xl bg-[#F0F5F1] border border-[#E8E0D5]/40 shrink-0 flex items-center justify-center">
-                      <Leaf className="w-10 h-10 text-[#009A44]/20" />
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl bg-[#F0F5F1] border border-[#E8E0D5]/40 shrink-0 flex items-center justify-center">
+                      <Leaf className="w-7 h-7 sm:w-10 sm:h-10 text-[#009A44]/20" />
                     </div>
 
                     {/* Content block */}
-                    <div className="flex-1 flex flex-col justify-between gap-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                        <div>
-                          <h3 className="font-land-heading text-xl font-bold text-land-ink leading-snug">{item.product.name}</h3>
+                    <div className="flex-1 flex flex-col justify-between min-w-0">
+                      <div className="flex flex-col md:flex-row justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-land-heading text-lg sm:text-xl font-bold text-land-ink leading-snug truncate sm:whitespace-normal">{item.product.name}</h3>
                           <p className="text-xs text-land-muted mt-0.5">
                             {descParts.length > 0 ? descParts.join(" • ") : `${qty} ${item.product.unit}`}
                           </p>
                         </div>
-                        <div className="text-xl font-bold text-[#009A44] font-tabular whitespace-nowrap">
+                        <div className="text-base sm:text-xl font-bold text-[#009A44] font-tabular whitespace-nowrap mt-1 md:mt-0">
                           {formatRupiah(item.product.price)}
                           <span className="text-xs font-normal text-land-muted">/{item.product.unit}</span>
                         </div>
                       </div>
 
                       {/* Controls row */}
-                      <div className="flex justify-between items-center pt-2 border-t border-[#E8E0D5]/40">
+                      <div className="flex flex-wrap justify-between items-center pt-3 mt-4 border-t border-[#E8E0D5]/40 gap-3">
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => handleQtyChange(item, -1)}

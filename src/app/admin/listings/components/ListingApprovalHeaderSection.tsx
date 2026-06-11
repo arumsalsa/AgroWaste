@@ -21,7 +21,7 @@ export const ListingApprovalHeaderSection = ({
         <p className="text-sm text-admin-textsecondary">Tinjau dan lakukan moderasi penawaran limbah tani yang diajukan oleh para penjual.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard title="Total Pending"       value={pendingCount}    description="Butuh verifikasi segera"  colorScheme="amber" />
         <StatCard title="Disetujui Hari Ini"  value={approvedToday}   description="Sesuai target harian"     colorScheme="green" />
         <StatCard title="Ditolak (Mingguan)"  value={rejectedWeekly}  description="Rata-rata 5 per minggu"   colorScheme="red"   />

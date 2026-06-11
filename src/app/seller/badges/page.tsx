@@ -96,7 +96,7 @@ export default function BadgesPage() {
       </div>
 
       {/* Top Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
           <div className="absolute right-0 top-0 w-24 h-24 bg-seller-primary/5 rounded-bl-full -mr-4 -mt-4"></div>
           <div>
@@ -138,7 +138,7 @@ export default function BadgesPage() {
       </div>
 
       {/* Badges Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {badges.map((badge) => {
           const isUnlocked = totalSold >= badge.target;
           const percentage = Math.min(100, Math.round((totalSold / badge.target) * 100));

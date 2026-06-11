@@ -172,7 +172,7 @@ export default function CourierSettings() {
                 <h3 className="font-bold text-courier-primary text-sm">Informasi Pribadi</h3>
               </div>
               <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nama Lengkap *</label>
                     <input
@@ -213,7 +213,7 @@ export default function CourierSettings() {
                 <h3 className="font-bold text-courier-primary text-sm">Detail Kendaraan & Layanan</h3>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nama Perusahaan / Layanan *</label>
                     <input

@@ -180,16 +180,16 @@ export default function ProductDetail() {
 
   return (
     <div className="flex-1 animate-fade-in pb-20">
-      <div className="max-w-7xl mx-auto px-6 pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
 
         {/* Breadcrumb */}
         <nav className="flex items-center text-[10px] text-[#555555] font-bold tracking-wider uppercase mb-8">
           <Link href="/marketplace" className="hover:text-[#009A44] transition-colors">Marketplace</Link>
           <span className="mx-2">›</span>
-          <span className="text-[#111111] line-clamp-1 max-w-xs">{product.name}</span>
+          <span className="text-[#111111] line-clamp-1 max-w-[180px] sm:max-w-xs">{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
 
           {/* Left Column */}
           <div className="lg:col-span-2">
@@ -210,14 +210,14 @@ export default function ProductDetail() {
               </div>
 
               {/* Thumbnails */}
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3 sm:gap-4">
                 {product.image_urls && product.image_urls.length > 0 ? (
                   product.image_urls.map((url, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setActiveImage(url)}
-                      className={`w-24 h-24 rounded-2xl overflow-hidden flex items-center justify-center transition-colors relative ${
+                      className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden flex items-center justify-center transition-colors relative ${
                         activeImage === url
                           ? "border-2 border-[#009A44] bg-[#F0F5F1]"
                           : "border border-[#E8E0D5] bg-[#F0F5F1] hover:border-[#009A44]"

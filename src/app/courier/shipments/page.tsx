@@ -419,7 +419,7 @@ export default function ShipmentsPage() {
             </div>
             
             {/* Real GIS Leaflet map div */}
-            <div id="gis-map" className="h-80 w-full bg-[#EAE6E1]" style={{ zIndex: 1 }} />
+            <div id="gis-map" className="h-80 w-full bg-[#EAE6E1]" style={{ zIndex: 1, minHeight: "320px" }} />
 
             {selectedShipment ? (
               <div className="p-5 space-y-4 bg-white">

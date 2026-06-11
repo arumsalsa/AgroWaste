@@ -1,6 +1,4 @@
-import { Sidebar } from "@/components/seller/Sidebar";
-import { Topbar } from "@/components/seller/Topbar";
-import SellerGuard from "@/components/seller/SellerGuard";
+import SellerDashboardShell from "@/components/seller/SellerDashboardShell";
 
 export const metadata = {
   title: "AgroWaste Peternak Dashboard",
@@ -12,22 +10,5 @@ export default function SellerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="seller-theme min-h-screen bg-seller-warmbg font-sans text-seller-textprimary flex">
-      {/* Sidebar Kiri */}
-      <Sidebar />
-
-      {/* Konten Utama */}
-      <main className="flex-1 flex flex-col min-h-screen ml-64">
-        <Topbar />
-        
-        {/* Area Konten Dinamis */}
-        <div className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
-            <SellerGuard>{children}</SellerGuard>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+  return <SellerDashboardShell>{children}</SellerDashboardShell>;
 }

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getUser, type AuthUser } from "@/lib/auth";
 
@@ -13,6 +14,7 @@ export function Header() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [mounted, setMounted] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const fetchCartCount = () => {
     apiFetch("/cart-items")
@@ -20,6 +22,11 @@ export function Header() {
       .then((j) => setCartCount((j.data as unknown[]).length))
       .catch(() => setCartCount(0));
   };
+
+  // close mobile menu when path changes
+  React.useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   // scroll + auth state setup
   React.useEffect(() => {
@@ -56,17 +63,9 @@ export function Header() {
     };
   }, []);
 
-  const navLinks = [
-    { label: "Beranda", href: "/" },
-    { label: "Pasar", href: "/marketplace" },
-    { name: "Peta Pelacakan", path: "/maps" },
-    { name: "Dampak", path: "/impact" },
-    { name: "Tentang", path: "/about" },
-  ];
-
   return (
     <header className={`fixed top-0 w-full z-50 transition-all duration-400 ${
-      isScrolled
+      isScrolled || isMenuOpen
         ? "bg-white/96 backdrop-blur-md border-b border-neutral-100 shadow-sm"
         : "bg-transparent"
     }`}>
@@ -145,9 +144,43 @@ export function Header() {
               </div>
             </Link>
           )}
+
+          {/* Hamburger Menu (Mobile) */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 text-land-dark/70 hover:text-land-clay focus:outline-none transition-colors rounded-full hover:bg-neutral-100"
+            aria-label={isMenuOpen ? "Tutup menu" : "Buka menu"}
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
 
       </div>
+
+      {/* Mobile Nav Drawer */}
+      {isMenuOpen && (
+        <nav className="md:hidden bg-white border-b border-neutral-100 shadow-lg px-6 py-4 flex flex-col gap-4 text-sm font-semibold text-land-ink/70">
+          {[
+            { href: "/", label: "Beranda", active: pathname === "/" },
+            { href: "/marketplace", label: "Pasar", active: pathname.startsWith("/marketplace") },
+            { href: "/pesanan", label: "Pesanan", active: pathname.startsWith("/pesanan") },
+            { href: "/impact", label: "Dampak", active: pathname.startsWith("/impact") },
+            { href: "/about", label: "Tentang", active: pathname.startsWith("/about") },
+          ].map(({ href, label, active }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`transition-all duration-200 py-2 border-b border-neutral-50 last:border-0 ${
+                active
+                  ? "text-land-clay pl-2 border-l-2 border-land-clay font-bold"
+                  : "hover:text-land-clay hover:pl-2"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

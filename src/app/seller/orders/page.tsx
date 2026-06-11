@@ -153,7 +153,7 @@ function OrdersContent() {
           const items = order.items ?? [];
           return (
             <>
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary">Detail Pesanan</h2>
                 {order.status === "menunggu_pembayaran" && (
                   <div className="flex gap-3">
@@ -213,7 +213,7 @@ function OrdersContent() {
                         <h3 className="text-sm font-bold text-seller-textprimary">{formatDate(order.created_at)}</h3>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">STATUS</span>
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider ${cls}`}>

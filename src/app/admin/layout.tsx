@@ -25,10 +25,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       />
 
       {/* Main content */}
-      <div className="flex-1 ml-0 lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 w-full flex flex-col min-h-screen ml-0 lg:ml-64">
         <Topbar onMenuToggle={() => setMobileOpen((v) => !v)} />
 
-        <main className="flex-1 p-8 overflow-y-auto pb-14">
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto pb-14">
           <div className="max-w-7xl mx-auto">
             <AdminGuard>{children}</AdminGuard>
           </div>

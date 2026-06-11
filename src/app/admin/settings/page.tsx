@@ -91,10 +91,10 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar Settings Menu */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className="flex flex-row overflow-x-auto lg:flex-col lg:col-span-1 gap-2 pb-2 lg:pb-0 w-full scrollbar-none shrink-0">
           <button 
             onClick={() => setActiveTab('personal')}
-            className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${
+            className={`text-left px-4 py-3 rounded-xl text-sm transition-all whitespace-nowrap w-auto lg:w-full shrink-0 ${
               activeTab === 'personal' 
                 ? 'bg-admin-primary text-white font-bold shadow-md shadow-admin-primary/20' 
                 : 'text-admin-textsecondary hover:bg-admin-warmbg hover:text-admin-textprimary font-semibold'
@@ -104,7 +104,7 @@ export default function SettingsPage() {
           </button>
           <button 
             onClick={() => setActiveTab('security')}
-            className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${
+            className={`text-left px-4 py-3 rounded-xl text-sm transition-all whitespace-nowrap w-auto lg:w-full shrink-0 ${
               activeTab === 'security' 
                 ? 'bg-admin-primary text-white font-bold shadow-md shadow-admin-primary/20' 
                 : 'text-admin-textsecondary hover:bg-admin-warmbg hover:text-admin-textprimary font-semibold'
@@ -114,7 +114,7 @@ export default function SettingsPage() {
           </button>
           <button 
             onClick={() => setActiveTab('permissions')}
-            className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${
+            className={`text-left px-4 py-3 rounded-xl text-sm transition-all whitespace-nowrap w-auto lg:w-full shrink-0 ${
               activeTab === 'permissions' 
                 ? 'bg-admin-primary text-white font-bold shadow-md shadow-admin-primary/20' 
                 : 'text-admin-textsecondary hover:bg-admin-warmbg hover:text-admin-textprimary font-semibold'
@@ -141,7 +141,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-admin-textsecondary mb-1">Nama Lengkap</label>
                       <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} required className="w-full px-4 py-2.5 bg-admin-warmbg border border-admin-hairline rounded-xl text-sm font-semibold text-admin-textprimary focus:outline-none focus:ring-1 focus:ring-admin-primary" />
@@ -163,7 +163,7 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-bold text-admin-textprimary mb-6">Kontak & Lokasi Tugas</h3>
                 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-admin-textsecondary mb-1">Email Administrator</label>
                       <input type="email" value={profileEmail} disabled className="w-full px-4 py-2.5 bg-admin-hairline/50 border border-admin-hairline rounded-xl text-sm font-bold text-admin-textsecondary cursor-not-allowed" />
@@ -198,7 +198,7 @@ export default function SettingsPage() {
               <div className="bg-admin-surfacewhite border border-admin-hairline p-6 rounded-2xl">
                 <h3 className="text-lg font-bold text-admin-textprimary mb-6">Ubah Kata Sandi</h3>
                 <form onSubmit={handleSavePassword} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-admin-textsecondary mb-1">Kata Sandi Sekarang</label>
                       <input type="password" required className="w-full px-4 py-2.5 bg-admin-warmbg border border-admin-hairline rounded-xl text-sm text-admin-textprimary focus:outline-none focus:ring-1 focus:ring-admin-primary" />
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-admin-textsecondary">Berikut adalah daftar modul sistem yang berada dalam cakupan otorisasi akun Anda.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="p-5 border border-admin-hairline rounded-xl bg-admin-warmbg/50 flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 rounded-xl bg-admin-primary/10 text-admin-primary flex items-center justify-center mb-4">

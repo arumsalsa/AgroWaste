@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, ShoppingCart, ArrowRight, Plus, Check, X, Leaf, MapPin } from "lucide-react";
+import { ShoppingCart, ArrowRight, Plus, Check, X, Leaf } from "lucide-react";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import EarthyCard from "./EarthyCard";
@@ -109,34 +109,20 @@ export default function FeaturedProducts() {
     </div>
   );
 
-  const viewMoreCard = (
-    <div className="w-[150px] md:w-[200px] shrink-0 bg-land-warm rounded-[32px] border border-[#E8E0D5] flex flex-col items-center justify-center group hover:bg-land-accent transition-colors cursor-pointer snap-center">
-      <Link href="/marketplace" className="w-full h-full flex flex-col items-center justify-center p-6 gap-4">
-        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-land-accent shadow-sm group-hover:scale-110 transition-transform">
-          <ArrowRight className="w-6 h-6" />
-        </div>
-        <span className="font-bold text-land-ink text-sm group-hover:text-white text-center">Lihat Semua<br />Produk</span>
-      </Link>
-    </div>
-  );
-
   /* loading */
   if (loading) {
     return (
-      <section className="py-10 md:py-12 w-full overflow-hidden">
+      <section className="py-10 md:py-12 w-full">
         {sectionHeader}
-        <div
-          className="flex overflow-x-auto gap-6 px-6 pb-12 snap-x snap-mandatory items-stretch max-w-7xl mx-auto"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 px-4 sm:px-6 max-w-7xl mx-auto">
+          {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="w-[300px] md:w-[350px] shrink-0 bg-white rounded-[32px] p-3 border border-[#E8E0D5] animate-pulse snap-center"
+              className="bg-white rounded-2xl p-2.5 sm:p-3 border border-[#E8E0D5] animate-pulse"
             >
-              <div className="w-full h-56 rounded-[24px] bg-[#E8E0D5] mb-5" />
-              <div className="px-3 pb-3 space-y-3">
-                <div className="h-5 bg-[#E8E0D5] rounded-full w-4/5" />
+              <div className="w-full h-28 sm:h-44 rounded-xl bg-[#E8E0D5] mb-3 sm:mb-5" />
+              <div className="px-2 pb-2 space-y-3">
+                <div className="h-4 bg-[#E8E0D5] rounded-full w-4/5" />
                 <div className="h-4 bg-[#E8E0D5] rounded-full w-full" />
                 <div className="h-4 bg-[#E8E0D5] rounded-full w-2/3" />
                 <div className="flex justify-between items-center mt-4">
@@ -146,7 +132,6 @@ export default function FeaturedProducts() {
               </div>
             </div>
           ))}
-          {viewMoreCard}
         </div>
       </section>
     );
@@ -154,15 +139,10 @@ export default function FeaturedProducts() {
 
   /* render */
   return (
-    <section className="py-10 md:py-12 w-full overflow-hidden">
+    <section className="py-10 md:py-12 w-full">
       {sectionHeader}
 
-      <div
-        className="flex overflow-x-auto gap-6 px-6 pb-12 snap-x snap-mandatory items-stretch max-w-7xl mx-auto"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        <style dangerouslySetInnerHTML={{ __html: `::-webkit-scrollbar { display: none; }` }} />
-
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 px-4 sm:px-6 max-w-7xl mx-auto">
         {products.map((product) => (
           <EarthyCard
             key={product.id}
@@ -186,11 +166,16 @@ export default function FeaturedProducts() {
             ctaSuccessIcon={Check}
             ctaErrorIcon={X}
             decorativeIcon={Leaf}
-            className="w-[300px] md:w-[350px] shrink-0 snap-center"
+            className="w-full"
           />
         ))}
+      </div>
 
-        {viewMoreCard}
+      {/* Button link only visible on mobile at the bottom */}
+      <div className="mt-8 flex justify-center md:hidden px-4">
+        <Link href="/marketplace" className="w-full text-center py-3.5 border border-land-accent text-land-accent font-bold rounded-full text-sm">
+          Lihat Semua Koleksi →
+        </Link>
       </div>
     </section>
   );

@@ -14,7 +14,12 @@ interface UserProfile {
   };
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -70,12 +75,30 @@ export function Sidebar() {
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmName)}&background=3F4F44&color=fff&rounded=true`;
 
   return (
-    <aside className="w-64 h-screen fixed left-0 top-0 border-r border-seller-hairline bg-[#EBE7E0] flex flex-col z-20">
+    <aside
+      className={`
+        w-64 h-screen fixed left-0 top-0 border-r border-seller-hairline bg-[#EBE7E0]
+        flex flex-col z-30 transition-transform duration-300 ease-in-out
+        ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}
+      aria-label="Navigasi seller"
+    >
       {/* Brand Header */}
-      <div className="h-20 flex items-center px-6 pt-4">
-        <Link href="/seller" className="flex items-center gap-2">
+      <div className="h-20 flex items-center justify-between px-6 pt-4">
+        <Link href="/seller" className="flex items-center gap-2" onClick={onClose}>
           <span className="text-2xl font-bold text-seller-primary tracking-tight">AgroWaste</span>
         </Link>
+        {/* Mobile close button */}
+        <button
+          type="button"
+          aria-label="Tutup navigasi"
+          onClick={onClose}
+          className="lg:hidden p-2 -mr-1 rounded-lg hover:bg-seller-hairline text-seller-textsecondary transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Profile */}
@@ -97,6 +120,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.path}
+              onClick={onClose}
               className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
                 isActive 
                   ? "bg-seller-primary text-white shadow-md shadow-seller-primary/20" 

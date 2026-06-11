@@ -173,14 +173,14 @@ export default function CourierDashboard() {
   return (
     <div className="space-y-8 animate-fade-in pb-20 relative">
       {/* Header Section */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-courier-primary mb-1">
             Halo, {courierName}!
           </h2>
           <p className="text-sm text-courier-textsecondary">Siap untuk pengiriman pupuk AgroWaste hari ini?</p>
         </div>
-        <div className="px-4 py-2 bg-courier-warmbg border border-courier-hairline rounded-lg text-sm font-bold text-courier-textprimary flex items-center gap-2 shadow-sm">
+        <div className="px-4 py-2 bg-courier-warmbg border border-courier-hairline rounded-lg text-sm font-bold text-courier-textprimary flex items-center gap-2 shadow-sm self-start sm:self-auto">
           <svg className="w-4 h-4 text-courier-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
@@ -189,50 +189,50 @@ export default function CourierDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-courier-warmbg text-courier-textsecondary flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-courier-surfacewhite border border-courier-hairline rounded-xl sm:rounded-2xl p-4 sm:p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-courier-warmbg text-courier-textsecondary flex items-center justify-center">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
               </svg>
             </div>
           </div>
           <div>
-            <span className="text-xs text-courier-textsecondary block mb-1">Total Pengiriman Saya</span>
-            <div className="text-4xl font-bold font-tabular text-courier-textprimary">
+            <span className="text-[10px] sm:text-xs text-courier-textsecondary block mb-1">Total Pengiriman Saya</span>
+            <div className="text-2xl sm:text-4xl font-bold font-tabular text-courier-textprimary">
               {loading ? "..." : totalCount}
             </div>
           </div>
         </div>
 
-        <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-courier-primary/10 text-courier-primary flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <div className="bg-courier-surfacewhite border border-courier-hairline rounded-xl sm:rounded-2xl p-4 sm:p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-courier-primary/10 text-courier-primary flex items-center justify-center">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
           </div>
           <div>
-            <span className="text-xs text-courier-textsecondary block mb-1">Pengiriman Berhasil</span>
-            <div className="text-4xl font-bold font-tabular text-courier-textprimary">
+            <span className="text-[10px] sm:text-xs text-courier-textsecondary block mb-1">Pengiriman Berhasil</span>
+            <div className="text-2xl sm:text-4xl font-bold font-tabular text-courier-textprimary">
               {loading ? "..." : `${successCount} Selesai`}
             </div>
           </div>
         </div>
 
-        <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-courier-warmbg text-courier-textsecondary flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <div className="bg-courier-surfacewhite border border-courier-hairline rounded-xl sm:rounded-2xl p-4 sm:p-6 relative flex flex-col justify-between hover:border-courier-primary/50 transition-colors shadow-sm">
+          <div className="flex justify-between items-start mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-courier-warmbg text-courier-textsecondary flex items-center justify-center">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
               </svg>
             </div>
           </div>
           <div>
-            <span className="text-xs text-courier-textsecondary block mb-1">Rute Aktif & Terjadwal</span>
-            <div className="text-4xl font-bold font-tabular text-courier-textprimary">
+            <span className="text-[10px] sm:text-xs text-courier-textsecondary block mb-1">Rute Aktif & Terjadwal</span>
+            <div className="text-2xl sm:text-4xl font-bold font-tabular text-courier-textprimary">
               {loading ? "..." : `${activeRoutesCount} Aktif / ${scheduledCount} Antrean`}
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function CourierDashboard() {
           <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm flex flex-col flex-1">
             
             {/* GIS Overview map */}
-            <div id="overview-map" className="h-64 bg-gray-900 w-full" style={{ zIndex: 1 }} />
+            <div id="overview-map" className="h-64 bg-gray-900 w-full" style={{ zIndex: 1, minHeight: "256px" }} />
 
             <div className="p-5 flex justify-between items-center bg-courier-surfacewhite text-sm border-t border-courier-hairline">
               <div>

@@ -54,7 +54,7 @@ export const ListingApprovalDashboardSection = ({
     <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl overflow-hidden">
       {/* Controls */}
       <div className="p-6 border-b border-admin-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-max" role="tablist" aria-label="Category filter">
+        <div className="flex bg-admin-warmbg p-1.5 rounded-xl gap-1 max-w-full overflow-x-auto w-full sm:w-auto" role="tablist" aria-label="Category filter">
           {(["All Pending", "Limbah Padat", "Limbah Cair"] as FilterKey[]).map((f) => (
             <button
               key={f}

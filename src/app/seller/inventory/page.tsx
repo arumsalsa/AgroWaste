@@ -385,8 +385,8 @@ export default function InventoryPage() {
         <p className="text-sm text-seller-textsecondary">Kelola ketersediaan limbah organik peternakan Anda.</p>
       </div>
 
-      {/* Top Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats KPI */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-seller-surfacewhite border border-seller-hairline p-5 rounded-2xl">
           <div className="text-seller-primary mb-4">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
@@ -598,7 +598,7 @@ export default function InventoryPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {field("price",       "Harga (Rp/kg) *", "number", "2000")}
                 {field("stock_kg",    "Stok Awal (kg) *", "number", "100")}
                 {field("min_order_kg","Min. Order (kg) *", "number", "1")}
@@ -619,7 +619,7 @@ export default function InventoryPage() {
 
               <div className="pt-2 border-t border-seller-hairline">
                 <p className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider mb-3">Lokasi Produk</p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {field("provinsi",  "Provinsi",  "text", "Jawa Timur")}
                   {field("kabupaten", "Kabupaten", "text", "Malang")}
                   {field("kecamatan", "Kecamatan", "text", "Lowokwaru")}
