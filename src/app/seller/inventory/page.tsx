@@ -66,7 +66,8 @@ function formatRupiah(n: string | number) {
 function statusInfo(s: string) {
   switch (s) {
     case "aktif":   return { label: "AKTIF",    color: "text-seller-semgreen",     dot: "bg-seller-semgreen" };
-    case "pending": return { label: "MENUNGGU", color: "text-amber-600",           dot: "bg-amber-500" };
+    case "pending":
+    case "menunggu_review": return { label: "MENUNGGU", color: "text-amber-600",           dot: "bg-amber-500" };
     case "ditolak": return { label: "DITOLAK",  color: "text-seller-semred",       dot: "bg-seller-semred" };
     default:        return { label: s.toUpperCase(), color: "text-seller-textsecondary", dot: "bg-seller-textsecondary" };
   }

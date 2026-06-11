@@ -25,7 +25,7 @@ interface Product {
   image_url?: string | null;
   image_urls?: string[];
   category?: { name: string };
-  peternak_profile?: { nama_peternakan: string; badge: string };
+  peternak_profile?: { nama_peternakan: string; badge: string; user_id: string };
 }
 
 function formatRupiah(n: string | number) {
@@ -271,7 +271,7 @@ export default function ProductDetail() {
                 </div>
 
                 {/* Farmer Info */}
-                <div className="flex items-center justify-between border border-[#E8E0D5] rounded-xl p-3 mb-6 hover:border-[#009A44] transition-colors cursor-pointer group">
+                <Link href={`/sellers/${product.peternak_profile?.user_id}`} className="flex items-center justify-between border border-[#E8E0D5] rounded-xl p-3 mb-6 hover:border-[#009A44] transition-colors cursor-pointer group">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#2C3930] flex items-center justify-center text-white text-sm font-bold">
                       {(product.peternak_profile?.nama_peternakan ?? "P").charAt(0).toUpperCase()}
@@ -288,7 +288,7 @@ export default function ProductDetail() {
                     </div>
                   </div>
                   <svg className="w-5 h-5 text-[#E8E0D5] group-hover:text-[#009A44]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"></path></svg>
-                </div>
+                </Link>
 
                 {/* Quantity + Actions */}
                 <div className="mb-2">

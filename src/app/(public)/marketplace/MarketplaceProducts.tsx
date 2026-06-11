@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf } from "lucide-react";
+import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf, Sprout } from "lucide-react";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import EarthyCard from "@/components/public/EarthyCard";
 
 interface Product {
   id: string;
@@ -145,7 +146,7 @@ export default function MarketplaceProducts({
   const countBar = (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
       <span className="text-land-muted font-bold text-base">
-        <span className="text-[#009A44] text-lg">
+        <span className="text-land-accent text-lg">
           {loading ? "—" : (paginated?.total ?? 0)}
         </span>{" "}
         Produk ditemukan
@@ -153,7 +154,7 @@ export default function MarketplaceProducts({
       <button
         type="button"
         onClick={handleSortCycle}
-        className="flex items-center gap-2 px-5 py-3 bg-white border border-[#E8E0D5] rounded-full text-sm font-bold text-land-ink hover:border-[#009A44] transition-colors shadow-sm"
+        className="flex items-center gap-2 px-5 py-3 bg-white border border-[#E8E0D5] rounded-full text-sm font-bold text-land-ink hover:border-land-accent transition-colors shadow-sm cursor-pointer"
       >
         Urutkan: {sortLabel} <ChevronDown className="w-4 h-4" />
       </button>
@@ -229,104 +230,43 @@ export default function MarketplaceProducts({
           const badgeLabel = isVerified ? "TERVERIFIKASI" : badge?.toUpperCase();
 
           return (
-            <Link
-              href={`/marketplace/${product.id}`}
+            <EarthyCard
               key={product.id}
-              className="bg-white border border-[#E8E0D5] rounded-[28px] p-3 shadow-[0_8px_24px_rgba(44,57,48,0.04)] flex flex-col group hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(44,57,48,0.08)] transition-all"
-            >
-              <div className="w-full aspect-[4/3] rounded-[20px] overflow-hidden mb-5 relative bg-[#F0F5F1] flex items-center justify-center">
-                {product.image_url && (
-                  <img
-                    src={getProductImageUrl(product.image_url)}
-                    alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                  />
-                )}
-                <Leaf className="w-16 h-16 text-[#009A44]/20" />
-                {showBadge && (
-                  <div
-                    className={`absolute top-3 left-3 px-3 py-1.5 rounded-full text-[10px] font-bold text-white flex items-center gap-1.5 shadow-md backdrop-blur-md ${
-                      isVerified ? "bg-[#009A44]/90" : "bg-[#10B981]/90"
-                    }`}
-                  >
-                    {isVerified ? (
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                    ) : (
-                      <Star className="w-3.5 h-3.5" />
-                    )}
-                    {badgeLabel}
-                  </div>
-                )}
-              </div>
-
-              <div className="px-2 pb-2 flex flex-col flex-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-land-muted mb-2">
-                  <MapPin className="w-3.5 h-3.5 text-[#009A44]" />
-                  {product.kabupaten}
-                </div>
-
-                <h3 className="font-land-heading text-lg font-bold text-land-ink mb-1 line-clamp-2">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-land-muted mb-4">
-                  {product.peternak_profile?.nama_peternakan ?? "—"}
-                </p>
-
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#E8E0D5]/50">
-                  <div>
-                    <span className="font-bold text-[#009A44] text-xl block">
-                      {formatRupiah(product.price)}
-                      <span className="text-sm font-medium text-land-muted">
-                        /{product.unit}
-                      </span>
-                    </span>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                      <span className="text-xs font-bold text-land-ink">
-                        {Number(product.rating_avg).toFixed(1)}
-                      </span>
-                      <span className="text-xs text-land-muted">
-                        ({product.review_count})
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => handleAddToCart(product, e)}
-                    disabled={addingId === product.id}
-                    aria-label="Tambah ke keranjang"
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed ${
-                      addedId === product.id
-                        ? "bg-[#009A44] text-white"
-                        : errorId === product.id
-                        ? "bg-red-100 text-red-500"
-                        : "bg-land-warm text-land-ink hover:bg-[#009A44] hover:text-white"
-                    }`}
-                  >
-                    {addedId === product.id ? (
-                      <Check className="w-5 h-5" />
-                    ) : errorId === product.id ? (
-                      <X className="w-5 h-5" />
-                    ) : (
-                      <Plus className={`w-5 h-5 ${addingId === product.id ? "animate-pulse" : ""}`} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </Link>
+              href={`/marketplace/${product.id}`}
+              title={product.name}
+              description={product.peternak_profile?.nama_peternakan ?? "—"}
+              imageUrl={product.image_url ? getProductImageUrl(product.image_url) : null}
+              imageFallbackIcon={Leaf}
+              badgeText={showBadge ? badgeLabel : undefined}
+              badgeDotColorClass={isVerified ? "bg-land-accent" : "bg-land-clay"}
+              locationText={product.kabupaten || undefined}
+              rating={Number(product.rating_avg) > 0 ? Number(product.rating_avg) : undefined}
+              price={formatRupiah(product.price)}
+              unit={`/ ${product.unit}`}
+              ctaText="Lihat Detail"
+              onCtaClick={(e) => handleAddToCart(product, e)}
+              ctaLoading={addingId === product.id}
+              ctaSuccess={addedId === product.id}
+              ctaError={errorId === product.id}
+              ctaIcon={Plus}
+              ctaSuccessIcon={Check}
+              ctaErrorIcon={X}
+              decorativeIcon={Sprout}
+              className="w-full shrink-0"
+            />
           );
         })}
       </div>
 
       {/* Pagination */}
       {paginated && paginated.last_page > 1 && (
-        <div className="flex justify-center pt-8 border-t border-[#E8E0D5]">
+        <div className="flex justify-center pt-8 border-t border-land-cream">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="w-12 h-12 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center text-land-muted hover:border-[#009A44] hover:text-[#009A44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-12 h-12 rounded-full bg-white border border-land-cream flex items-center justify-center text-land-muted hover:border-land-accent hover:text-land-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <ChevronDown className="w-5 h-5 rotate-90" />
             </button>
@@ -336,9 +276,9 @@ export default function MarketplaceProducts({
                 key={p}
                 type="button"
                 onClick={() => setPage(p)}
-                className={`w-12 h-12 rounded-full font-bold transition-colors ${
+                className={`w-12 h-12 rounded-full font-bold transition-colors cursor-pointer ${
                   p === page
-                    ? "bg-[#009A44] text-white shadow-md"
+                    ? "bg-land-accent text-white shadow-md"
                     : "bg-white border border-transparent text-land-muted hover:bg-land-warm"
                 }`}
               >
@@ -350,7 +290,7 @@ export default function MarketplaceProducts({
               type="button"
               onClick={() => setPage((p) => Math.min(paginated.last_page, p + 1))}
               disabled={page === paginated.last_page}
-              className="w-12 h-12 rounded-full bg-white border border-[#E8E0D5] flex items-center justify-center text-land-muted hover:border-[#009A44] hover:text-[#009A44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-12 h-12 rounded-full bg-white border border-land-cream flex items-center justify-center text-land-muted hover:border-land-accent hover:text-land-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <ChevronDown className="w-5 h-5 -rotate-90" />
             </button>

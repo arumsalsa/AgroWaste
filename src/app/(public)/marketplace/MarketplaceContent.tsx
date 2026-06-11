@@ -65,15 +65,15 @@ export default function MarketplaceContent() {
       <div className="max-w-7xl mx-auto px-6">
 
         {/* ── Hero Section & Searchbar ── */}
-        <section className="bg-[#2C3930] rounded-[32px] px-6 py-10 md:py-12 mt-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-md">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-[#009A44] rounded-full mix-blend-screen filter blur-[100px] opacity-20 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#F59E0B] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
+        <section className="bg-land-ink rounded-[32px] px-6 py-10 md:py-12 mt-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-md">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-land-accent rounded-full mix-blend-screen filter blur-[100px] opacity-20 pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-land-clay rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
 
           <h1
             className="text-3xl md:text-4xl font-land-heading font-bold text-white mb-8 relative z-10"
             style={{ textWrap: "balance" }}
           >
-            Bursa pupuk organik <span className="text-[#4ADE80]">terbesar.</span>
+            Bursa pupuk organik <span className="text-emerald-300">terbesar.</span>
           </h1>
 
           <div className="w-full max-w-3xl relative z-20 group">
@@ -83,14 +83,14 @@ export default function MarketplaceContent() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && setDebouncedSearch(searchInput.trim())}
               placeholder="Cari kompos, pupuk kandang, atau alat pertanian..."
-              className="w-full h-16 md:h-20 pl-14 md:pl-16 pr-32 md:pr-40 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/60 text-base md:text-xl focus:outline-none focus:bg-white/20 focus:border-[#4ADE80] transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15)]"
+              className="w-full h-16 md:h-20 pl-14 md:pl-16 pr-32 md:pr-40 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/60 text-base md:text-xl focus:outline-none focus:bg-white/20 focus:border-land-accent transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15)]"
             />
-            <Search className="w-6 h-6 md:w-8 md:h-8 text-white/60 absolute left-5 md:left-6 top-1/2 -translate-y-1/2 group-focus-within:text-[#4ADE80] transition-colors pointer-events-none" />
+            <Search className="w-6 h-6 md:w-8 md:h-8 text-white/60 absolute left-5 md:left-6 top-1/2 -translate-y-1/2 group-focus-within:text-land-accent transition-colors pointer-events-none" />
 
             <button
               type="button"
               onClick={() => setDebouncedSearch(searchInput.trim())}
-              className="absolute right-2 top-2 bottom-2 px-6 md:px-10 bg-[#009A44] hover:bg-[#008139] text-white rounded-full font-bold md:text-lg transition-transform hover:scale-105 shadow-md flex items-center justify-center"
+              className="absolute right-2 top-2 bottom-2 px-6 md:px-10 bg-land-accent hover:bg-land-accent-hover text-white rounded-full font-bold md:text-lg transition-transform hover:scale-105 shadow-md flex items-center justify-center cursor-pointer"
             >
               Cari
             </button>
@@ -135,12 +135,12 @@ export default function MarketplaceContent() {
                         onChange={() =>
                           setJenisTernak((prev) => (prev === opt.value ? "" : opt.value))
                         }
-                        className="w-5 h-5 rounded-[6px] border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer"
+                        className="w-5 h-5 rounded-[6px] border-[#E8E0D5] text-land-accent focus:ring-land-accent transition-colors cursor-pointer"
                       />
                       <span
                         className={`font-medium transition-colors group-hover:text-land-ink ${
                           jenisTernak === opt.value
-                            ? "text-[#009A44] font-semibold"
+                            ? "text-land-accent font-semibold"
                             : "text-land-muted"
                         }`}
                       >
@@ -165,12 +165,12 @@ export default function MarketplaceContent() {
                         onChange={() =>
                           setKategori((prev) => (prev === opt.value ? "" : opt.value))
                         }
-                        className="w-5 h-5 rounded-[6px] border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer"
+                        className="w-5 h-5 rounded-[6px] border-[#E8E0D5] text-land-accent focus:ring-land-accent transition-colors cursor-pointer"
                       />
                       <span
                         className={`font-medium transition-colors group-hover:text-land-ink ${
                           kategori === opt.value
-                            ? "text-[#009A44] font-semibold"
+                            ? "text-land-accent font-semibold"
                             : "text-land-muted"
                         }`}
                       >
@@ -195,12 +195,12 @@ export default function MarketplaceContent() {
                         onChange={() =>
                           setProvinsi((prev) => (prev === loc ? "" : loc))
                         }
-                        className="w-5 h-5 rounded-[6px] border-[#E8E0D5] text-[#009A44] focus:ring-[#009A44] transition-colors cursor-pointer"
+                        className="w-5 h-5 rounded-[6px] border-[#E8E0D5] text-land-accent focus:ring-land-accent transition-colors cursor-pointer"
                       />
                       <span
                         className={`font-medium transition-colors group-hover:text-land-ink ${
                           provinsi === loc
-                            ? "text-[#009A44] font-semibold"
+                            ? "text-land-accent font-semibold"
                             : "text-land-muted"
                         }`}
                       >

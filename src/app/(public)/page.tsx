@@ -1,22 +1,113 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Leaf, Recycle, ShieldCheck, ArrowRight, MapPin, Truck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Leaf, Recycle, ShieldCheck } from "lucide-react";
 import ImpactCalculator from "@/components/public/ImpactCalculator";
 import { Marquee } from "@/components/public/Marquee";
 import ImageSlider from "@/components/public/ImageSlider";
 import FeaturedProducts from "@/components/public/FeaturedProducts";
+import MapCn, { SellerInfo } from "@/components/public/MapCn";
 
-export const metadata = {
-  title: "Beranda Utama | AgroWaste",
-};
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [userCoords, setUserCoords] = useState<[number, number] | null>(null);
+  const [sellers, setSellers] = useState<SellerInfo[]>([]);
+  const [activeSellerId, setActiveSellerId] = useState<string | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "prompting" | "granted" | "denied">("idle");
+  const [loadingSellers, setLoadingSellers] = useState(true);
+
+  // Set page title client-side since this is a Client Component
+  useEffect(() => {
+    document.title = "Beranda Utama | AgroWaste";
+  }, []);
+
+  // Fetch unique sellers from active products
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?sort=terbaru`)
+      .then((r) => (r.ok ? r.json() : { data: { data: [] } }))
+      .then((json) => {
+        const list = json.data?.data ?? [];
+        const uniqueSellersMap = new Map<string, SellerInfo>();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        list.forEach((p: any) => {
+          const profile = p.peternak_profile;
+          if (profile) {
+            const lat = parseFloat(profile.lat || p.lat || "0");
+            const lng = parseFloat(profile.lng || p.lng || "0");
+            if (lat !== 0 && lng !== 0) {
+              uniqueSellersMap.set(profile.user_id, {
+                userId: profile.user_id,
+                name: profile.nama_peternakan || "Peternak Organik",
+                lat,
+                lng,
+                kabupaten: p.kabupaten || "Jawa Timur",
+                provinsi: p.provinsi || "Indonesia",
+              });
+            }
+          }
+        });
+
+        setSellers(Array.from(uniqueSellersMap.values()));
+        setLoadingSellers(false);
+      })
+      .catch(() => setLoadingSellers(false));
+  }, []);
+
+  // Request user geolocation coords
+  const requestLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setGeoStatus("denied");
+      return;
+    }
+    setGeoStatus("prompting");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords([pos.coords.longitude, pos.coords.latitude]);
+        setGeoStatus("granted");
+      },
+      () => {
+        setGeoStatus("denied");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  useEffect(() => {
+    requestLocation();
+  }, []);
+
+  // Calculate Haversine distance and sort sellers by proximity
+  const sortedSellers = useMemo(() => {
+    if (!userCoords) return sellers;
+
+    const [uLng, uLat] = userCoords;
+    const sellersWithDistance = sellers.map((s) => {
+      const dist = getDistance(uLat, uLng, s.lat, s.lng);
+      return { ...s, distance: dist };
+    });
+
+    return [...sellersWithDistance].sort((a, b) => (a.distance || 0) - (b.distance || 0));
+  }, [userCoords, sellers]);
+
   return (
     <div className="flex-1 flex flex-col bg-land-bg">
-
       {/* Hero Section */}
       <section className="relative bg-land-bg overflow-hidden lg:min-h-[90dvh] flex items-center">
-
         {/* Decorative cow photo — desktop only, right side, fades left */}
         <div
           className="hidden lg:block absolute inset-y-0 right-0 w-[55%] pointer-events-none select-none"
@@ -43,11 +134,8 @@ export default function LandingPage() {
         {/* Text content — left column, constrained so it doesn't reach the photo */}
         <div className="relative z-10 w-full px-6 md:px-10 lg:px-16 pt-28 md:pt-3 pb-8 md:pb-12 max-w-7xl mx-auto">
           <div className="lg:max-w-[52%]">
-
             {/* Brand label — contextual, not an eyebrow pill */}
-            <p
-              className="text-land-muted font-medium text-base md:text-lg mb-8 hero-fade-up"
-            >
+            <p className="text-land-muted font-medium text-base md:text-lg mb-8 hero-fade-up">
               AgroWaste
             </p>
 
@@ -60,7 +148,8 @@ export default function LandingPage() {
                 animationDelay: "60ms",
               } as React.CSSProperties}
             >
-              Limbah ternak<br />
+              Limbah ternak
+              <br />
               punya nilai.
             </h1>
 
@@ -80,8 +169,7 @@ export default function LandingPage() {
               className="text-land-muted text-lg leading-relaxed max-w-lg mb-12 hero-fade-up"
               style={{ animationDelay: "220ms" } as React.CSSProperties}
             >
-              Hubungkan sisa pakan, kotoran ternak, dan produk kandangmu dengan
-              petani yang butuh pupuk organik berkualitas.
+              Hubungkan sisa pakan, kotoran ternak, dan produk kandangmu dengan petani yang butuh pupuk organik berkualitas.
             </p>
 
             {/* CTAs — clay-tactile style, left-aligned, stack on mobile */}
@@ -91,7 +179,13 @@ export default function LandingPage() {
             >
               <Link href="/register?role=penjual" className="btn-clay-primary">
                 Mulai Jual Limbah
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </Link>
@@ -99,10 +193,8 @@ export default function LandingPage() {
                 Cari Pupuk Organik
               </Link>
             </div>
-
           </div>
         </div>
-
       </section>
 
       <Marquee />
@@ -110,21 +202,23 @@ export default function LandingPage() {
       {/* Mission Section (Redesigned Editorial) */}
       <section className="py-10 md:py-12 px-6 max-w-7xl mx-auto w-full">
         <div className="bg-land-ink rounded-[32px] p-8 md:p-16 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center shadow-[0_8px_32px_rgba(44,57,48,0.15)] relative overflow-hidden">
-          
           {/* Decorative background element */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-land-secondary opacity-30 rounded-full blur-3xl pointer-events-none" />
 
           {/* Text Content */}
           <div className="w-full lg:w-1/2 relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-land-bg text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/5">
-              <Leaf className="w-4 h-4 text-[#4ADE80]" />
+              <Leaf className="w-4 h-4 text-land-accent" />
               Misi Kami
             </div>
-            
-            <h2 className="font-land-heading font-bold text-land-bg text-3xl md:text-5xl leading-tight mb-6" style={{ textWrap: "balance" }}>
+
+            <h2
+              className="font-land-heading font-bold text-land-bg text-3xl md:text-5xl leading-tight mb-6"
+              style={{ textWrap: "balance" }}
+            >
               Merajut harmoni antara peternakan & alam.
             </h2>
-            
+
             <p className="text-land-warm/80 text-base md:text-lg leading-relaxed mb-8">
               Kami tidak sekadar platform jual-beli. AgroWaste lahir dari kegelisahan akan menumpuknya limbah organik yang mencemari lingkungan. Kami percaya, dengan sentuhan sirkular, apa yang tadinya sisa bisa menjadi nyawa baru bagi tanah Nusantara.
             </p>
@@ -132,7 +226,7 @@ export default function LandingPage() {
             {/* Stats - Editorial horizontal list */}
             <div className="flex flex-wrap gap-x-12 gap-y-6 pt-8 border-t border-white/10">
               <div>
-                <div className="text-4xl font-bold text-[#4ADE80] font-land-heading mb-1">5.2k+</div>
+                <div className="text-4xl font-bold text-land-accent font-land-heading mb-1">5.2k+</div>
                 <div className="text-[11px] font-bold text-land-warm/60 uppercase tracking-widest">Peternak Aktif</div>
               </div>
               <div>
@@ -145,38 +239,41 @@ export default function LandingPage() {
           {/* Image & Cards Layout (Asymmetric) */}
           <div className="w-full lg:w-1/2 relative z-10 flex flex-col sm:flex-row gap-6">
             <div className="flex flex-col gap-6 w-full sm:w-1/2 translate-y-0 sm:translate-y-8">
-              <ImageSlider 
+              <ImageSlider
                 images={[
                   "https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=600&q=80",
                   "https://images.unsplash.com/photo-1589923188900-85dae440047b?auto=format&fit=crop&w=600&q=80",
-                  "https://images.unsplash.com/photo-1500937386664-56d159f87b81?auto=format&fit=crop&w=600&q=80"
-                ]} 
+                  "https://images.unsplash.com/photo-1500937386664-56d159f87b81?auto=format&fit=crop&w=600&q=80",
+                ]}
                 overlayClass="bg-land-ink/20"
               />
               <div className="bg-land-secondary/80 backdrop-blur-md rounded-[24px] p-6 border border-white/10">
-                <Recycle className="w-8 h-8 text-[#4ADE80] mb-4" />
+                <Recycle className="w-8 h-8 text-land-accent mb-4" />
                 <h3 className="text-land-bg font-bold text-lg mb-2">Konversi Efisien</h3>
-                <p className="text-land-warm/70 text-sm leading-relaxed">Sistem cerdas kami memastikan perpindahan pupuk dari kandang ke lahan dalam waktu 48 jam.</p>
+                <p className="text-land-warm/70 text-sm leading-relaxed">
+                  Sistem cerdas kami memastikan perpindahan pupuk dari kandang ke lahan dalam waktu 48 jam.
+                </p>
               </div>
             </div>
-            
+
             <div className="flex flex-col gap-6 w-full sm:w-1/2">
               <div className="bg-land-clay/90 backdrop-blur-md rounded-[24px] p-6 border border-white/10">
                 <ShieldCheck className="w-8 h-8 text-land-bg mb-4" />
                 <h3 className="text-land-bg font-bold text-lg mb-2">Kualitas Terjamin</h3>
-                <p className="text-land-warm/80 text-sm leading-relaxed">Hanya pupuk organik terverifikasi yang sampai ke tangan petani, menekan risiko kegagalan panen.</p>
+                <p className="text-land-warm/80 text-sm leading-relaxed">
+                  Hanya pupuk organik terverifikasi yang sampai ke tangan petani, menekan risiko kegagalan panen.
+                </p>
               </div>
-              <ImageSlider 
+              <ImageSlider
                 images={[
                   "https://images.unsplash.com/photo-1592982537447-6f2b6cb1e194?auto=format&fit=crop&w=600&q=80",
                   "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=600&q=80",
-                  "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80"
-                ]} 
+                  "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80",
+                ]}
                 overlayClass="bg-land-clay/20"
               />
             </div>
           </div>
-          
         </div>
       </section>
 
@@ -185,80 +282,121 @@ export default function LandingPage() {
       {/* GIS Tracking Dark Section */}
       <section className="bg-[#1C231F] py-12 md:py-16 px-6 text-white mt-8">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="text-[10px] font-bold text-[#4ADE80] tracking-widest uppercase mb-4 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+          <div className="text-[10px] font-bold text-emerald-400 tracking-widest uppercase mb-4 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Kecerdasan Logistik
           </div>
-          
+
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <h2 className="text-3xl md:text-5xl font-land-heading font-bold max-w-2xl leading-tight">
-              Lacak pergerakan pupuk organik secara <span className="text-[#009A44]">real-time.</span>
+              Temukan peternak organik terdekat dari <span className="text-emerald-400">lokasi Anda.</span>
             </h2>
             <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-[#E8E0D5]">
-              SISTEM AKTIF: <span className="text-[#4ADE80] font-bold">100%</span>
+              SISTEM GIS: <span className="text-emerald-400 font-bold">AKTIF</span>
             </div>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Map Container */}
-            <div className="w-full lg:w-2/3 h-[400px] md:h-[500px] bg-[#000000] rounded-[32px] border border-white/10 relative overflow-hidden group">
-              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80" alt="Peta Persebaran" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity group-hover:scale-105 group-hover:opacity-80 transition-all duration-1000" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1C231F] via-transparent to-transparent opacity-80" />
-              
-              {/* Floating Status Badge */}
-              <div className="absolute top-6 left-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center gap-3 z-20">
-                <div className="w-10 h-10 rounded-full bg-[#009A44]/20 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-[#4ADE80]" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold tracking-widest uppercase text-white/70">Titik Tersedia</div>
-                  <div className="text-xl font-bold text-white">124 Lokasi</div>
-                </div>
-              </div>
-
-              {/* Dynamic Map Pins Overlay */}
-              <div className="absolute top-[30%] left-[40%] animate-bounce z-10" style={{ animationDuration: '3s' }}>
-                <MapPin className="w-10 h-10 text-[#009A44] drop-shadow-[0_0_15px_rgba(0,154,68,1)] fill-white" />
-                <div className="w-4 h-4 bg-[#009A44]/50 rounded-full blur-md absolute -bottom-1 left-3" />
-              </div>
-              <div className="absolute top-[45%] left-[60%] animate-bounce z-10" style={{ animationDuration: '4s' }}>
-                <MapPin className="w-8 h-8 text-[#4ADE80] drop-shadow-[0_0_15px_rgba(74,222,128,1)] fill-white" />
-              </div>
-              <div className="absolute top-[60%] left-[25%] animate-bounce z-10" style={{ animationDuration: '2.5s' }}>
-                <MapPin className="w-9 h-9 text-[#009A44] drop-shadow-[0_0_15px_rgba(0,154,68,1)] fill-[#E8E0D5]" />
-              </div>
-              <div className="absolute top-[20%] left-[70%] animate-bounce z-10" style={{ animationDuration: '3.5s' }}>
-                <MapPin className="w-7 h-7 text-[#009A44] drop-shadow-[0_0_10px_rgba(0,154,68,0.8)] fill-white" />
-              </div>
-
+            <div className="w-full lg:w-2/3 h-[450px] md:h-[520px] bg-[#000000] rounded-[32px] border border-white/10 relative overflow-hidden group shadow-clay">
+              <MapCn
+                userCoords={userCoords}
+                sellers={sortedSellers}
+                activeSellerId={activeSellerId}
+                onSelectSeller={(s) => router.push('/sellers/' + s.userId)}
+                className="w-full h-full"
+              />
             </div>
 
             {/* Stats Sidebar */}
             <div className="w-full lg:w-1/3 flex flex-col gap-6">
-              
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[32px] p-8 flex-1 flex flex-col justify-center relative overflow-hidden group hover:bg-white/10 transition-colors">
-                <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#009A44]/10 rounded-full blur-2xl group-hover:bg-[#009A44]/20 transition-colors" />
-                <div className="w-14 h-14 rounded-full bg-[#009A44]/20 flex items-center justify-center mb-6">
-                  <Truck className="w-7 h-7 text-[#4ADE80]" />
+              {/* Geolocation Status Card */}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 flex flex-col justify-between relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Status Lokasi Anda</span>
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      geoStatus === "granted"
+                        ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] animate-pulse"
+                        : geoStatus === "prompting"
+                        ? "bg-amber-400 animate-pulse"
+                        : "bg-red-400"
+                    }`}
+                  />
                 </div>
-                <div className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-2">Total Tonase Terkirim</div>
-                <div className="text-5xl font-land-heading font-bold text-white mb-3">4.5k<span className="text-2xl text-white/50"> Ton</span></div>
-                <div className="text-xs text-[#4ADE80] font-bold flex items-center gap-1">
-                  <ArrowRight className="w-4 h-4 -rotate-45" /> 
-                  Naik 12% bulan ini
-                </div>
+
+                {geoStatus === "granted" && userCoords ? (
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Koordinat Anda:</div>
+                    <div className="text-sm font-mono text-emerald-300 font-tabular">
+                      {userCoords[1].toFixed(5)}° S, {userCoords[0].toFixed(5)}° E
+                    </div>
+                  </div>
+                ) : geoStatus === "prompting" ? (
+                  <p className="text-xs text-white/80">Meminta izin lokasi perangkat...</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    <p className="text-xs text-white/60">Akses lokasi tidak diaktifkan. Aktifkan GPS untuk melacak peternak terdekat.</p>
+                    <button
+                      onClick={requestLocation}
+                      className="px-3.5 py-2 bg-land-accent hover:bg-land-accent-hover text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                    >
+                      Aktifkan Lokasi Saya
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[32px] p-8 flex-1 flex flex-col justify-center relative overflow-hidden group hover:bg-white/10 transition-colors">
-                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors" />
-                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center mb-6">
-                  <ShieldCheck className="w-7 h-7 text-blue-400" />
-                </div>
-                <div className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-2">Mitra Terverifikasi</div>
-                <div className="text-5xl font-land-heading font-bold text-white mb-3">89<span className="text-2xl text-white/50"> Desa</span></div>
-                <div className="text-xs text-white/50">Tersebar di 12 Provinsi</div>
-              </div>
+              {/* Nearest Sellers List */}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 flex-1 flex flex-col justify-start overflow-hidden min-h-[280px]">
+                <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-4 block">Peternak Terdekat</span>
 
+                {loadingSellers ? (
+                  <div className="flex flex-col items-center justify-center py-10 flex-1 animate-pulse">
+                    <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <span className="text-[10px] font-bold text-white/50">Mencari peternak...</span>
+                  </div>
+                ) : sortedSellers.length === 0 ? (
+                  <p className="text-xs text-white/50 italic py-10 text-center">Tidak ada lokasi peternak terverifikasi.</p>
+                ) : (
+                  <div className="space-y-3 overflow-y-auto max-h-[280px] pr-1">
+                    {sortedSellers.slice(0, 3).map((s) => (
+                      <div
+                        key={s.userId}
+                        onClick={() => setActiveSellerId(s.userId)}
+                        className={`p-3.5 rounded-xl border transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 ${
+                          activeSellerId === s.userId
+                            ? "bg-land-accent/20 border-land-accent text-white"
+                            : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="overflow-hidden">
+                          <h4 className="font-bold text-sm truncate leading-snug">{s.name}</h4>
+                          <p className="text-[10px] text-white/50 truncate mt-0.5">
+                            {s.kabupaten}, {s.provinsi}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          {s.distance !== undefined ? (
+                            <span className="text-xs font-bold text-emerald-300 font-tabular block">
+                              {s.distance.toFixed(1)} <span className="text-[10px] font-normal text-white/50">km</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-white/40">Lokasi</span>
+                          )}
+                          <Link
+                            href={`/sellers/${s.userId}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block mt-1 hover:underline"
+                          >
+                            Lihat Profil
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -266,9 +404,6 @@ export default function LandingPage() {
 
       {/* Impact Calculator (Client Component) */}
       <ImpactCalculator />
-
-
-
     </div>
   );
 }

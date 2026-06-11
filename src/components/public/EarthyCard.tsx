@@ -26,6 +26,7 @@ export interface EarthyCardProps {
   ctaErrorIcon?: LucideIcon;
   decorativeIcon?: LucideIcon;
   className?: string;
+  imageHeightClass?: string;
 }
 
 export default function EarthyCard({
@@ -50,6 +51,7 @@ export default function EarthyCard({
   ctaErrorIcon: CtaErrorIcon,
   decorativeIcon: DecorativeIcon,
   className = "",
+  imageHeightClass = "h-56",
 }: EarthyCardProps) {
   const wrapperClass = `w-full bg-land-bg rounded-2xl p-4 border border-land-cream shadow-clay hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-clay-hover hover:border-land-accent/30 transition-all duration-300 flex flex-col group relative overflow-hidden cursor-pointer z-10 ${className}`;
 
@@ -63,7 +65,7 @@ export default function EarthyCard({
       )}
 
       {/* Image container */}
-      <div className="w-full h-56 rounded-xl overflow-hidden relative mb-4 bg-land-warm flex items-center justify-center border border-land-cream/40 shrink-0 z-10">
+      <div className={`w-full rounded-xl overflow-hidden relative mb-4 bg-land-warm flex items-center justify-center border border-land-cream/40 shrink-0 z-10 ${imageHeightClass}`}>
         {imageUrl ? (
           <img
             src={imageUrl}

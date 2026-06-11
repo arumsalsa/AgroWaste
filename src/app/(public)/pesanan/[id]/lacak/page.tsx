@@ -6,9 +6,10 @@ export const metadata = {
   title: "Lacak Pengiriman | AgroWaste",
 };
 
-export default function LacakPesananPage({ params }: { params: { id: string } }) {
+export default async function LacakPesananPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   // Mock data untuk keperluan UI
-  const orderId = params.id || "AGW-882910";
+  const orderId = resolvedParams.id || "AGW-882910";
 
   return (
     <div className="flex-1 animate-fade-in bg-land-warm min-h-screen pb-20">
