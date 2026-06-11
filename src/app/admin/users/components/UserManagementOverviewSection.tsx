@@ -19,14 +19,16 @@ import icon21 from "./icons/paginationright.svg";
 
 type FilterKey = "all" | "peternak" | "pembeli" | "kurir";
 
+type IconSrc = string | { src: string };
+
 type MetricCard = {
   title: string;
   value: string;
   change: string;
   changeColorClass: string;
   iconBgClass: string;
-  iconSrc: any;
-  trendIconSrc: any;
+  iconSrc: IconSrc;
+  trendIconSrc: IconSrc;
   iconClassName: string;
 };
 
@@ -41,11 +43,11 @@ type UserRow = {
   statusDotClass: string;
   statusTextClass: string;
   joinedDate: string;
-  menuIcon: any;
+  menuIcon: IconSrc;
   avatarType: "image" | "icon";
   avatarBgClass: string;
   avatarImageClassName?: string;
-  avatarIconSrc?: any;
+  avatarIconSrc?: IconSrc;
   nameTextClass?: string;
 };
 
@@ -202,7 +204,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                 <img
                   className={card.iconClassName}
                   alt=""
-                  src={(card.iconSrc as any)?.src || card.iconSrc}
+                  src={(card.iconSrc as { src?: string })?.src ?? (card.iconSrc as string)}
                   aria-hidden="true"
                 />
               </div>
@@ -218,7 +220,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                   <img
                     className="relative w-[11.67px] h-[7px]"
                     alt=""
-                    src={(card.trendIconSrc as any)?.src || card.trendIconSrc}
+                    src={(card.trendIconSrc as { src?: string })?.src ?? (card.trendIconSrc as string)}
                     aria-hidden="true"
                   />
                 </div>
@@ -284,7 +286,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                 <img
                   className="relative w-[13.5px] h-[9px]"
                   alt=""
-                  src={(icon13 as any)?.src || icon13}
+                  src={(icon13 as { src?: string })?.src ?? String(icon13)}
                   aria-hidden="true"
                 />
               </div>
@@ -301,7 +303,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                 <img
                   className="relative w-3 h-3"
                   alt=""
-                  src={(icon14 as any)?.src || icon14}
+                  src={(icon14 as { src?: string })?.src ?? String(icon14)}
                   aria-hidden="true"
                 />
               </div>
@@ -349,7 +351,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                         <img
                           className="relative w-4 h-4"
                           alt=""
-                          src={(user.avatarIconSrc as any)?.src || user.avatarIconSrc}
+                          src={(user.avatarIconSrc as { src?: string })?.src ?? (user.avatarIconSrc as string)}
                           aria-hidden="true"
                         />
                       )}
@@ -390,7 +392,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                       <img
                         className="w-1 h-4"
                         alt=""
-                        src={(user.menuIcon as any)?.src || user.menuIcon}
+                        src={(user.menuIcon as { src?: string })?.src ?? (user.menuIcon as string)}
                         aria-hidden="true"
                       />
                     </button>
@@ -420,7 +422,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                 <img
                   className="relative w-[5.55px] h-[9px]"
                   alt=""
-                  src={(icon20 as any)?.src || icon20}
+                  src={(icon20 as { src?: string })?.src ?? String(icon20)}
                   aria-hidden="true"
                 />
               </div>
@@ -469,7 +471,7 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                 <img
                   className="relative w-[5.55px] h-[9px]"
                   alt=""
-                  src={(icon21 as any)?.src || icon21}
+                  src={(icon21 as { src?: string })?.src ?? String(icon21)}
                   aria-hidden="true"
                 />
               </div>

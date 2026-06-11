@@ -47,7 +47,7 @@ export const Sidebar = () => {
         if (json?.success && json?.data) {
           const list = json.data || [];
           // Count active shipments (dijadwalkan or dalam_perjalanan)
-          const active = list.filter((s: any) => s.status !== "terkirim").length;
+          const active = list.filter((s: { status: string }) => s.status !== "terkirim").length;
           setPendingCount(active);
         }
       })

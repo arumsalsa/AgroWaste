@@ -46,8 +46,8 @@ export default function SettingsPage() {
 
   // Leaflet states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
-  const [mapInstance, setMapInstance] = useState<any>(null);
-  const [markerInstance, setMarkerInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
+  const [markerInstance, setMarkerInstance] = useState<LeafletMarker | null>(null);
 
   useEffect(() => {
     apiFetch("/profile")
@@ -98,7 +98,7 @@ export default function SettingsPage() {
       script.onload = () => setLeafletLoaded(true);
       document.body.appendChild(script);
     } else {
-      if ((window as any).L) {
+      if (window.L) {
         setLeafletLoaded(true);
       }
     }
@@ -107,7 +107,7 @@ export default function SettingsPage() {
   // Initialize Leaflet Map
   useEffect(() => {
     if (!leafletLoaded || loading) return;
-    const L = (window as any).L;
+    const L = window.L;
     if (!L) return;
 
     let initialLat = -7.8924;
@@ -134,7 +134,7 @@ export default function SettingsPage() {
     });
 
     // Update lat/lng states when map is clicked
-    map.on("click", (e: any) => {
+    map.on("click", (e: LeafletMouseEvent) => {
       const coords = e.latlng;
       marker.setLatLng(coords);
       setLat(coords.lat.toFixed(6));

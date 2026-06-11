@@ -243,7 +243,7 @@ export default function AdminDashboard() {
             <svg className="w-5 h-5 text-admin-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <div className="text-xs text-admin-textsecondary leading-relaxed">
               <span className="font-bold text-admin-primary block mb-1">Wawasan Sistem</span>
-              "Persetujuan listing 15% lebih lambat minggu ini. Disarankan menambah moderator pada antrean 'Peternak'."
+              &quot;Persetujuan listing 15% lebih lambat minggu ini. Disarankan menambah moderator pada antrean &apos;Peternak&apos;.&quot;
             </div>
           </div>
         </div>

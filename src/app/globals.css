@@ -148,9 +148,28 @@
 html, body {
   height: 100%;
   background-color: #fff8f5;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dashboard Font & Tabular Overrides */
+.seller-theme, .admin-theme, .courier-theme {
+  font-family: 'Nunito Sans', sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Prevent thin font weights (anything below 400) in dashboards */
+.seller-theme .font-light,
+.admin-theme .font-light,
+.courier-theme .font-light,
+.seller-theme .font-thin,
+.admin-theme .font-thin,
+.courier-theme .font-thin,
+.seller-theme .font-extralight,
+.admin-theme .font-extralight,
+.courier-theme .font-extralight {
+  font-weight: 500 !important;
 }
 
 @layer utilities {

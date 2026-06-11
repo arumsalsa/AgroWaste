@@ -17,22 +17,24 @@ import icon20 from "./icons/user.svg";
 import image from "./icons/listing.svg";
 import vector from "./icons/Vector.svg";
 
+type IconSrc = string | { src: string };
+
 type SummaryCard = {
   label: string;
   value: string;
   change: string;
   changeColor: string;
   iconBg: string;
-  iconSrc: string;
+  iconSrc: IconSrc;
   iconAlt: string;
   iconClassName: string;
-  trendIconSrc: string;
+  trendIconSrc: IconSrc;
   trendLabel: string;
 };
 
 type ActivityItem = {
   iconBg: string;
-  iconSrc: string;
+  iconSrc: IconSrc;
   iconAlt: string;
   iconClassName: string;
   time: string;
@@ -238,7 +240,7 @@ const statusCards: StatusCard[] = [
         <img
           className="relative w-[30px] h-6"
           alt="Active logs icon"
-          src={(icon12 as any)?.src || icon12}
+          src={(icon12 as { src?: string })?.src ?? String(icon12)}
         />
       </div>
     ),
@@ -286,7 +288,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                 <img
                   className={card.iconClassName}
                   alt={card.iconAlt}
-                  src={(card.iconSrc as any)?.src || card.iconSrc}
+                  src={(card.iconSrc as { src?: string })?.src ?? (card.iconSrc as string)}
                 />
               </div>
               <div
@@ -302,7 +304,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                   <img
                     className="relative w-2.5 h-1.5"
                     alt=""
-                    src={(card.trendIconSrc as any)?.src || card.trendIconSrc}
+                    src={(card.trendIconSrc as { src?: string })?.src ?? (card.trendIconSrc as string)}
                     aria-hidden="true"
                   />
                 </div>
@@ -349,7 +351,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
               <img
                 className="w-3 h-3"
                 alt=""
-                src={(vector as any)?.src || vector}
+                src={(vector as { src?: string })?.src ?? String(vector)}
                 aria-hidden="true"
               />
             </button>
@@ -457,7 +459,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                     <img
                       className={item.iconClassName}
                       alt={item.iconAlt}
-                      src={(item.iconSrc as any)?.src || item.iconSrc}
+                      src={(item.iconSrc as { src?: string })?.src ?? (item.iconSrc as string)}
                     />
                   </div>
                 </div>
@@ -480,7 +482,7 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                   <img
                     className="relative w-[22px] h-[22px]"
                     alt="Admin insights icon"
-                    src={(icon11 as any)?.src || icon11}
+                    src={(icon11 as { src?: string })?.src ?? String(icon11)}
                   />
                 </div>
                 <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">

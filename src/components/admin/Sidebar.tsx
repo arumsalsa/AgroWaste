@@ -21,7 +21,7 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
       .then((res) => (res.ok ? res.json() : { data: [] }))
       .then((json) => {
         const all = json.data ?? [];
-        const pending = all.filter((p: any) => p.status === "menunggu_review");
+        const pending = all.filter((p: { status: string }) => p.status === "menunggu_review");
         setPendingCount(pending.length);
       })
       .catch(() => {});

@@ -18,6 +18,18 @@ export interface Listing {
   unit: string;
 }
 
+interface ProductApiItem {
+  id: string;
+  name: string;
+  category?: { slug?: string };
+  jenis_ternak?: string;
+  peternak_profile?: { nama_peternakan?: string; badge?: string };
+  created_at: string;
+  price: string | number;
+  unit?: string;
+  status: string;
+}
+
 const REJECTION_REASONS = [
   "Foto produk kurang jelas",
   "Harga tidak wajar untuk pasaran",
@@ -26,7 +38,7 @@ const REJECTION_REASONS = [
   "Lainnya",
 ];
 
-function mapProductToListing(p: any): Listing {
+function mapProductToListing(p: ProductApiItem): Listing {
   return {
     id: p.id,
     title: p.name,
@@ -59,8 +71,8 @@ export const AdminListing = () => {
     apiFetch("/admin/products")
       .then((r) => (r.ok ? r.json() : { data: [], meta: { approved_today: 0, rejected_weekly: 0 } }))
       .then((json) => {
-        const all = json.data ?? [];
-        const pending = all.filter((p: any) => p.status === "menunggu_review");
+        const all: ProductApiItem[] = json.data ?? [];
+        const pending = all.filter((p) => p.status === "menunggu_review");
         setListings(pending.map(mapProductToListing));
         if (json.meta) {
           setApprovedToday(json.meta.approved_today ?? 0);

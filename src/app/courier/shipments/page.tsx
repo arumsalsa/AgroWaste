@@ -79,7 +79,7 @@ export default function ShipmentsPage() {
 
   // Leaflet state
   const [leafletLoaded, setLeafletLoaded] = useState(false);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
 
   // Status updating states
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -133,7 +133,7 @@ export default function ShipmentsPage() {
       script.onload = () => setLeafletLoaded(true);
       document.body.appendChild(script);
     } else {
-      if ((window as any).L) {
+      if (window.L) {
         setLeafletLoaded(true);
       }
     }
@@ -142,7 +142,7 @@ export default function ShipmentsPage() {
   // 3. Initialize/Update Leaflet Map
   useEffect(() => {
     if (!leafletLoaded || !selectedShipment) return;
-    const L = (window as any).L;
+    const L = window.L;
     if (!L) return;
 
     // Get pickup coords (Bogor fallback)
@@ -167,9 +167,10 @@ export default function ShipmentsPage() {
       setMapInstance(map);
     } else {
       // Clear markers and lines
-      map.eachLayer((layer: any) => {
+      const currentMap = map;
+      currentMap.eachLayer((layer: LeafletLayer) => {
         if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-          map.removeLayer(layer);
+          currentMap.removeLayer(layer);
         }
       });
     }
@@ -373,7 +374,7 @@ export default function ShipmentsPage() {
                       {shipment.tracking_notes && (
                         <div className="mt-2 pt-2 border-t border-courier-hairline/50 text-[11px] text-courier-textsecondary">
                           <span className="font-bold text-courier-textprimary block">Catatan Terakhir:</span>
-                          "{shipment.tracking_notes}"
+                          &quot;{shipment.tracking_notes}&quot;
                         </div>
                       )}
                     </div>
@@ -473,7 +474,7 @@ export default function ShipmentsPage() {
               {pendingStatusUpdate.status === "dalam_perjalanan" ? "Mulai Pengantaran" : "Pengantaran Selesai"}
             </h3>
             <p className="text-xs text-courier-textsecondary">
-              Beri catatan pelacakan tambahan (misal: "Barang sudah dimuat di pickup" atau "Diterima oleh Bpk. Ahmad di kebun").
+              Beri catatan pelacakan tambahan (misal: &quot;Barang sudah dimuat di pickup&quot; atau &quot;Diterima oleh Bpk. Ahmad di kebun&quot;).
             </p>
             <textarea
               value={trackingNotes}

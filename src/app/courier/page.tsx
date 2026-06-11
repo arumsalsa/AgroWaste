@@ -51,7 +51,7 @@ export default function CourierDashboard() {
 
   // Leaflet states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
 
   useEffect(() => {
     setCourierName(getUser()?.name || "Kurir");
@@ -95,7 +95,7 @@ export default function CourierDashboard() {
       script.onload = () => setLeafletLoaded(true);
       document.body.appendChild(script);
     } else {
-      if ((window as any).L) {
+      if (window.L) {
         setLeafletLoaded(true);
       }
     }
@@ -104,7 +104,7 @@ export default function CourierDashboard() {
   // Render all active/scheduled routes on the overview map
   useEffect(() => {
     if (!leafletLoaded || shipments.length === 0) return;
-    const L = (window as any).L;
+    const L = window.L;
     if (!L) return;
 
     const activeShipments = shipments.filter(
@@ -120,14 +120,15 @@ export default function CourierDashboard() {
       setMapInstance(map);
     } else {
       // Clear markers and lines
-      map.eachLayer((layer: any) => {
+      const currentMap = map;
+      currentMap.eachLayer((layer: LeafletLayer) => {
         if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-          map.removeLayer(layer);
+          currentMap.removeLayer(layer);
         }
       });
     }
 
-    const boundsPoints: any[] = [];
+    const boundsPoints: [number, number][] = [];
 
     activeShipments.forEach((shipment, index) => {
       let pLat = -6.5971 + index * 0.01; // distribute fallbacks a bit
