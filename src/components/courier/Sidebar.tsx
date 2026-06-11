@@ -25,7 +25,6 @@ export const Sidebar = () => {
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    // 1. Fetch courier profile
     apiFetch("/profile")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
@@ -40,13 +39,12 @@ export const Sidebar = () => {
       })
       .catch(() => {});
 
-    // 2. Fetch shipments count
     apiFetch("/logistik/shipments")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (json?.success && json?.data) {
           const list = json.data || [];
-          // Count active shipments (dijadwalkan or dalam_perjalanan)
+          // active = not yet delivered
           const active = list.filter((s: { status: string }) => s.status !== "terkirim").length;
           setPendingCount(active);
         }

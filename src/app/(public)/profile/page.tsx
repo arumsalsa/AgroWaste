@@ -59,21 +59,19 @@ export default function ProfilePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // User details
   const [user, setUser] = useState<ProfileResponse["data"] | null>(null);
 
-  // Form fields
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
-  // Buyer specific fields
+  // buyer fields
   const [tipePembeli, setTipePembeli] = useState("individu");
   const [namaInstansi, setNamaInstansi] = useState("");
   const [buyerProvinsi, setBuyerProvinsi] = useState("");
   const [buyerKabupaten, setBuyerKabupaten] = useState("");
 
-  // Seller specific fields
+  // seller fields
   const [namaPeternakan, setNamaPeternakan] = useState("");
   const [jenisTernak, setJenisTernak] = useState<string[]>([]);
   const [kapasitasTernak, setKapasitasTernak] = useState<number | string>("");
@@ -82,11 +80,10 @@ export default function ProfilePage() {
   const [farmKabupaten, setFarmKabupaten] = useState("");
   const [farmKecamatan, setFarmKecamatan] = useState("");
 
-  // Logistics specific fields
+  // logistics fields
   const [companyName, setCompanyName] = useState("");
   const [vehiclePlate, setVehiclePlate] = useState("");
 
-  // Impact statistics
   const [pupukQuantity, setPupukQuantity] = useState(0);
   const [emisiQuantity, setEmisiQuantity] = useState(0);
 
@@ -96,7 +93,6 @@ export default function ProfilePage() {
       return;
     }
 
-    // Load main profile
     apiFetch("/profile")
       .then((res) => (res.ok ? res.json() : null))
       .then((json: ProfileResponse | null) => {
@@ -121,7 +117,7 @@ export default function ProfilePage() {
             setFarmKecamatan(u.peternak_profile.kecamatan || "");
             setKapasitasTernak(u.peternak_profile.kapasitas_ternak || "");
             
-            // Handle jenis_ternak array or JSON string
+            // jenis_ternak may be a JSON string or a plain array
             let jt: string[] = [];
             try {
               if (typeof u.peternak_profile.jenis_ternak === "string") {
@@ -277,7 +273,6 @@ export default function ProfilePage() {
           });
         }
         
-        // Force header refresh
         window.dispatchEvent(new Event("auth-change"));
       } else {
         setErrorMsg(json.message || "Gagal memperbarui profil.");
@@ -328,7 +323,6 @@ export default function ProfilePage() {
           });
         }
         
-        // Force header refresh
         window.dispatchEvent(new Event("auth-change"));
       } else {
         setErrorMsg(json.message || "Gagal mengunggah foto profil.");

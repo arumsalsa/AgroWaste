@@ -46,7 +46,7 @@ function statusBadge(status: string) {
   }
 }
 
-// Build 7-day labels and map revenue from chart_data
+// build 7-day bar chart from chart_data
 function buildChartBars(chartData: DashboardStats["chart_data"]) {
   const days = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
   const result: Array<{ label: string; value: number }> = [];

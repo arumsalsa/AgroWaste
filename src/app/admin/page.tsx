@@ -144,7 +144,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Row 2: Bento Grid Layout Split */}
+      {/* Row 2: bento grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Bento: Platform Growth */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Mock Chart Graphics */}
+          {/* chart area */}
           <div className="h-64 flex flex-col justify-between text-[10px] font-bold text-admin-textsecondary font-tabular pt-4 relative">
             <div className="w-full border-b border-dashed border-admin-hairline flex justify-between pb-2"><span>100%</span></div>
             <div className="w-full border-b border-dashed border-admin-hairline flex justify-between pb-2"><span>75%</span></div>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
             <div className="w-full border-b border-dashed border-admin-hairline flex justify-between pb-2"><span>25%</span></div>
             <div className="w-full border-b border-admin-hairline flex justify-between pb-2"><span>0%</span></div>
             
-            {/* Decorative Vector Chart Curve */}
+            {/* decorative chart curve */}
             <div className="absolute inset-x-8 bottom-8 top-12 flex items-end">
               <svg className="w-full h-full text-admin-primary" viewBox="0 0 400 150" fill="none" preserveAspectRatio="none">
                 <path d="M0,120 Q50,60 100,90 T200,40 T300,70 T400,20" stroke="currentColor" strokeWidth="4" strokeLinecap="round" fill="none"/>
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
               <Link href="/admin/listings" className="text-xs font-bold text-admin-primary hover:underline">Lihat Semua</Link>
             </div>
 
-            {/* Vertical Activity Log Feed */}
+            {/* activity feed */}
             <div className="space-y-5">
               {stats?.recent_activities && stats.recent_activities.length > 0 ? (
                 stats.recent_activities.map((act) => {

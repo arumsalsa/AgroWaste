@@ -12,7 +12,6 @@ export default function SettingsPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showMobileSession, setShowMobileSession] = useState(true);
 
-  // Formulir data diri
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [profileBio, setProfileBio] = useState("Bertanggung jawab penuh atas kelancaran moderasi marketplace limbah tani AgroWaste.");
@@ -50,14 +49,14 @@ export default function SettingsPage() {
       });
       const json = await res.json();
       if (res.ok && json.success) {
-        // Update local storage user name too
+        // keep localStorage in sync
         const localUser = getUser();
         if (localUser) {
           localUser.name = profileName;
           localStorage.setItem("agrowaste_user", JSON.stringify(localUser));
         }
         setIsSuccessModalOpen(true);
-        // Force header update
+        // reload so header reflects new name
         setTimeout(() => {
           window.location.reload();
         }, 1500);

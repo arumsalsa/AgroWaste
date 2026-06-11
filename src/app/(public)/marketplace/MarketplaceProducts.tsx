@@ -61,7 +61,6 @@ export default function MarketplaceProducts({
   const [sort,      setSort]      = useState("terbaru");
   const [page,      setPage]      = useState(1);
 
-  // Add-to-cart feedback per product id
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedId,  setAddedId]  = useState<string | null>(null);
   const [errorId,  setErrorId]  = useState<string | null>(null);
@@ -142,7 +141,7 @@ export default function MarketplaceProducts({
     setSort(SORT_OPTIONS[(idx + 1) % SORT_OPTIONS.length].value);
   };
 
-  /* ── Count bar (sort button) ───────────────────────── */
+  /* count bar */
   const countBar = (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
       <span className="text-land-muted font-bold text-base">
@@ -161,7 +160,7 @@ export default function MarketplaceProducts({
     </div>
   );
 
-  /* ── Loading skeleton ──────────────────────────────── */
+  /* loading */
   if (loading) {
     return (
       <>
@@ -186,7 +185,7 @@ export default function MarketplaceProducts({
     );
   }
 
-  /* ── Error ─────────────────────────────────────────── */
+  /* error */
   if (error) {
     return (
       <>
@@ -201,7 +200,7 @@ export default function MarketplaceProducts({
 
   const products = paginated?.data ?? [];
 
-  /* ── Empty ─────────────────────────────────────────── */
+  /* empty */
   if (products.length === 0) {
     return (
       <>
@@ -217,7 +216,7 @@ export default function MarketplaceProducts({
     );
   }
 
-  /* ── Product grid ──────────────────────────────────── */
+  /* product grid */
   return (
     <>
       {countBar}

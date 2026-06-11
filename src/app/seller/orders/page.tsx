@@ -84,7 +84,6 @@ function OrdersContent() {
     return orders.filter((o) => o.status === statusFilter);
   }, [orders, activeTab]);
 
-  // ── Process order (terima/tolak) ──────────────────────────
   const handleProcess = async (order: Order, status: "dikonfirmasi" | "ditolak", reason?: string) => {
     setProcessingId(order.id);
     setActionError(null);
@@ -97,7 +96,6 @@ function OrdersContent() {
         setActionError(json.message ?? "Gagal memproses pesanan.");
         return;
       }
-      // update status lokal
       setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status, rejection_reason: reason ?? null } : o));
       setRejectingOrder(null);
       setRejectionReason("");
@@ -108,7 +106,6 @@ function OrdersContent() {
     }
   };
 
-  // ── Update order status (kirim barang) ────────────────────
   const handleUpdateStatus = async (order: Order, status: "dikirim") => {
     setProcessingId(order.id);
     setActionError(null);
@@ -120,7 +117,6 @@ function OrdersContent() {
         setActionError(json.message ?? "Gagal memperbarui status pesanan.");
         return;
       }
-      // update status lokal
       setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status } : o));
     } catch {
       setActionError("Tidak dapat terhubung ke server.");
@@ -129,7 +125,7 @@ function OrdersContent() {
     }
   };
 
-  // ── DETAIL VIEW ───────────────────────────────────────────
+  // detail view
   if (orderId) {
     const order = orders.find((o) => o.id === orderId);
 
@@ -322,7 +318,7 @@ function OrdersContent() {
     );
   }
 
-  // ── LIST VIEW ─────────────────────────────────────────────
+  // list view
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">Daftar Pesanan</h2>

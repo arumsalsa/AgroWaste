@@ -6,7 +6,6 @@ import { Leaf, Recycle, Star } from "lucide-react";
 export default function ImpactCalculator() {
   const [volume, setVolume] = useState(100);
 
-  // Formulas based on original static design
   const co2Reduced = (volume * 0.375).toFixed(1);
   const treesPlanted = (volume * 0.015).toFixed(1);
   const valueMin = Math.floor(volume * 1500 / 1000); // in k

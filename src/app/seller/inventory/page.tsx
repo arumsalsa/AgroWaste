@@ -107,7 +107,7 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
-    // Fetch categories (public) and products in parallel
+    // fetch categories and products in parallel
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`).then((r) => r.json()).catch(() => ({ data: [] })),
       fetchProducts(),
@@ -273,7 +273,7 @@ export default function InventoryPage() {
         return;
       }
 
-      // Step 2: upload images (jika ada gambar baru yang dipilih)
+      // upload any newly selected images
       if (images.length > 0) {
         setSubmitLabel("Mengunggah gambar...");
         const productId = formMode === "add" ? json.data.id : editId;

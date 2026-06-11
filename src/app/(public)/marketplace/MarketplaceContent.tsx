@@ -24,7 +24,6 @@ const JENIS_TERNAK_OPTIONS = [
 ];
 
 export default function MarketplaceContent() {
-  // --- search ---
   const [searchInput,     setSearchInput]     = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -34,7 +33,6 @@ export default function MarketplaceContent() {
     return () => clearTimeout(id);
   }, [searchInput]);
 
-  // --- sidebar filters ---
   const [jenisTernak, setJenisTernak] = useState("");
   const [kategori,    setKategori]    = useState("");
   const [provinsi,    setProvinsi]    = useState("");

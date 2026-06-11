@@ -30,7 +30,6 @@ export default function CourierImpactTracker() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Compute metrics from real shipments
   const completedShipments = shipments.filter((s) => s.status === "terkirim");
   const completedCount = completedShipments.length;
 
@@ -42,16 +41,14 @@ export default function CourierImpactTracker() {
   const co2ReducedKg = totalWasteManagedKg * 0.98;
   const totalDistanceKm = completedCount * 12.5; // average 12.5km per delivery
 
-  // Badges logic
   const isWasteBadgeUnlocked = totalWasteManagedKg >= 500;
   const isCarbonBadgeUnlocked = co2ReducedKg >= 400;
   const isDistanceBadgeUnlocked = totalDistanceKm >= 100;
 
   const badgesCount = (isWasteBadgeUnlocked ? 1 : 0) + (isCarbonBadgeUnlocked ? 1 : 0) + (isDistanceBadgeUnlocked ? 1 : 0);
 
-  // Dynamic monthly chart calculations (split by last 6 months)
   const getMonthlyWeightSum = () => {
-    const monthlySum = [0, 0, 0, 0, 0, 0]; // last 6 months
+    const monthlySum = [0, 0, 0, 0, 0, 0]; // index 0 = 5 months ago, 5 = current
     const now = new Date();
     completedShipments.forEach((s) => {
       const sDate = new Date(s.created_at);
@@ -68,7 +65,6 @@ export default function CourierImpactTracker() {
   const maxMonthly = Math.max(...monthlyData, 100); // minimum scale of 100kg
   const chartHeights = monthlyData.map((w) => Math.min(100, Math.round((w / maxMonthly) * 100)));
 
-  // Generate dynamic labels for last 6 months
   const getMonthLabels = () => {
     const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
     const labels = [];
@@ -171,11 +167,11 @@ export default function CourierImpactTracker() {
             </div>
           </div>
           
-          {/* Chart Graphic */}
+          {/* chart */}
           <div className="flex-1 min-h-[250px] flex items-end justify-between relative px-4 pb-8">
             <div className="absolute inset-x-0 bottom-8 border-b border-courier-hairline"></div>
             
-            {/* Bars */}
+            {/* bars */}
             {chartHeights.map((h, i) => (
               <div key={i} className="w-12 bg-courier-warmbg relative group rounded-t-lg transition-all duration-300 hover:bg-courier-primary/20" style={{ height: `${Math.max(h, 6)}%` }}>
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-courier-textprimary text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">

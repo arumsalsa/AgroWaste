@@ -129,7 +129,6 @@ export default function AdminLogistics() {
     }
   };
 
-  // Filter Orders based on active Tab
   const filteredOrders = orders.filter((order) => {
     if (activeTab === "Semua") return true;
     if (activeTab === "Sedang Kirim") return order.status === "dikirim";
@@ -138,12 +137,11 @@ export default function AdminLogistics() {
     return true;
   });
 
-  // KPI Calculations
   const totalShipmentsCount = orders.length;
   const activeShipmentsCount = orders.filter((o) => o.status === "dikirim").length;
   const pendingAssignmentCount = orders.filter((o) => o.status === "dikonfirmasi").length;
   
-  // A shipment is considered late if it has been shipped for more than 24 hours but is not completed yet
+  // "late" = dikirim > 24 hours ago and not yet selesai
   const lateShipmentsCount = orders.filter((o) => {
     if (o.status !== "dikirim") return false;
     const shippedDate = new Date(o.updated_at);
@@ -268,7 +266,7 @@ export default function AdminLogistics() {
                   const courierName = orderShipment?.logistik_profile?.company_name ?? orderShipment?.logistik_profile?.user?.name ?? "Belum Ditugaskan";
                   const vehiclePlate = orderShipment?.logistik_profile?.vehicle_plate ?? "";
 
-                  // Map order status to UI friendly badges
+                  // status → badge
                   let statusText = "Menunggu";
                   let statusBadge = "bg-admin-semamber/10 text-admin-semamber";
                   let statusDot = "bg-admin-semamber";

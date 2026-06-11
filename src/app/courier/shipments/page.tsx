@@ -77,11 +77,9 @@ export default function ShipmentsPage() {
   const [activeTab, setActiveTab] = useState("Semua");
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
 
-  // Leaflet state
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
 
-  // Status updating states
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [trackingNotes, setTrackingNotes] = useState("");
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -95,7 +93,7 @@ export default function ShipmentsPage() {
         const list = (json.data as Shipment[]) || [];
         setShipments(list);
         if (list.length > 0) {
-          // Keep selection or default to first
+          // keep previous selection or default to first
           setSelectedShipment((prev) => {
             const found = list.find((s) => s.id === prev?.id);
             return found || list[0];
@@ -109,12 +107,12 @@ export default function ShipmentsPage() {
     }
   };
 
-  // 1. Fetch Shipments on mount
+  // fetch on mount
   useEffect(() => {
     fetchShipments();
   }, []);
 
-  // 2. Load Leaflet CDN script & stylesheet
+  // lazy-load Leaflet from CDN
   useEffect(() => {
     const cssId = "leaflet-css";
     if (!document.getElementById(cssId)) {
@@ -139,13 +137,13 @@ export default function ShipmentsPage() {
     }
   }, []);
 
-  // 3. Initialize/Update Leaflet Map
+  // init/update map when selection changes
   useEffect(() => {
     if (!leafletLoaded || !selectedShipment) return;
     const L = window.L;
     if (!L) return;
 
-    // Get pickup coords (Bogor fallback)
+    // pickup coords — fallback to Bogor
     let pLat = -6.5971;
     let pLng = 106.7973;
     const peternakProfile = selectedShipment.order?.peternak?.peternak_profile;
@@ -154,7 +152,7 @@ export default function ShipmentsPage() {
       pLng = Number(peternakProfile.lng);
     }
 
-    // Offset for mock delivery destination
+    // mock delivery destination: slight offset from pickup
     const dLat = pLat + 0.015;
     const dLng = pLng + 0.025;
 
@@ -166,7 +164,7 @@ export default function ShipmentsPage() {
       }).addTo(map);
       setMapInstance(map);
     } else {
-      // Clear markers and lines
+      // clear stale markers/lines before redrawing
       const currentMap = map;
       currentMap.eachLayer((layer: LeafletLayer) => {
         if (layer instanceof L.Marker || layer instanceof L.Polyline) {
@@ -175,7 +173,6 @@ export default function ShipmentsPage() {
       });
     }
 
-    // Add Markers
     const pickupMarker = L.marker([pLat, pLng]).addTo(map)
       .bindPopup(`<b>Titik Penjemputan (Peternak):</b><br/>${peternakProfile?.nama_peternakan || "Peternak"}`)
       .openPopup();
@@ -183,7 +180,6 @@ export default function ShipmentsPage() {
     const deliveryMarker = L.marker([dLat, dLng]).addTo(map)
       .bindPopup(`<b>Titik Pengiriman (Pembeli):</b><br/>${selectedShipment.order?.alamat_pengiriman || "Alamat Pembeli"}`);
 
-    // Draw Route Line
     const routeLine = L.polyline([[pLat, pLng], [dLat, dLng]], {
       color: "#2F5A28",
       weight: 4,
@@ -196,15 +192,12 @@ export default function ShipmentsPage() {
 
   }, [leafletLoaded, selectedShipment, mapInstance]);
 
-  // Tab Filtering & Search
   const visibleShipments = useMemo(() => {
     return shipments.filter((s) => {
-      // Tab filter
       if (activeTab === "Sedang Berjalan" && s.status !== "dalam_perjalanan") return false;
       if (activeTab === "Selesai" && s.status !== "terkirim") return false;
       if (activeTab === "Dijadwalkan" && s.status !== "dijadwalkan") return false;
 
-      // Search filter
       const num = s.order?.order_number || s.id;
       const dest = s.order?.alamat_pengiriman || "";
       const query = search.toLowerCase();
@@ -223,7 +216,6 @@ export default function ShipmentsPage() {
     { label: "Selesai", count: countByStatus("terkirim") },
   ];
 
-  // Update Status handler
   const handleUpdateStatus = async (id: string, newStatus: string, notes = "") => {
     setUpdatingId(id);
     try {

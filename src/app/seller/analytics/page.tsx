@@ -17,7 +17,7 @@ function formatRupiah(n: string | number) {
   }).format(Number(n));
 }
 
-// Bangun 7 bar dari chart_data, isi hari tanpa data dengan 0
+// build 7-day bars; days with no data default to 0
 function buildBars(chartData: DashboardStats["chart_data"]) {
   const DAY = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
   const bars = Array.from({ length: 7 }, (_, i) => {
@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* KPI Cards — hanya 4 metrik yang tersedia dari API */}
+      {/* KPI Cards */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {skeletonCard}{skeletonCard}{skeletonCard}{skeletonCard}
@@ -130,7 +130,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Grafik Tren Pendapatan — dari chart_data */}
+      {/* Revenue Trend */}
       <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
         <div className="mb-8">
           <h3 className="text-lg font-bold text-seller-textprimary">Tren Pendapatan</h3>

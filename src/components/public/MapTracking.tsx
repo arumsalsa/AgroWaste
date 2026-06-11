@@ -23,7 +23,7 @@ export default function MapTracking({
   const endMarkerRef = useRef<any>(null);
   const courierMarkerRef = useRef<any>(null);
 
-  // 1. Dynamic script and CSS loading for MapLibre GL
+  // lazy-load MapLibre GL from CDN
   useEffect(() => {
     const cssId = "maplibre-css";
     if (!document.getElementById(cssId)) {
@@ -52,11 +52,11 @@ export default function MapTracking({
     }
   }, []);
 
-  // 2. Initialize map instance
+  // init map instance
   useEffect(() => {
     if (!maplibreLoaded || !containerRef.current || mapInstanceRef.current) return;
 
-    // Calculate center between start and end
+    // center between start and end
     const centerLng = (startCoords[0] + endCoords[0]) / 2;
     const centerLat = (startCoords[1] + endCoords[1]) / 2;
 
@@ -72,7 +72,7 @@ export default function MapTracking({
 
     map.addControl(new (window as any).maplibregl.NavigationControl(), "top-right");
 
-    // Add route line when style is loaded
+    // draw route line after style loads
     const onStyleLoad = () => {
       if (map.getSource("route")) return;
 
@@ -128,17 +128,16 @@ export default function MapTracking({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maplibreLoaded]);
 
-  // 3. Render or update markers
+  // render markers
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !maplibreLoaded) return;
 
-    // Remove old markers if any
     if (startMarkerRef.current) startMarkerRef.current.remove();
     if (endMarkerRef.current) endMarkerRef.current.remove();
     if (courierMarkerRef.current) courierMarkerRef.current.remove();
 
-    // Create Store/Start marker (Green dot with text label)
+    // pickup marker
     const startEl = document.createElement("div");
     startEl.className = "flex flex-col items-center select-none pointer-events-none";
     startEl.innerHTML = `
@@ -149,7 +148,7 @@ export default function MapTracking({
       .setLngLat(startCoords)
       .addTo(map);
 
-    // Create Home/End marker (Blue pin with text label)
+    // destination marker
     const endEl = document.createElement("div");
     endEl.className = "flex flex-col items-center select-none pointer-events-none";
     endEl.innerHTML = `
@@ -165,7 +164,7 @@ export default function MapTracking({
       .setLngLat(endCoords)
       .addTo(map);
 
-    // Create Courier/Truck marker (Blue badge with truck icon)
+    // courier marker
     const courierEl = document.createElement("div");
     courierEl.className = "w-10 h-10 rounded-full bg-[#3B82F6] border-2.5 border-white shadow-lg flex items-center justify-center text-white relative z-10 cursor-pointer hover:scale-105 transition-transform duration-200";
     courierEl.innerHTML = `
@@ -177,7 +176,7 @@ export default function MapTracking({
       .setLngLat(courierCoords)
       .addTo(map);
 
-    // Auto fit map bounds to cover both markers
+    // fit bounds to both endpoints
     const bounds = new (window as any).maplibregl.LngLatBounds()
       .extend(startCoords)
       .extend(endCoords);

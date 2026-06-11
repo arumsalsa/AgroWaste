@@ -23,7 +23,6 @@ export function Sidebar() {
   const [newOrdersCount, setNewOrdersCount] = useState(0);
 
   useEffect(() => {
-    // 1. Fetch profile to get real name/farm name and avatar
     apiFetch("/profile")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
@@ -43,7 +42,7 @@ export function Sidebar() {
       })
       .catch(() => {});
 
-    // 2. Fetch seller stats to get pesanan_baru count
+    // badge count for new orders
     apiFetch("/seller/dashboard")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {

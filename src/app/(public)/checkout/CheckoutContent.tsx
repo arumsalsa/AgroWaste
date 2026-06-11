@@ -119,7 +119,7 @@ export default function CheckoutContent() {
     }
   };
 
-  /* ── Success state ─────────────────────────────────── */
+  /* success */
   if (successOrder) {
     return (
       <div className="flex-1 animate-fade-in pb-24 bg-land-bg flex items-center justify-center min-h-[60vh]">
@@ -162,7 +162,7 @@ export default function CheckoutContent() {
     );
   }
 
-  /* ── Loading skeleton ──────────────────────────────── */
+  /* loading */
   if (cartLoading) {
     return (
       <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
@@ -185,7 +185,7 @@ export default function CheckoutContent() {
     );
   }
 
-  /* ── Empty / error cart ────────────────────────────── */
+  /* empty/error cart */
   if (cartError || cartItems.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center py-32">
@@ -202,7 +202,7 @@ export default function CheckoutContent() {
     );
   }
 
-  /* ── Main form ─────────────────────────────────────── */
+  /* main form */
   return (
     <form onSubmit={handleSubmit} className="flex-1 animate-fade-in pb-24 bg-land-bg">
 

@@ -52,18 +52,16 @@ export default function AdminAnalytics() {
   const totalCo2 = data ? data.total_co2eq_reduced_kg : 0;
   const activeSellers = data ? data.active_sellers_count : 0;
 
-  // SDG Target calculations
-  const sdg12Target = 640; // 640 Tons target
+  const sdg12Target = 640; // 640 tons SDG 12 annual target
   const sdg12Pct = Math.min(Math.round((totalWasteTons / sdg12Target) * 100), 100);
   const sdg12DashOffset = 251.2 * (1 - sdg12Pct / 100);
 
-  // Methane reduction (m3) = CO2 saved * 0.036 (modeled estimation)
+  // methane reduction estimate: CO2 saved × 0.036 m³
   const methaneReduced = Math.round(totalCo2 * 0.036);
-  const sdg13Target = 28000; // 28,000 m3 target
+  const sdg13Target = 28000; // 28,000 m³ SDG 13 annual target
   const sdg13Pct = Math.min(Math.round((methaneReduced / sdg13Target) * 100), 100);
   const sdg13DashOffset = 251.2 * (1 - sdg13Pct / 100);
 
-  // Category mapping helper
   const getCategoryLabel = (slug: string) => {
     switch (slug) {
       case "kotoran_padat":
@@ -135,9 +133,9 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* Middle: Chart + Regional */}
+      {/* Chart + Regional */}
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Left Section: Category Bar Chart */}
+        {/* Category Bar Chart */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 md:w-3/5 flex flex-col justify-between">
           <div>
             <h3 className="text-lg font-bold text-admin-textprimary">Distribusi Limbah berdasarkan Kategori</h3>
@@ -188,7 +186,7 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        {/* Right Section: Regional Growth */}
+        {/* Regional Growth */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 md:w-2/5 flex flex-col justify-between">
           <h3 className="text-lg font-bold text-admin-textprimary mb-6">Pertumbuhan Regional</h3>
 

@@ -26,7 +26,6 @@ export default function CourierSettings() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  // Form states
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -85,7 +84,7 @@ export default function CourierSettings() {
       const json = await res.json();
 
       if (res.ok && json.success) {
-        // Sync local storage auth session
+        // update cached auth
         const token = getToken();
         if (token && json.data) {
           saveAuth(token, {

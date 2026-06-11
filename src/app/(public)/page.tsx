@@ -41,7 +41,6 @@ export default function LandingPage() {
   const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [loadingImpact, setLoadingImpact] = useState(true);
 
-  // Fetch impact statistics from API using apiFetch
   useEffect(() => {
     apiFetch("/dashboard/impact")
       .then((res) => (res.ok ? res.json() : { data: null }))
@@ -54,7 +53,6 @@ export default function LandingPage() {
       .catch(() => setLoadingImpact(false));
   }, []);
 
-  // Format statistics for display in the bento section
   const wasteMetric = impactData ? (impactData.total_waste_managed_kg >= 1000 ? {
     value: (impactData.total_waste_managed_kg / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 }),
     unit: "Ton"
@@ -70,12 +68,11 @@ export default function LandingPage() {
     value: impactData.active_sellers_count.toLocaleString("id-ID"),
   }) : { value: "—" };
 
-  // Set page title client-side since this is a Client Component
+  // page title — must be set client-side
   useEffect(() => {
     document.title = "Beranda Utama | AgroWaste";
   }, []);
 
-  // Fetch unique sellers from active products
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?sort=terbaru`)
       .then((r) => (r.ok ? r.json() : { data: { data: [] } }))
@@ -108,7 +105,6 @@ export default function LandingPage() {
       .catch(() => setLoadingSellers(false));
   }, []);
 
-  // Request user geolocation coords
   const requestLocation = () => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       setGeoStatus("denied");
@@ -131,7 +127,7 @@ export default function LandingPage() {
     requestLocation();
   }, []);
 
-  // Calculate Haversine distance and sort sellers by proximity
+  // sort sellers by proximity
   const sortedSellers = useMemo(() => {
     if (!userCoords) return sellers;
 
@@ -148,7 +144,7 @@ export default function LandingPage() {
     <div className="flex-1 flex flex-col bg-land-bg">
       {/* Hero Section */}
       <section className="relative bg-land-bg overflow-hidden lg:min-h-[90dvh] flex items-center">
-        {/* Decorative cow photo — desktop only, right side, fades left */}
+        {/* decorative cow photo — desktop only */}
         <div
           className="hidden lg:block absolute inset-y-0 right-0 w-[55%] pointer-events-none select-none"
           aria-hidden="true"
@@ -171,15 +167,13 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Text content — left column, constrained so it doesn't reach the photo */}
+        {/* text content, left column */}
         <div className="relative z-10 w-full px-6 md:px-10 lg:px-16 pt-28 md:pt-3 pb-8 md:pb-12 max-w-7xl mx-auto">
           <div className="lg:max-w-[52%]">
-            {/* Brand label — contextual, not an eyebrow pill */}
             <p className="text-land-muted font-medium text-base md:text-lg mb-8 hero-fade-up">
               AgroWaste
             </p>
 
-            {/* Headline — Baloo 2, oversized, left-anchored */}
             <h1
               className="font-land-heading font-bold text-land-ink leading-[1.0] tracking-[-0.025em] mb-5 hero-fade-up"
               style={{
@@ -193,7 +187,6 @@ export default function LandingPage() {
               punya <span className="text-[#009A44] italic">nilai.</span>
             </h1>
 
-            {/* Solution — clay, Baloo 2 */}
             <p
               className="font-land-heading font-bold text-land-clay mb-8 hero-fade-up"
               style={{
@@ -204,7 +197,6 @@ export default function LandingPage() {
               Kami bantu jualkan.
             </p>
 
-            {/* Body copy */}
             <p
               className="text-land-muted text-lg leading-relaxed max-w-lg mb-12 hero-fade-up"
               style={{ animationDelay: "220ms" } as React.CSSProperties}
@@ -212,7 +204,7 @@ export default function LandingPage() {
               Hubungkan sisa pakan, kotoran ternak, dan produk kandangmu dengan petani yang butuh pupuk organik berkualitas.
             </p>
 
-            {/* CTAs — clay-tactile style, left-aligned, stack on mobile */}
+            {/* CTAs */}
             <div
               className="flex flex-wrap gap-4 hero-fade-up"
               style={{ animationDelay: "300ms" } as React.CSSProperties}
@@ -239,7 +231,7 @@ export default function LandingPage() {
 
       <Marquee />
 
-      {/* Mission Section (Redesigned Editorial) */}
+      {/* Mission Section */}
       <section className="py-10 md:py-12 px-6 max-w-7xl mx-auto w-full">
         <div className="bg-land-ink rounded-[32px] p-8 md:p-16 flex flex-col gap-12 shadow-[0_8px_32px_rgba(44,57,48,0.15)] relative overflow-hidden">
           {/* Decorative background element */}
@@ -268,10 +260,10 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Bottom Row: 5-Card Layout Flow */}
+          {/* 5-card layout */}
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10 mt-4 lg:items-center">
             
-            {/* Card 1: Logo Aksen (Blob/Organik Lembut - Surface Tenang) */}
+            {/* Card 1 */}
             <div className="w-full h-[280px] rounded-[32px] bg-[#DCD7C9] bg-gradient-to-tr from-[#D5CFC0] to-[#E3DEC3] flex items-center justify-center p-6 relative overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
                 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -283,9 +275,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Card 2: Stats (Dua blok bertumpuk) */}
+            {/* Card 2: stats */}
             <div className="w-full h-[340px] flex flex-col gap-4">
-              {/* Top Box */}
               <div className="bg-white border border-land-cream rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
                 <div className="text-3xl font-bold text-land-ink font-land-heading font-tabular flex items-center">
                   {loadingImpact ? (
@@ -299,7 +290,6 @@ export default function LandingPage() {
                   Bergabung menyalurkan limbah ternak produktif.
                 </p>
               </div>
-              {/* Bottom Box */}
               <div className="bg-[#DCE6E1] border border-[#C8DACF] rounded-[24px] p-5 flex-1 flex flex-col justify-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
                 <div className="text-3xl font-bold text-[#1E3E2A] font-land-heading font-tabular flex items-center">
                   {loadingImpact ? (
@@ -315,7 +305,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Card 3: Foto Besar Portrait dengan Caption Overlay */}
+            {/* Card 3 */}
             <div className="w-full h-[400px] rounded-[32px] overflow-hidden relative group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <img
                 src="/auth-bg.jpeg"
@@ -331,7 +321,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Card 4: Kartu Gelap dengan Badge Pill */}
+            {/* Card 4 */}
             <div className="w-full h-[340px] rounded-[32px] bg-land-ink p-6 flex flex-col justify-between relative overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group cursor-pointer border border-white/5">
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
               <div className="relative z-10">
@@ -354,7 +344,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Card 5: Kartu Lingkaran Konsentris (Rings) */}
+            {/* Card 5 */}
             <div className="w-full h-[280px] rounded-[32px] bg-gradient-to-br from-[#DCE6E1] to-[#CAD7D2] relative overflow-hidden flex flex-col justify-center items-center p-6 text-center group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.12]">
                 <div className="w-20 h-20 rounded-full border-2 border-land-ink absolute"></div>
@@ -499,7 +489,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Impact Calculator (Client Component) */}
+      {/* Impact Calculator */}
       <ImpactCalculator />
     </div>
   );

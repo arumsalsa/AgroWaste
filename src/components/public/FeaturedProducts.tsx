@@ -35,7 +35,6 @@ export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading,  setLoading]  = useState(true);
 
-  // Add-to-cart feedback per product id
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedId,  setAddedId]  = useState<string | null>(null);
   const [errorId,  setErrorId]  = useState<string | null>(null);
@@ -121,7 +120,7 @@ export default function FeaturedProducts() {
     </div>
   );
 
-  /* ── Loading ──────────────────────────────────────────── */
+  /* loading */
   if (loading) {
     return (
       <section className="py-10 md:py-12 w-full overflow-hidden">
@@ -153,7 +152,7 @@ export default function FeaturedProducts() {
     );
   }
 
-  /* ── Render ───────────────────────────────────────────── */
+  /* render */
   return (
     <section className="py-10 md:py-12 w-full overflow-hidden">
       {sectionHeader}

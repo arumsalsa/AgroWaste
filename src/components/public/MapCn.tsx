@@ -34,7 +34,7 @@ export default function MapCn({
   const userMarkerRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
 
-  // 1. Dynamic script and CSS loading for MapLibre GL
+  // lazy-load MapLibre GL from CDN
   useEffect(() => {
     const cssId = "maplibre-css";
     if (!document.getElementById(cssId)) {
@@ -53,7 +53,7 @@ export default function MapCn({
       script.onload = () => setMaplibreLoaded(true);
       document.body.appendChild(script);
     } else {
-      // If script is already there, check if maplibregl is available on window
+      // script already injected — poll until maplibregl lands on window
       const checkInterval = setInterval(() => {
         if ((window as any).maplibregl) {
           setMaplibreLoaded(true);
@@ -64,11 +64,11 @@ export default function MapCn({
     }
   }, []);
 
-  // 2. Initialize map instance
+  // init map instance
   useEffect(() => {
     if (!maplibreLoaded || !containerRef.current || mapInstanceRef.current) return;
 
-    // Default center: Surabaya, Jawa Timur (center of many farms)
+    // default to Surabaya when no user/seller coords available
     const defaultCenter: [number, number] = [112.7521, -7.2575];
     const initialCenter = userCoords || (sellers.length > 0 ? [sellers[0].lng, sellers[0].lat] : defaultCenter);
 
@@ -95,7 +95,7 @@ export default function MapCn({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maplibreLoaded]);
 
-  // 3. Render or update User marker
+  // user location marker
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !maplibreLoaded) return;
@@ -118,26 +118,24 @@ export default function MapCn({
         .setPopup(popup)
         .addTo(map);
 
-      // Pan to user coords on load
+      // pan to user on first appearance
       map.easeTo({ center: userCoords, zoom: 11 });
     }
   }, [maplibreLoaded, userCoords]);
 
-  // 4. Render or update Seller markers
+  // seller markers
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !maplibreLoaded) return;
 
-    // Clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    // Add new seller markers
     sellers.forEach((s) => {
       const el = document.createElement("div");
       el.className = "w-8 h-8 cursor-pointer z-10";
 
-      // Highlight if active
+      // highlight selected seller
       const isActive = activeSellerId === s.userId;
       const innerEl = document.createElement("div");
       innerEl.className = `w-full h-full rounded-full border-2 border-white shadow-md flex items-center justify-center text-white transition-all duration-200 hover:scale-110 ${
@@ -171,7 +169,7 @@ export default function MapCn({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maplibreLoaded, sellers, activeSellerId]);
 
-  // 5. Handle Active Seller focus change
+  // pan to active seller
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !maplibreLoaded || !activeSellerId) return;

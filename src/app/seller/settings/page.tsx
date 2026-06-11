@@ -31,7 +31,6 @@ export default function SettingsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  // Form states
   const [ownerName, setOwnerName] = useState("");
   const [farmName, setFarmName] = useState("");
   const [description, setDescription] = useState("");
@@ -44,7 +43,6 @@ export default function SettingsPage() {
   const [lat, setLat] = useState<number | string>("");
   const [lng, setLng] = useState<number | string>("");
 
-  // Leaflet states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
   const [markerInstance, setMarkerInstance] = useState<LeafletMarker | null>(null);
@@ -79,7 +77,7 @@ export default function SettingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Load Leaflet CDN script & style
+  // lazy-load Leaflet from CDN
   useEffect(() => {
     const cssId = "leaflet-css";
     if (!document.getElementById(cssId)) {
@@ -104,7 +102,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  // Initialize Leaflet Map
+  // init map once Leaflet is ready
   useEffect(() => {
     if (!leafletLoaded || loading) return;
     const L = window.L;
@@ -126,14 +124,14 @@ export default function SettingsPage() {
       draggable: true,
     }).addTo(map);
 
-    // Update lat/lng states when marker is dragged
+    // sync coords on drag
     marker.on("dragend", () => {
       const position = marker.getLatLng();
       setLat(position.lat.toFixed(6));
       setLng(position.lng.toFixed(6));
     });
 
-    // Update lat/lng states when map is clicked
+    // sync coords on click
     map.on("click", (e: LeafletMouseEvent) => {
       const coords = e.latlng;
       marker.setLatLng(coords);
@@ -195,7 +193,7 @@ export default function SettingsPage() {
       const json = await res.json();
 
       if (res.ok && json.success) {
-        // Sync local storage auth data
+        // update cached auth
         const token = getToken();
         if (token && json.data) {
           saveAuth(token, {

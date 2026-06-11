@@ -21,7 +21,7 @@ export function Header() {
       .catch(() => setCartCount(0));
   };
 
-  // Handle scroll and auth state
+  // scroll + auth state setup
   React.useEffect(() => {
     setMounted(true);
 

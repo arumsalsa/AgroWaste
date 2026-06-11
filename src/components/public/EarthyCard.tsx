@@ -56,7 +56,7 @@ export default function EarthyCard({
   const wrapperClass = `w-full bg-land-bg rounded-2xl p-4 border border-land-cream shadow-clay hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-clay-hover hover:border-land-accent/30 transition-all duration-300 flex flex-col group relative overflow-hidden cursor-pointer z-10 ${className}`;
 
   const inner = (<>
-      {/* Decorative large translucent background line-art icon */}
+      {/* decorative background icon */}
       {DecorativeIcon && (
         <DecorativeIcon
           strokeWidth={1}
@@ -81,7 +81,7 @@ export default function EarthyCard({
           <FallbackIcon className="w-16 h-16 text-land-secondary/20 relative z-10" />
         )}
 
-        {/* Badges overlay on image */}
+        {/* badges overlay */}
         {badgeText && (
           <div className="absolute top-3 left-3 bg-land-bg/95 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1.5 z-20">
             <span className={`w-1.5 h-1.5 rounded-full ${badgeDotColorClass} shrink-0`} />
@@ -129,7 +129,7 @@ export default function EarthyCard({
             </div>
           )}
 
-          {/* Secondary Action (e.g. Add to Cart) */}
+          {/* secondary action */}
           {onCtaClick ? (
             <button
               onClick={onCtaClick}
@@ -157,7 +157,7 @@ export default function EarthyCard({
           ) : null}
         </div>
 
-        {/* Arrow CTA text Link (slides to the right when hovered) */}
+        {/* arrow CTA */}
         {ctaText && (
           <div className="mt-4 flex items-center gap-1.5 text-sm font-bold text-land-accent transition-colors group-hover:text-land-accent-hover">
             <span>{ctaText}</span>

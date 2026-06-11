@@ -83,12 +83,10 @@ function statusMeta(status: string): StatusMeta {
 export default function PesananContent() {
   const router = useRouter();
 
-  // Remote data
   const [orders,  setOrders]  = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
 
-  // Local filter state
   const [searchInput,  setSearchInput]  = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [timeFilter,   setTimeFilter]   = useState("semua");
@@ -139,13 +137,12 @@ export default function PesananContent() {
       });
   }, [router]);
 
-  // Frontend filter: search (order_number OR product name) + status + time
+  // filter: search, status, time
   const visibleOrders = useMemo(() => {
     return orders.filter((order) => {
-      // Status filter
       if (statusFilter && order.status !== statusFilter) return false;
 
-      // Search filter — cari di order_number dan semua nama produk
+      // search across order_number and all product names
       const q = searchInput.trim().toLowerCase();
       if (q) {
         const idText = (order.order_number ?? order.id).toLowerCase();
@@ -156,7 +153,6 @@ export default function PesananContent() {
         if (!idText.includes(q) && !productNames.includes(q)) return false;
       }
 
-      // Time filter
       if (timeFilter !== "semua") {
         const orderDate = new Date(order.created_at).getTime();
         const now = new Date().getTime();
@@ -345,7 +341,7 @@ export default function PesananContent() {
             {!loading && !error && visibleOrders.map((order) => {
               const { label: statusLabel, Icon: StatusIcon, color: statusColor, bg: statusBg } = statusMeta(order.status);
 
-              // Nama produk: dari relasi lama (product) atau item pertama di items[]
+              // support both old (product) and new (items[]) order shapes
               const productName =
                 order.product?.name ??
                 order.items?.[0]?.product?.name ??

@@ -49,7 +49,6 @@ export default function CourierDashboard() {
   const [loading, setLoading] = useState(true);
   const [todayStr, setTodayStr] = useState("");
 
-  // Leaflet states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
 
@@ -64,7 +63,6 @@ export default function CourierDashboard() {
       }).format(new Date())
     );
 
-    // Fetch shipments
     apiFetch("/logistik/shipments")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
@@ -76,7 +74,7 @@ export default function CourierDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Load Leaflet CDN script & style
+  // lazy-load Leaflet from CDN
   useEffect(() => {
     const cssId = "leaflet-css";
     if (!document.getElementById(cssId)) {
@@ -101,7 +99,7 @@ export default function CourierDashboard() {
     }
   }, []);
 
-  // Render all active/scheduled routes on the overview map
+  // draw active/scheduled routes on overview map
   useEffect(() => {
     if (!leafletLoaded || shipments.length === 0) return;
     const L = window.L;
@@ -119,7 +117,7 @@ export default function CourierDashboard() {
       }).addTo(map);
       setMapInstance(map);
     } else {
-      // Clear markers and lines
+      // clear stale layers before redrawing
       const currentMap = map;
       currentMap.eachLayer((layer: LeafletLayer) => {
         if (layer instanceof L.Marker || layer instanceof L.Polyline) {
@@ -147,14 +145,12 @@ export default function CourierDashboard() {
 
       const isTransit = shipment.status === "dalam_perjalanan";
 
-      // Add pins
       L.marker([pLat, pLng]).addTo(map)
         .bindPopup(`<b>Pickup #${index + 1}:</b> ${peternak?.nama_peternakan || "Peternak"}`);
 
       L.marker([dLat, dLng]).addTo(map)
         .bindPopup(`<b>Kirim #${index + 1}:</b> ${shipment.order?.user?.name || "Pembeli"}`);
 
-      // Draw polyline
       L.polyline([[pLat, pLng], [dLat, dLng]], {
         color: isTransit ? "#FF8A00" : "#2F5A28",
         weight: 3,
@@ -167,7 +163,6 @@ export default function CourierDashboard() {
     }
   }, [leafletLoaded, shipments, mapInstance]);
 
-  // Derived metrics
   const totalCount = shipments.length;
   const successCount = shipments.filter((s) => s.status === "terkirim").length;
   const activeRoutesCount = shipments.filter((s) => s.status === "dalam_perjalanan").length;
