@@ -1,14 +1,4 @@
 <?php
-// CORS headers FIRST — before anything else can produce output
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
 foreach ([
     '/tmp/storage/app/public',
     '/tmp/storage/framework/cache/data',
