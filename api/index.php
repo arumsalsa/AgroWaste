@@ -6,6 +6,7 @@ foreach ([
     '/tmp/storage/framework/views',
     '/tmp/storage/logs',
     '/tmp/bootstrap/cache',
+    '/tmp/storage/framework/testing',
 ] as $dir) {
     is_dir($dir) || mkdir($dir, 0777, true);
 }
@@ -16,5 +17,11 @@ putenv('APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php');
 putenv('APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php');
 putenv('APP_EVENTS_CACHE=/tmp/bootstrap/cache/events.php');
 
-// Jangan ubah REQUEST_URI — Laravel sudah expect /api/v1/...
+if (!empty($_SERVER['PATH_INFO'])) {
+    $query = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
+    $_SERVER['REQUEST_URI'] = $_SERVER['PATH_INFO'] . $query;
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    $_SERVER['PHP_SELF'] = '/index.php';
+}
+
 require __DIR__ . '/../public/index.php';
