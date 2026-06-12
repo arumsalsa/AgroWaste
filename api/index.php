@@ -13,5 +13,4 @@ foreach ([
     is_dir($dir) || mkdir($dir, 0777, true);
 }
 
-define('LARAVEL_START', microtime(true));
 require __DIR__ . '/../public/index.php';
