@@ -16,11 +16,5 @@ putenv('APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php');
 putenv('APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php');
 putenv('APP_EVENTS_CACHE=/tmp/bootstrap/cache/events.php');
 
-if (!empty($_SERVER['PATH_INFO'])) {
-    $query = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
-    $_SERVER['REQUEST_URI'] = $_SERVER['PATH_INFO'] . $query;
-    $_SERVER['SCRIPT_NAME'] = '/index.php';
-    $_SERVER['PHP_SELF'] = '/index.php';
-}
-
+// Jangan ubah REQUEST_URI — Laravel sudah expect /api/v1/...
 require __DIR__ . '/../public/index.php';
