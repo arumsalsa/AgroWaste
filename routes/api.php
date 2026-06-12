@@ -1,12 +1,17 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProductController;
+
+// Test routes
 Route::get('/test', function () {
     return response()->json(['api' => 'working']);
 });
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ProductController;
+Route::get('/v1/products-test', function () {
+    return response()->json(['v1' => 'working']);
+});
 
 Route::prefix('v1')->group(function () {
     
@@ -97,14 +102,4 @@ Route::prefix('v1')->group(function () {
     Route::get('/dashboard/impact', [\App\Http\Controllers\Api\DashboardController::class, 'getImpactDashboard']);
     Route::post('/webhooks/midtrans', [\App\Http\Controllers\Api\PaymentController::class, 'midtransWebhook']);
 
-});
-
-// Migration route (outside v1 prefix)
-Route::get('/run-migrations', function () {
-    try {
-        \Artisan::call('migrate', ['--force' => true]);
-        return response()->json(['status' => 'ok', 'output' => \Artisan::output()]);
-    } catch (\Exception $e) {
-        return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
-    }
 });
