@@ -46,7 +46,7 @@ class ProductService
 
         $data['peternak_profile_id'] = $peternak->id;
         $data['slug']                = $this->generateUniqueSlug($data['name']);
-        $data['status']              = 'menunggu_review';
+        $data['status']              = 'aktif';
 
         // Lokasi produk dikunci ke lokasi peternak terdaftar
         $data['provinsi']  = $peternak->provinsi;
