@@ -16,10 +16,21 @@ putenv('APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php');
 putenv('APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php');
 putenv('APP_EVENTS_CACHE=/tmp/bootstrap/cache/events.php');
 
-// Gunakan PATH_INFO sebagai REQUEST_URI
 if (!empty($_SERVER['PATH_INFO'])) {
-    $query = isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
+    $query = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
     $_SERVER['REQUEST_URI'] = $_SERVER['PATH_INFO'] . $query;
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    $_SERVER['PHP_SELF'] = '/index.php';
+}
+
+if (isset($_GET['debug'])) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'REQUEST_URI' => $_SERVER['REQUEST_URI'],
+        'PATH_INFO' => $_SERVER['PATH_INFO'] ?? null,
+        'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
+    ]);
+    exit;
 }
 
 require __DIR__ . '/../public/index.php';
