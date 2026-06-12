@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
 
 // Buat direktori writable di /tmp (Vercel read-only filesystem)
 $dirs = [
@@ -16,7 +18,6 @@ foreach ($dirs as $dir) {
     }
 }
 
-// Arahkan storage & cache ke /tmp
 $_ENV['APP_STORAGE'] = '/tmp/storage';
 
 require __DIR__ . '/../public/index.php';
