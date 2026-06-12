@@ -23,14 +23,4 @@ if (!empty($_SERVER['PATH_INFO'])) {
     $_SERVER['PHP_SELF'] = '/index.php';
 }
 
-if (isset($_GET['debug'])) {
-    header('Content-Type: application/json');
-    echo json_encode([
-        'REQUEST_URI' => $_SERVER['REQUEST_URI'],
-        'PATH_INFO' => $_SERVER['PATH_INFO'] ?? null,
-        'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
-    ]);
-    exit;
-}
-
 require __DIR__ . '/../public/index.php';
