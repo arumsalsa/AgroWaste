@@ -16,12 +16,17 @@ foreach ([
 try {
     require __DIR__ . '/../public/index.php';
 } catch (\Throwable $e) {
+    $errors = [];
+    $current = $e;
+    while ($current !== null) {
+        $errors[] = [
+            'error' => $current->getMessage(),
+            'file' => $current->getFile(),
+            'line' => $current->getLine(),
+        ];
+        $current = $current->getPrevious();
+    }
     header('Content-Type: application/json');
     http_response_code(500);
-    echo json_encode([
-        'error' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
-        'trace' => array_slice(explode("\n", $e->getTraceAsString()), 0, 5),
-    ]);
+    echo json_encode(['chain' => $errors]);
 }
