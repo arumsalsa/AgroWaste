@@ -13,4 +13,15 @@ foreach ([
     is_dir($dir) || mkdir($dir, 0777, true);
 }
 
-require __DIR__ . '/../public/index.php';
+try {
+    require __DIR__ . '/../public/index.php';
+} catch (\Throwable $e) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode([
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => array_slice(explode("\n", $e->getTraceAsString()), 0, 5),
+    ]);
+}
