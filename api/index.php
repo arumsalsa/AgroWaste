@@ -1,6 +1,4 @@
 <?php
-ob_start();
-
 foreach ([
     '/tmp/storage/app/public',
     '/tmp/storage/framework/cache/data',
@@ -17,14 +15,5 @@ putenv('APP_PACKAGES_CACHE=/tmp/bootstrap/cache/packages.php');
 putenv('APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php');
 putenv('APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php');
 putenv('APP_EVENTS_CACHE=/tmp/bootstrap/cache/events.php');
-
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error) {
-        ob_clean();
-        header('Content-Type: application/json');
-        echo json_encode(['fatal' => $error]);
-    }
-});
 
 require __DIR__ . '/../public/index.php';
