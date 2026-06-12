@@ -15,23 +15,20 @@ Route::get('/v1/products-test', function () {
 
 Route::prefix('v1')->group(function () {
     
-    // Auth Routes (Public)
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
     });
 
-    // Katalog Produk & Kategori (Public)
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
     Route::get('/categories', [\App\Http\Controllers\Api\CategoryController::class, 'index']);
     Route::get('/sellers/{id}', [ProductController::class, 'sellerProfile']);
-   
-    // Edukasi Artikel (Public)
     Route::get('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'index']);
     Route::get('/articles/{slug}', [\App\Http\Controllers\Api\ArticleController::class, 'show']);
+    Route::get('/dashboard/impact', [\App\Http\Controllers\Api\DashboardController::class, 'getImpactDashboard']);
+    Route::post('/webhooks/midtrans', [\App\Http\Controllers\Api\PaymentController::class, 'midtransWebhook']);
 
-    // Protected Routes
     Route::middleware('auth:sanctum')->group(function () {
         
         Route::prefix('products')->group(function () {
@@ -98,8 +95,5 @@ Route::prefix('v1')->group(function () {
         });
         
     });
-
-    Route::get('/dashboard/impact', [\App\Http\Controllers\Api\DashboardController::class, 'getImpactDashboard']);
-    Route::post('/webhooks/midtrans', [\App\Http\Controllers\Api\PaymentController::class, 'midtransWebhook']);
 
 });
