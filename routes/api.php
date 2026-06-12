@@ -1,5 +1,9 @@
 <?php
 
+Route::get('/test', function () {
+    return response()->json(['api' => 'working']);
+});
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
