@@ -16,7 +16,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->shouldRenderJsonWhen(function ($request, $throwable) {
+            return true;
+        });
     })->create();
+
+$app->useStoragePath('/tmp/storage');
 
 return $app;
