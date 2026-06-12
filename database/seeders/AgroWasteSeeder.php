@@ -56,7 +56,7 @@ class AgroWasteSeeder extends Seeder
         PeternakProfile::create([
             'id'              => Str::uuid()->toString(),
             'user_id'         => $userPeternak->id,
-            'nama_peternakan' => 'Maju Jaya Organik Malang',
+            'nama_kandang' => 'Maju Jaya Organik Malang',
             'jenis_ternak'    => json_encode(['sapi', 'kambing']),
             'provinsi'        => 'Jawa Timur',
             'kabupaten'       => 'Kabupaten Malang',
