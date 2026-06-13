@@ -1,23 +1,17 @@
-FROM php:8.3-cli
+﻿FROM php:8.3-cli
 
 RUN apt-get update && apt-get install -y \
-    git unzip libpq-dev libzip-dev libpng-dev libonig-dev \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip gd bcmath \
-    && rm -rf /var/lib/apt/lists/*
+    git curl zip unzip libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-
-COPY composer.json composer.lock ./
-RUN composer install --optimize-autoloader --no-dev --no-scripts --no-interaction
-
 COPY . .
 
-RUN composer dump-autoload --optimize
-RUN chmod -R 775 storage bootstrap/cache
-RUN chmod +x docker-start.sh
+RUN composer install --no-dev --optimize-autoloader
 
-EXPOSE 8000
+RUN php artisan config:cache && php artisan route:cache
 
-CMD ["./docker-start.sh"]
+EXPOSE 10000
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
