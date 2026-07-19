@@ -55,7 +55,8 @@ export default function EarthyCard({
 }: EarthyCardProps) {
   const wrapperClass = `w-full bg-land-bg rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-land-cream shadow-clay hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-clay-hover hover:border-land-accent/30 transition-all duration-300 flex flex-col group relative overflow-hidden cursor-pointer z-10 ${className}`;
 
-  const inner = (<>
+  const inner = (
+    <>
       {/* decorative background icon */}
       {DecorativeIcon && (
         <DecorativeIcon
@@ -65,7 +66,9 @@ export default function EarthyCard({
       )}
 
       {/* Image container */}
-      <div className={`w-full rounded-xl overflow-hidden relative mb-3 sm:mb-4 bg-land-warm flex items-center justify-center border border-land-cream/40 shrink-0 z-10 ${imageHeightClass}`}>
+      <div
+        className={`w-full rounded-xl overflow-hidden relative mb-3 sm:mb-4 bg-land-warm flex items-center justify-center border border-land-cream/40 shrink-0 z-10 ${imageHeightClass}`}
+      >
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -84,8 +87,12 @@ export default function EarthyCard({
         {/* badges overlay */}
         {badgeText && (
           <div className="absolute top-2 left-2 bg-land-bg/95 backdrop-blur-sm px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1 z-20">
-            <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${badgeDotColorClass} shrink-0`} />
-            <span className="truncate max-w-[50px] sm:max-w-none">{badgeText}</span>
+            <span
+              className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${badgeDotColorClass} shrink-0`}
+            />
+            <span className="truncate max-w-[50px] sm:max-w-none">
+              {badgeText}
+            </span>
           </div>
         )}
 
@@ -109,7 +116,7 @@ export default function EarthyCard({
         <h3 className="font-land-heading text-sm sm:text-lg md:text-xl font-bold text-land-ink mb-1 sm:mb-2 line-clamp-2 leading-tight">
           {title}
         </h3>
-        
+
         {description && (
           <p className="text-land-muted text-[11px] sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 leading-relaxed">
             {description}
@@ -124,7 +131,9 @@ export default function EarthyCard({
                 {price}
               </div>
               {unit && (
-                <div className="text-[10px] sm:text-xs font-bold text-land-muted">{unit}</div>
+                <div className="text-[10px] sm:text-xs font-bold text-land-muted">
+                  {unit}
+                </div>
               )}
             </div>
           )}
@@ -138,20 +147,28 @@ export default function EarthyCard({
                 ctaSuccess
                   ? "bg-land-accent text-white"
                   : ctaError
-                  ? "bg-red-100 text-red-600"
-                  : "bg-land-warm text-land-ink hover:bg-land-accent hover:text-white"
+                    ? "bg-red-100 text-red-600"
+                    : "bg-land-warm text-land-ink hover:bg-land-accent hover:text-white"
               }`}
             >
               {ctaSuccess ? (
-                CtaSuccessIcon ? <CtaSuccessIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : <span>✓</span>
-              ) : ctaError ? (
-                CtaErrorIcon ? <CtaErrorIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : <span>✗</span>
-              ) : (
-                CtaIcon ? (
-                  <CtaIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${ctaLoading ? "animate-pulse" : ""}`} />
+                CtaSuccessIcon ? (
+                  <CtaSuccessIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                 ) : (
-                  <span>+</span>
+                  <span>✓</span>
                 )
+              ) : ctaError ? (
+                CtaErrorIcon ? (
+                  <CtaErrorIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <span>✗</span>
+                )
+              ) : CtaIcon ? (
+                <CtaIcon
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${ctaLoading ? "animate-pulse" : ""}`}
+                />
+              ) : (
+                <span>+</span>
               )}
             </button>
           ) : null}
@@ -165,10 +182,15 @@ export default function EarthyCard({
           </div>
         )}
       </div>
-    </>);
+    </>
+  );
 
   if (href) {
-    return <Link href={href} className={wrapperClass}>{inner}</Link>;
+    return (
+      <Link href={href} className={wrapperClass}>
+        {inner}
+      </Link>
+    );
   }
   return <div className={wrapperClass}>{inner}</div>;
 }

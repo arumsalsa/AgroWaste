@@ -11,7 +11,8 @@ const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
  */
 export function generateBase32Secret(length = 16): string {
   let secret = "";
-  const cryptoObj = typeof window !== "undefined" && window.crypto ? window.crypto : null;
+  const cryptoObj =
+    typeof window !== "undefined" && window.crypto ? window.crypto : null;
   const bytes = new Uint8Array(length);
 
   if (cryptoObj) {
@@ -31,7 +32,11 @@ export function generateBase32Secret(length = 16): string {
 /**
  * Builds standard otpauth:// URI for Authenticator apps
  */
-export function buildOtpAuthUri(label: string, issuer: string, secret: string): string {
+export function buildOtpAuthUri(
+  label: string,
+  issuer: string,
+  secret: string,
+): string {
   const encodedLabel = encodeURIComponent(`${issuer}:${label}`);
   const encodedIssuer = encodeURIComponent(issuer);
   return `otpauth://totp/${encodedLabel}?secret=${secret}&issuer=${encodedIssuer}&algorithm=SHA1&digits=6&period=30`;
@@ -69,23 +74,34 @@ function base32ToBytes(base32: string): Uint8Array {
 /**
  * Synchronous HMAC-SHA1 calculation for TOTP
  */
-async function hmacSha1(keyBytes: Uint8Array, messageBytes: Uint8Array): Promise<Uint8Array> {
+async function hmacSha1(
+  keyBytes: Uint8Array,
+  messageBytes: Uint8Array,
+): Promise<Uint8Array> {
   if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
     const cryptoKey = await window.crypto.subtle.importKey(
       "raw",
       keyBytes.buffer as ArrayBuffer,
       { name: "HMAC", hash: "SHA-1" },
       false,
-      ["sign"]
+      ["sign"],
     );
-    const signature = await window.crypto.subtle.sign("HMAC", cryptoKey, messageBytes.buffer as ArrayBuffer);
+    const signature = await window.crypto.subtle.sign(
+      "HMAC",
+      cryptoKey,
+      messageBytes.buffer as ArrayBuffer,
+    );
     return new Uint8Array(signature);
   }
-  
+
   // Fallback simple SHA1 simulation for offline testing
   const hash = new Uint8Array(20);
   for (let i = 0; i < 20; i++) {
-    hash[i] = (keyBytes[i % keyBytes.length] ^ messageBytes[i % messageBytes.length] ^ (i * 13)) & 0xff;
+    hash[i] =
+      (keyBytes[i % keyBytes.length] ^
+        messageBytes[i % messageBytes.length] ^
+        (i * 13)) &
+      0xff;
   }
   return hash;
 }
@@ -93,7 +109,11 @@ async function hmacSha1(keyBytes: Uint8Array, messageBytes: Uint8Array): Promise
 /**
  * Verifies a 6-digit TOTP token against a Base32 Secret Key (RFC 6238)
  */
-export async function verifyTotpToken(secret: string, token: string, windowSteps = 1): Promise<boolean> {
+export async function verifyTotpToken(
+  secret: string,
+  token: string,
+  windowSteps = 1,
+): Promise<boolean> {
   const cleanToken = token.trim().replace(/\s+/g, "");
   if (!/^\d{6}$/.test(cleanToken)) return false;
 
@@ -103,7 +123,11 @@ export async function verifyTotpToken(secret: string, token: string, windowSteps
 
   const secretBytes = base32ToBytes(secret);
 
-  for (let errorWindow = -windowSteps; errorWindow <= windowSteps; errorWindow++) {
+  for (
+    let errorWindow = -windowSteps;
+    errorWindow <= windowSteps;
+    errorWindow++
+  ) {
     const step = currentStep + errorWindow;
     const msg = new Uint8Array(8);
     let tempStep = step;

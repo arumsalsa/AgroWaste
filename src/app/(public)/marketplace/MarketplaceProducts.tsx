@@ -3,11 +3,26 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf, Sprout, Navigation } from "lucide-react";
+import {
+  Star,
+  MapPin,
+  ShieldCheck,
+  Plus,
+  Check,
+  X,
+  ChevronDown,
+  Leaf,
+  Sprout,
+  Navigation,
+} from "lucide-react";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import EarthyCard from "@/components/public/EarthyCard";
-import { calculateDistanceKm, formatDistance, getCoordinatesByLocationName } from "@/lib/location";
+import {
+  calculateDistanceKm,
+  formatDistance,
+  getCoordinatesByLocationName,
+} from "@/lib/location";
 
 interface Product {
   id: string;
@@ -52,9 +67,9 @@ function formatCategoryBadge(text: string | undefined | null): string {
 }
 
 const SORT_OPTIONS = [
-  { value: "terbaru",         label: "Terbaru" },
-  { value: "terdekat",        label: "Lokasi Terdekat" },
-  { value: "harga_terendah",  label: "Harga Terendah" },
+  { value: "terbaru", label: "Terbaru" },
+  { value: "terdekat", label: "Lokasi Terdekat" },
+  { value: "harga_terendah", label: "Harga Terendah" },
   { value: "harga_tertinggi", label: "Harga Tertinggi" },
 ];
 
@@ -70,14 +85,14 @@ export default function MarketplaceProducts({
   const router = useRouter();
 
   const [paginated, setPaginated] = useState<PaginatedData | null>(null);
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState<string | null>(null);
-  const [sort,      setSort]      = useState("terbaru");
-  const [page,      setPage]      = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [sort, setSort] = useState("terbaru");
+  const [page, setPage] = useState(1);
 
   const [addingId, setAddingId] = useState<string | null>(null);
-  const [addedId,  setAddedId]  = useState<string | null>(null);
-  const [errorId,  setErrorId]  = useState<string | null>(null);
+  const [addedId, setAddedId] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
 
   const handleAddToCart = async (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -92,10 +107,10 @@ export default function MarketplaceProducts({
     setErrorId(null);
 
     try {
-      const res  = await apiFetch("/cart-items", {
+      const res = await apiFetch("/cart-items", {
         method: "POST",
         body: JSON.stringify({
-          product_id:  product.id,
+          product_id: product.id,
           quantity_kg: Math.max(1, parseFloat(product.min_order_kg || "1")),
         }),
       });
@@ -148,7 +163,8 @@ export default function MarketplaceProducts({
       });
   }, [filterParams, sort, page]);
 
-  const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Terbaru";
+  const sortLabel =
+    SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Terbaru";
 
   const handleSortCycle = () => {
     const idx = SORT_OPTIONS.findIndex((o) => o.value === sort);
@@ -157,19 +173,35 @@ export default function MarketplaceProducts({
 
   const processedProducts = useMemo(() => {
     const rawList = paginated?.data ?? [];
-    
+
     const mapped = rawList.map((p) => {
       let distanceKm: number | null = null;
 
       const pLat = Number(p.peternak_profile?.latitude);
       const pLng = Number(p.peternak_profile?.longitude);
 
-      if (!isNaN(pLat) && !isNaN(pLng) && pLat !== 0 && pLng !== 0 && userCoords) {
-        distanceKm = calculateDistanceKm(userCoords.lat, userCoords.lng, pLat, pLng);
+      if (
+        !isNaN(pLat) &&
+        !isNaN(pLng) &&
+        pLat !== 0 &&
+        pLng !== 0 &&
+        userCoords
+      ) {
+        distanceKm = calculateDistanceKm(
+          userCoords.lat,
+          userCoords.lng,
+          pLat,
+          pLng,
+        );
       } else if (userCoords) {
         const coords = getCoordinatesByLocationName(p.kabupaten);
         if (coords) {
-          distanceKm = calculateDistanceKm(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
+          distanceKm = calculateDistanceKm(
+            userCoords.lat,
+            userCoords.lng,
+            coords.lat,
+            coords.lng,
+          );
         }
       }
 
@@ -218,7 +250,9 @@ export default function MarketplaceProducts({
         onClick={handleSortCycle}
         className="flex items-center gap-2 px-5 py-3 bg-white border border-[#E8E0D5] rounded-full text-sm font-bold text-land-ink hover:border-land-accent transition-colors shadow-sm cursor-pointer"
       >
-        {sort === "terdekat" && <MapPin className="w-4 h-4 text-land-accent shrink-0" />}
+        {sort === "terdekat" && (
+          <MapPin className="w-4 h-4 text-land-accent shrink-0" />
+        )}
         <span>Urutkan: {sortLabel}</span>
         <ChevronDown className="w-4 h-4" />
       </button>
@@ -256,7 +290,9 @@ export default function MarketplaceProducts({
       <>
         {countBar}
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-land-muted font-bold text-lg mb-2">Gagal memuat produk</p>
+          <p className="text-land-muted font-bold text-lg mb-2">
+            Gagal memuat produk
+          </p>
           <p className="text-sm text-land-muted">{error}</p>
         </div>
       </>
@@ -273,7 +309,9 @@ export default function MarketplaceProducts({
           <p className="text-land-muted font-bold text-lg mb-1">
             Tidak ada produk yang cocok
           </p>
-          <p className="text-sm text-land-muted">Coba ubah atau reset filter yang dipilih.</p>
+          <p className="text-sm text-land-muted">
+            Coba ubah atau reset filter yang dipilih.
+          </p>
         </div>
       </>
     );
@@ -286,28 +324,46 @@ export default function MarketplaceProducts({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-16">
         {processedProducts.map((product) => {
-          const badge      = product.peternak_profile?.badge;
-          const showBadge  = badge && badge !== "none";
+          const badge = product.peternak_profile?.badge;
+          const showBadge = badge && badge !== "none";
           const isVerified = badge === "verified" || badge === "terverifikasi";
-          const badgeLabel = isVerified ? "TERVERIFIKASI" : badge?.toUpperCase();
+          const badgeLabel = isVerified
+            ? "TERVERIFIKASI"
+            : badge?.toUpperCase();
 
-          const formattedKab = product.kabupaten ? product.kabupaten.replace(/^Kabupaten\s+/i, "Kab. ") : "";
+          const formattedKab = product.kabupaten
+            ? product.kabupaten.replace(/^Kabupaten\s+/i, "Kab. ")
+            : "";
           const locationLabel = product.distanceText
             ? `${formattedKab ? `${formattedKab} • ` : ""}${product.distanceText}`
-            : (formattedKab || undefined);
+            : formattedKab || undefined;
 
           return (
             <EarthyCard
               key={product.id}
               href={`/marketplace/${product.id}`}
               title={product.name}
-              description={product.description ?? product.peternak_profile?.nama_peternakan ?? "Produk organik berkualitas terverifikasi."}
-              imageUrl={product.image_url ? getProductImageUrl(product.image_url) : null}
+              description={
+                product.description ??
+                product.peternak_profile?.nama_peternakan ??
+                "Produk organik berkualitas terverifikasi."
+              }
+              imageUrl={
+                product.image_url ? getProductImageUrl(product.image_url) : null
+              }
               imageFallbackIcon={Leaf}
-              badgeText={formatCategoryBadge(product.category?.name || (showBadge ? badgeLabel : "Organik"))}
-              badgeDotColorClass={isVerified ? "bg-land-accent" : "bg-land-clay"}
+              badgeText={formatCategoryBadge(
+                product.category?.name || (showBadge ? badgeLabel : "Organik"),
+              )}
+              badgeDotColorClass={
+                isVerified ? "bg-land-accent" : "bg-land-clay"
+              }
               locationText={locationLabel}
-              rating={Number(product.rating_avg) > 0 ? Number(product.rating_avg) : undefined}
+              rating={
+                Number(product.rating_avg) > 0
+                  ? Number(product.rating_avg)
+                  : undefined
+              }
               price={formatRupiah(product.price)}
               unit={`/ ${product.unit}`}
               ctaText="Lihat Detail"
@@ -338,24 +394,28 @@ export default function MarketplaceProducts({
               <ChevronDown className="w-5 h-5 rotate-90" />
             </button>
 
-            {Array.from({ length: paginated.last_page }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPage(p)}
-                className={`w-12 h-12 rounded-full font-bold transition-colors cursor-pointer ${
-                  p === page
-                    ? "bg-land-accent text-white shadow-md"
-                    : "bg-white border border-transparent text-land-muted hover:bg-land-warm"
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+            {Array.from({ length: paginated.last_page }, (_, i) => i + 1).map(
+              (p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPage(p)}
+                  className={`w-12 h-12 rounded-full font-bold transition-colors cursor-pointer ${
+                    p === page
+                      ? "bg-land-accent text-white shadow-md"
+                      : "bg-white border border-transparent text-land-muted hover:bg-land-warm"
+                  }`}
+                >
+                  {p}
+                </button>
+              ),
+            )}
 
             <button
               type="button"
-              onClick={() => setPage((p) => Math.min(paginated.last_page, p + 1))}
+              onClick={() =>
+                setPage((p) => Math.min(paginated.last_page, p + 1))
+              }
               disabled={page === paginated.last_page}
               className="w-12 h-12 rounded-full bg-white border border-land-cream flex items-center justify-center text-land-muted hover:border-land-accent hover:text-land-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >

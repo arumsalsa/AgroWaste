@@ -5,17 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken, logout, saveAuth } from "@/lib/auth";
-import { 
-  User as UserIcon, 
-  MapPin, 
-  Award, 
-  FileText, 
-  Check, 
-  X, 
-  Edit2, 
-  LogOut, 
-  Leaf, 
-  AlertCircle
+import {
+  User as UserIcon,
+  MapPin,
+  Award,
+  FileText,
+  Check,
+  X,
+  Edit2,
+  LogOut,
+  Leaf,
+  AlertCircle,
 } from "lucide-react";
 import TwoFactorModal from "@/components/common/TwoFactorModal";
 
@@ -61,7 +61,9 @@ export default function ProfilePage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
-  const [passwordSuccessMsg, setPasswordSuccessMsg] = useState<string | null>(null);
+  const [passwordSuccessMsg, setPasswordSuccessMsg] = useState<string | null>(
+    null,
+  );
 
   const [user, setUser] = useState<ProfileResponse["data"] | null>(null);
 
@@ -120,7 +122,7 @@ export default function ProfilePage() {
             setFarmKabupaten(u.peternak_profile.kabupaten || "");
             setFarmKecamatan(u.peternak_profile.kecamatan || "");
             setKapasitasTernak(u.peternak_profile.kapasitas_ternak || "");
-            
+
             // jenis_ternak may be a JSON string or a plain array
             let jt: string[] = [];
             try {
@@ -166,11 +168,11 @@ export default function ProfilePage() {
       .then((json) => {
         if (json?.success && json?.data) {
           const completedOrders = (json.data as BuyerOrder[]).filter(
-            (o) => o.status === "selesai"
+            (o) => o.status === "selesai",
           );
           const totalKg = completedOrders.reduce(
             (acc, o) => acc + Number(o.quantity_kg || 0),
-            0
+            0,
           );
           setPupukQuantity(totalKg);
           setEmisiQuantity(totalKg * 0.98);
@@ -191,11 +193,11 @@ export default function ProfilePage() {
       .then((json) => {
         if (json?.success && json?.data) {
           const completedShipments = (json.data as LogistikShipment[]).filter(
-            (s) => s.status === "terkirim"
+            (s) => s.status === "terkirim",
           );
           const totalKg = completedShipments.reduce(
             (acc, s) => acc + Number(s.order?.quantity_kg || 0),
-            0
+            0,
           );
           setPupukQuantity(totalKg);
           setEmisiQuantity(totalKg * 0.98);
@@ -246,7 +248,8 @@ export default function ProfilePage() {
       body.provinsi = farmProvinsi;
       body.kabupaten = farmKabupaten;
       body.kecamatan = farmKecamatan;
-      body.kapasitas_ternak = kapasitasTernak !== "" ? Number(kapasitasTernak) : null;
+      body.kapasitas_ternak =
+        kapasitasTernak !== "" ? Number(kapasitasTernak) : null;
       body.jenis_ternak = jenisTernak;
     } else if (user?.role === "logistik") {
       body.company_name = companyName;
@@ -265,7 +268,7 @@ export default function ProfilePage() {
         setSuccessMsg("Profil Anda berhasil diperbarui!");
         setIsEditing(false);
         setUser(json.data);
-        
+
         const token = getToken();
         if (token && json.data) {
           saveAuth(token, {
@@ -273,10 +276,10 @@ export default function ProfilePage() {
             name: json.data.name,
             email: json.data.email,
             role: json.data.role,
-            avatar_url: json.data.avatar_url
+            avatar_url: json.data.avatar_url,
           });
         }
-        
+
         window.dispatchEvent(new Event("auth-change"));
       } else {
         setErrorMsg(json.message || "Gagal memperbarui profil.");
@@ -314,7 +317,7 @@ export default function ProfilePage() {
       if (res.ok && json.success) {
         setSuccessMsg("Foto profil berhasil diperbarui!");
         setUser(json.data);
-        
+
         // Sync local storage
         const token = getToken();
         if (token && json.data) {
@@ -323,10 +326,10 @@ export default function ProfilePage() {
             name: json.data.name,
             email: json.data.email,
             role: json.data.role,
-            avatar_url: json.data.avatar_url
+            avatar_url: json.data.avatar_url,
           });
         }
-        
+
         window.dispatchEvent(new Event("auth-change"));
       } else {
         setErrorMsg(json.message || "Gagal mengunggah foto profil.");
@@ -367,10 +370,18 @@ export default function ProfilePage() {
 
   const getLocationText = () => {
     if (user?.role === "pembeli" && user.buyer_profile) {
-      return `${user.buyer_profile.kabupaten || ""}, ${user.buyer_profile.provinsi || ""}`.trim().replace(/^,\s*|,\s*$/g, "") || "Lokasi belum diatur";
+      return (
+        `${user.buyer_profile.kabupaten || ""}, ${user.buyer_profile.provinsi || ""}`
+          .trim()
+          .replace(/^,\s*|,\s*$/g, "") || "Lokasi belum diatur"
+      );
     }
     if (user?.role === "peternak" && user.peternak_profile) {
-      return `${user.peternak_profile.kecamatan || ""}, ${user.peternak_profile.kabupaten || ""}, ${user.peternak_profile.provinsi || ""}`.trim().replace(/^,\s*|,\s*$/g, "") || "Lokasi belum diatur";
+      return (
+        `${user.peternak_profile.kecamatan || ""}, ${user.peternak_profile.kabupaten || ""}, ${user.peternak_profile.provinsi || ""}`
+          .trim()
+          .replace(/^,\s*|,\s*$/g, "") || "Lokasi belum diatur"
+      );
     }
     return "Indonesia";
   };
@@ -418,52 +429,56 @@ export default function ProfilePage() {
   /* ── 2. MAIN PROFILE CONTENT ── */
   return (
     <div className="flex-1 animate-fade-in bg-[#FFF8F5] pb-20">
-      
       {/* Profile Header */}
       <div className="bg-[#1C1A18] pt-28 pb-16 px-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#009A44] rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/3"></div>
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-6 relative z-10">
-          
           <div className="relative group w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#FFF8F5] bg-gray-200 overflow-hidden shrink-0 shadow-xl flex items-center justify-center">
             {user?.avatar_url ? (
-              <img 
-                src={getProductImageUrl(user.avatar_url)} 
-                alt="Foto Pengguna" 
-                className="w-full h-full object-cover animate-fade-in" 
+              <img
+                src={getProductImageUrl(user.avatar_url)}
+                alt="Foto Pengguna"
+                className="w-full h-full object-cover animate-fade-in"
               />
             ) : (
               <div className="w-full h-full bg-[#009A44]/10 text-[#009A44] flex items-center justify-center font-bold text-4xl md:text-5xl">
-                <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
+                <span>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                </span>
               </div>
             )}
-            
+
             {/* Overlay to change/add photo */}
             <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[10px] md:text-xs font-bold cursor-pointer transition-opacity duration-200">
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
                 onChange={handleAvatarUpload}
               />
               <Edit2 className="w-4 h-4 md:w-6 md:h-6 mb-1" />
               Ganti Foto
             </label>
           </div>
-          
+
           <div className="flex-1 text-center md:text-left">
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-3 border ${getRoleBadgeStyles(user?.role)}`}>
+            <div
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-3 border ${getRoleBadgeStyles(user?.role)}`}
+            >
               <Award className="w-3.5 h-3.5" />
               {getRoleBadge(user?.role)}
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{user?.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              {user?.name}
+            </h1>
             <p className="text-sm text-gray-400 flex items-center justify-center md:justify-start gap-2">
               <MapPin className="w-4 h-4 text-[#009A44]" />
               {getLocationText()}
             </p>
           </div>
-          
+
           {!isEditing ? (
-            <button 
+            <button
               onClick={() => {
                 setIsEditing(true);
                 setSuccessMsg(null);
@@ -475,7 +490,7 @@ export default function ProfilePage() {
               Edit Profil
             </button>
           ) : (
-            <button 
+            <button
               onClick={() => {
                 setIsEditing(false);
                 setErrorMsg(null);
@@ -491,7 +506,6 @@ export default function ProfilePage() {
 
       <div className="max-w-4xl mx-auto px-6 -mt-8 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
           {/* Left Column: Sidebar Nav */}
           <div className="md:col-span-1 space-y-6">
             <div className="bg-white rounded-3xl border border-[#E8E0D5] p-2 shadow-sm overflow-hidden">
@@ -500,15 +514,21 @@ export default function ProfilePage() {
                   <UserIcon className="w-5 h-5" />
                   Informasi Akun
                 </button>
-                <Link href="/pesanan" className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#555555] hover:bg-[#F9F9F9] hover:text-[#111111] font-bold text-sm text-left transition-colors">
+                <Link
+                  href="/pesanan"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#555555] hover:bg-[#F9F9F9] hover:text-[#111111] font-bold text-sm text-left transition-colors"
+                >
                   <FileText className="w-5 h-5" />
                   Riwayat Pesanan
                 </Link>
-                <Link href="/impact" className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#555555] hover:bg-[#F9F9F9] hover:text-[#111111] font-bold text-sm text-left transition-colors">
+                <Link
+                  href="/impact"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#555555] hover:bg-[#F9F9F9] hover:text-[#111111] font-bold text-sm text-left transition-colors"
+                >
                   <Leaf className="w-5 h-5" />
                   Dampak Lingkungan
                 </Link>
-                <button 
+                <button
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 font-bold text-sm text-left transition-colors mt-4"
                   onClick={handleLogout}
                 >
@@ -521,7 +541,6 @@ export default function ProfilePage() {
 
           {/* Right Column: Main Content */}
           <div className="md:col-span-2 space-y-6">
-            
             {/* Impact Mini Dashboard */}
             <div className="bg-[#009A44] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
               <div className="absolute -right-10 -top-10 opacity-10">
@@ -542,7 +561,8 @@ export default function ProfilePage() {
                     {user?.role === "admin" && "Total Limbah Diolah"}
                   </div>
                   <div className="text-2xl font-bold font-tabular">
-                    {pupukQuantity.toLocaleString("id-ID")} <span className="text-sm font-normal">kg</span>
+                    {pupukQuantity.toLocaleString("id-ID")}{" "}
+                    <span className="text-sm font-normal">kg</span>
                   </div>
                 </div>
                 <div className="bg-black/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
@@ -550,7 +570,10 @@ export default function ProfilePage() {
                     Emisi Ditekan
                   </div>
                   <div className="text-2xl font-bold font-tabular">
-                    {emisiQuantity.toLocaleString("id-ID", { maximumFractionDigits: 1 })} <span className="text-sm font-normal">kg CO₂</span>
+                    {emisiQuantity.toLocaleString("id-ID", {
+                      maximumFractionDigits: 1,
+                    })}{" "}
+                    <span className="text-sm font-normal">kg CO₂</span>
                   </div>
                 </div>
               </div>
@@ -573,94 +596,125 @@ export default function ProfilePage() {
             {/* Personal Information Form */}
             <div className="bg-white border border-[#E8E0D5] rounded-3xl p-8 shadow-sm">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-[#111111]">Informasi Pribadi</h2>
+                <h2 className="text-xl font-bold text-[#111111]">
+                  Informasi Pribadi
+                </h2>
               </div>
-              
+
               <form onSubmit={handleSave} className="space-y-5">
                 {/* ── SECTION: COMMON FIELDS ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Nama Lengkap</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                      Nama Lengkap
+                    </label>
+                    <input
+                      type="text"
                       required
-                      readOnly={!isEditing} 
-                      value={name} 
+                      readOnly={!isEditing}
+                      value={name}
                       onChange={(e) => setName(e.target.value)}
                       className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                        isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                      }`} 
+                        isEditing
+                          ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                          : "border-[#E8E0D5] cursor-not-allowed"
+                      }`}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Nomor HP</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                      Nomor HP
+                    </label>
+                    <input
+                      type="text"
                       required
-                      readOnly={!isEditing} 
-                      value={phone} 
+                      readOnly={!isEditing}
+                      value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                        isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                      }`} 
+                        isEditing
+                          ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                          : "border-[#E8E0D5] cursor-not-allowed"
+                      }`}
                     />
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Alamat Email</label>
-                  <input 
-                    type="email" 
+                  <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                    Alamat Email
+                  </label>
+                  <input
+                    type="email"
                     disabled
-                    readOnly 
-                    value={email} 
-                    className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed focus:outline-none" 
+                    readOnly
+                    value={email}
+                    className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-3 text-sm font-bold text-gray-500 cursor-not-allowed focus:outline-none"
                   />
                   {isEditing && (
-                    <span className="text-[10px] text-gray-400 mt-1 block">Email tidak dapat diubah karena merupakan tanda pengenal akun Anda.</span>
+                    <span className="text-[10px] text-gray-400 mt-1 block">
+                      Email tidak dapat diubah karena merupakan tanda pengenal
+                      akun Anda.
+                    </span>
                   )}
                 </div>
 
                 {/* ── SECTION: BUYER ROLE FIELDS ── */}
                 {user?.role === "pembeli" && (
                   <div className="space-y-5 pt-3 border-t border-dashed border-[#E8E0D5]">
-                    <h3 className="text-xs font-bold text-emerald-700 tracking-widest uppercase">Detail Akun Pembeli</h3>
-                    
+                    <h3 className="text-xs font-bold text-emerald-700 tracking-widest uppercase">
+                      Detail Akun Pembeli
+                    </h3>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Tipe Pembeli</label>
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Tipe Pembeli
+                        </label>
                         {isEditing ? (
                           <select
                             value={tipePembeli}
                             onChange={(e) => setTipePembeli(e.target.value)}
                             className="w-full bg-white border border-[#A27B5C] rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#A27B5C]"
                           >
-                            <option value="individu">Individu / Petani Mandiri</option>
-                            <option value="instansi">Instansi / Kelompok Tani / Perusahaan</option>
+                            <option value="individu">
+                              Individu / Petani Mandiri
+                            </option>
+                            <option value="instansi">
+                              Instansi / Kelompok Tani / Perusahaan
+                            </option>
                           </select>
                         ) : (
-                          <input 
-                            type="text" 
-                            readOnly 
-                            value={tipePembeli === "instansi" ? "Kelompok Tani / Instansi" : "Individu / Petani Mandiri"}
-                            className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-3 text-sm font-bold text-[#111111] cursor-not-allowed" 
+                          <input
+                            type="text"
+                            readOnly
+                            value={
+                              tipePembeli === "instansi"
+                                ? "Kelompok Tani / Instansi"
+                                : "Individu / Petani Mandiri"
+                            }
+                            className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-3 text-sm font-bold text-[#111111] cursor-not-allowed"
                           />
                         )}
                       </div>
 
                       {tipePembeli === "instansi" && (
                         <div>
-                          <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Nama Instansi / Perusahaan</label>
-                          <input 
-                            type="text" 
+                          <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                            Nama Instansi / Perusahaan
+                          </label>
+                          <input
+                            type="text"
                             required={tipePembeli === "instansi"}
-                            readOnly={!isEditing} 
+                            readOnly={!isEditing}
                             value={namaInstansi}
                             onChange={(e) => setNamaInstansi(e.target.value)}
                             placeholder="Contoh: Koperasi Tani Makmur"
                             className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                              isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                            }`} 
+                              isEditing
+                                ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                                : "border-[#E8E0D5] cursor-not-allowed"
+                            }`}
                           />
                         </div>
                       )}
@@ -668,31 +722,39 @@ export default function ProfilePage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Provinsi</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Provinsi
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={buyerProvinsi}
                           onChange={(e) => setBuyerProvinsi(e.target.value)}
                           placeholder="Jawa Barat, Jawa Timur, dll."
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Kota / Kabupaten</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Kota / Kabupaten
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={buyerKabupaten}
                           onChange={(e) => setBuyerKabupaten(e.target.value)}
                           placeholder="Kabupaten Bandung Barat, Kota Malang, dll."
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                     </div>
@@ -702,42 +764,62 @@ export default function ProfilePage() {
                 {/* ── SECTION: SELLER ROLE FIELDS ── */}
                 {user?.role === "peternak" && (
                   <div className="space-y-5 pt-3 border-t border-dashed border-[#E8E0D5]">
-                    <h3 className="text-xs font-bold text-emerald-700 tracking-widest uppercase">Detail Peternakan</h3>
-                    
+                    <h3 className="text-xs font-bold text-emerald-700 tracking-widest uppercase">
+                      Detail Peternakan
+                    </h3>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Nama Peternakan</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Nama Peternakan
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={namaPeternakan}
                           onChange={(e) => setNamaPeternakan(e.target.value)}
                           placeholder="Nama Peternakan Anda"
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Kapasitas Ternak (Ekor)</label>
-                        <input 
-                          type="number" 
-                          readOnly={!isEditing} 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Kapasitas Ternak (Ekor)
+                        </label>
+                        <input
+                          type="number"
+                          readOnly={!isEditing}
                           value={kapasitasTernak}
                           onChange={(e) => setKapasitasTernak(e.target.value)}
                           placeholder="Jumlah ternak aktif"
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Jenis Hewan Ternak</label>
+                      <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                        Jenis Hewan Ternak
+                      </label>
                       <div className="flex flex-wrap gap-2.5 mt-1">
-                        {["sapi", "ayam", "kambing", "domba", "kuda", "babi", "lainnya"].map((animal) => {
+                        {[
+                          "sapi",
+                          "ayam",
+                          "kambing",
+                          "domba",
+                          "kuda",
+                          "babi",
+                          "lainnya",
+                        ].map((animal) => {
                           const isSelected = jenisTernak.includes(animal);
                           if (isEditing) {
                             return (
@@ -751,13 +833,14 @@ export default function ProfilePage() {
                                     : "bg-white border-[#E8E0D5] text-gray-600 hover:bg-gray-50"
                                 }`}
                               >
-                                {animal.charAt(0).toUpperCase() + animal.slice(1)}
+                                {animal.charAt(0).toUpperCase() +
+                                  animal.slice(1)}
                               </button>
                             );
                           } else {
                             return isSelected ? (
-                              <span 
-                                key={animal} 
+                              <span
+                                key={animal}
                                 className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-gray-100 border border-gray-200 text-gray-700 capitalize"
                               >
                                 {animal}
@@ -766,62 +849,80 @@ export default function ProfilePage() {
                           }
                         })}
                         {!isEditing && jenisTernak.length === 0 && (
-                          <span className="text-sm font-semibold text-gray-400">Belum ada jenis ternak yang dipilih.</span>
+                          <span className="text-sm font-semibold text-gray-400">
+                            Belum ada jenis ternak yang dipilih.
+                          </span>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Deskripsi Peternakan</label>
-                      <textarea 
-                        readOnly={!isEditing} 
+                      <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                        Deskripsi Peternakan
+                      </label>
+                      <textarea
+                        readOnly={!isEditing}
                         value={farmDeskripsi}
                         onChange={(e) => setFarmDeskripsi(e.target.value)}
                         placeholder="Tuliskan info singkat peternakan dan ketersediaan limbah..."
                         className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-semibold text-[#555555] focus:outline-none transition-colors resize-none h-24 ${
-                          isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                        }`} 
+                          isEditing
+                            ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                            : "border-[#E8E0D5] cursor-not-allowed"
+                        }`}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Provinsi</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Provinsi
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={farmProvinsi}
                           onChange={(e) => setFarmProvinsi(e.target.value)}
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Kabupaten</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Kabupaten
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={farmKabupaten}
                           onChange={(e) => setFarmKabupaten(e.target.value)}
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Kecamatan</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Kecamatan
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={farmKecamatan}
                           onChange={(e) => setFarmKecamatan(e.target.value)}
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                     </div>
@@ -831,35 +932,45 @@ export default function ProfilePage() {
                 {/* ── SECTION: LOGISTIK / COURIER ROLE FIELDS ── */}
                 {user?.role === "logistik" && (
                   <div className="space-y-5 pt-3 border-t border-dashed border-[#E8E0D5]">
-                    <h3 className="text-xs font-bold text-emerald-700 tracking-widest uppercase">Info Kendaraan & Logistik</h3>
-                    
+                    <h3 className="text-xs font-bold text-emerald-700 tracking-widest uppercase">
+                      Info Kendaraan & Logistik
+                    </h3>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Perusahaan Logistik</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Perusahaan Logistik
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={companyName}
                           onChange={(e) => setCompanyName(e.target.value)}
                           placeholder="Perusahaan kurir / logistik mandiri"
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">Nomor Plat Kendaraan</label>
-                        <input 
-                          type="text" 
+                        <label className="block text-xs font-bold text-[#555555] tracking-wider uppercase mb-2">
+                          Nomor Plat Kendaraan
+                        </label>
+                        <input
+                          type="text"
                           required
-                          readOnly={!isEditing} 
+                          readOnly={!isEditing}
                           value={vehiclePlate}
                           onChange={(e) => setVehiclePlate(e.target.value)}
                           placeholder="Contoh: N 1234 AB"
                           className={`w-full bg-[#F9F9F9] border rounded-xl px-4 py-3 text-sm font-bold text-[#111111] focus:outline-none transition-colors ${
-                            isEditing ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]" : "border-[#E8E0D5] cursor-not-allowed"
-                          }`} 
+                            isEditing
+                              ? "border-[#A27B5C] bg-white focus:ring-1 focus:ring-[#A27B5C]"
+                              : "border-[#E8E0D5] cursor-not-allowed"
+                          }`}
                         />
                       </div>
                     </div>
@@ -887,9 +998,24 @@ export default function ProfilePage() {
                     >
                       {submitting ? (
                         <>
-                          <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          <svg
+                            className="animate-spin h-4 w-4 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
                           </svg>
                           Menyimpan...
                         </>
@@ -908,8 +1034,12 @@ export default function ProfilePage() {
             {/* ── SECURITY & 2FA CARD ── */}
             <div className="bg-white border border-[#E8E0D5] rounded-3xl p-8 shadow-sm space-y-6">
               <div className="border-b border-[#E8E0D5] pb-4">
-                <h2 className="text-xl font-bold text-[#111111]">Keamanan Akun & 2FA</h2>
-                <p className="text-xs text-gray-500 mt-1">Kelola kata sandi dan proteksi ganda akun Anda.</p>
+                <h2 className="text-xl font-bold text-[#111111]">
+                  Keamanan Akun & 2FA
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Kelola kata sandi dan proteksi ganda akun Anda.
+                </p>
               </div>
 
               {passwordSuccessMsg && (
@@ -929,10 +1059,14 @@ export default function ProfilePage() {
                 }}
                 className="space-y-4"
               >
-                <h3 className="text-xs font-bold text-[#555555] tracking-wider uppercase">Ubah Kata Sandi</h3>
+                <h3 className="text-xs font-bold text-[#555555] tracking-wider uppercase">
+                  Ubah Kata Sandi
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">Kata Sandi Sekarang</label>
+                    <label className="block text-[11px] font-bold text-gray-600 mb-1">
+                      Kata Sandi Sekarang
+                    </label>
                     <input
                       type="password"
                       required
@@ -941,7 +1075,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">Kata Sandi Baru</label>
+                    <label className="block text-[11px] font-bold text-gray-600 mb-1">
+                      Kata Sandi Baru
+                    </label>
                     <input
                       type="password"
                       required
@@ -950,7 +1086,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">Ulangi Sandi Baru</label>
+                    <label className="block text-[11px] font-bold text-gray-600 mb-1">
+                      Ulangi Sandi Baru
+                    </label>
                     <input
                       type="password"
                       required
@@ -974,11 +1112,16 @@ export default function ProfilePage() {
                 <div>
                   <h3 className="text-sm font-bold text-[#111111] flex items-center gap-2 mb-1">
                     Autentikasi Dua Langkah (2FA)
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {is2FAEnabled ? 'AKTIF' : 'NONAKTIF'}
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                    >
+                      {is2FAEnabled ? "AKTIF" : "NONAKTIF"}
                     </span>
                   </h3>
-                  <p className="text-xs text-gray-500">Minta kode verifikasi tambahan setiap kali Anda masuk ke akun.</p>
+                  <p className="text-xs text-gray-500">
+                    Minta kode verifikasi tambahan setiap kali Anda masuk ke
+                    akun.
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -991,7 +1134,7 @@ export default function ProfilePage() {
                   }}
                   className="px-4 py-2 bg-[#F9F9F9] hover:bg-gray-100 border border-[#E8E0D5] text-[#111111] font-bold text-xs rounded-xl transition-all shrink-0"
                 >
-                  {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA (Scan QR)'}
+                  {is2FAEnabled ? "Nonaktifkan 2FA" : "Aktifkan 2FA (Scan QR)"}
                 </button>
               </div>
             </div>
@@ -1004,15 +1147,14 @@ export default function ProfilePage() {
               onClose={() => setIs2FAModalOpen(false)}
               onSuccess={() => {
                 setIs2FAEnabled(true);
-                setPasswordSuccessMsg("2FA Google Authenticator berhasil diaktifkan dengan aman!");
+                setPasswordSuccessMsg(
+                  "2FA Google Authenticator berhasil diaktifkan dengan aman!",
+                );
               }}
             />
-
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }

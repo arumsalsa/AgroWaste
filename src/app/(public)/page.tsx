@@ -21,12 +21,14 @@ interface ImpactData {
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Earth radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -36,7 +38,9 @@ export default function LandingPage() {
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null);
   const [sellers, setSellers] = useState<SellerInfo[]>([]);
   const [activeSellerId, setActiveSellerId] = useState<string | null>(null);
-  const [geoStatus, setGeoStatus] = useState<"idle" | "prompting" | "granted" | "denied">("idle");
+  const [geoStatus, setGeoStatus] = useState<
+    "idle" | "prompting" | "granted" | "denied"
+  >("idle");
   const [loadingSellers, setLoadingSellers] = useState(true);
   const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [loadingImpact, setLoadingImpact] = useState(true);
@@ -53,20 +57,36 @@ export default function LandingPage() {
       .catch(() => setLoadingImpact(false));
   }, []);
 
-  const wasteMetric = impactData ? (impactData.total_waste_managed_kg >= 1000 ? {
-    value: (impactData.total_waste_managed_kg / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 }),
-    unit: "Ton"
-  } : {
-    value: impactData.total_waste_managed_kg.toLocaleString("id-ID"),
-    unit: "kg"
-  }) : { value: "—", unit: "Ton" };
+  const wasteMetric = impactData
+    ? impactData.total_waste_managed_kg >= 1000
+      ? {
+          value: (impactData.total_waste_managed_kg / 1000).toLocaleString(
+            "id-ID",
+            { maximumFractionDigits: 1 },
+          ),
+          unit: "Ton",
+        }
+      : {
+          value: impactData.total_waste_managed_kg.toLocaleString("id-ID"),
+          unit: "kg",
+        }
+    : { value: "—", unit: "Ton" };
 
-  const treesCount = impactData ? impactData.equivalent_trees.toLocaleString("id-ID") : "—";
-  const activeSellers = impactData ? (impactData.active_sellers_count >= 1000 ? {
-    value: (impactData.active_sellers_count / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "k",
-  } : {
-    value: impactData.active_sellers_count.toLocaleString("id-ID"),
-  }) : { value: "—" };
+  const treesCount = impactData
+    ? impactData.equivalent_trees.toLocaleString("id-ID")
+    : "—";
+  const activeSellers = impactData
+    ? impactData.active_sellers_count >= 1000
+      ? {
+          value:
+            (impactData.active_sellers_count / 1000).toLocaleString("id-ID", {
+              maximumFractionDigits: 1,
+            }) + "k",
+        }
+      : {
+          value: impactData.active_sellers_count.toLocaleString("id-ID"),
+        }
+    : { value: "—" };
 
   // page title — must be set client-side
   useEffect(() => {
@@ -119,7 +139,7 @@ export default function LandingPage() {
       () => {
         setGeoStatus("denied");
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 8000 },
     );
   };
 
@@ -137,7 +157,9 @@ export default function LandingPage() {
       return { ...s, distance: dist };
     });
 
-    return [...sellersWithDistance].sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    return [...sellersWithDistance].sort(
+      (a, b) => (a.distance || 0) - (b.distance || 0),
+    );
   }, [userCoords, sellers]);
 
   return (
@@ -151,10 +173,14 @@ export default function LandingPage() {
         >
           <div
             className="absolute inset-0"
-            style={{
-              maskImage: "linear-gradient(to left, black 55%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to left, black 55%, transparent 100%)",
-            } as React.CSSProperties}
+            style={
+              {
+                maskImage:
+                  "linear-gradient(to left, black 55%, transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to left, black 55%, transparent 100%)",
+              } as React.CSSProperties
+            }
           >
             <img
               src="/hero-sapi.jpeg"
@@ -176,11 +202,13 @@ export default function LandingPage() {
 
             <h1
               className="font-land-heading font-bold text-land-ink leading-[1.0] tracking-[-0.025em] mb-5 hero-fade-up"
-              style={{
-                fontSize: "clamp(2rem, 8vw, 5rem)",
-                textWrap: "balance",
-                animationDelay: "60ms",
-              } as React.CSSProperties}
+              style={
+                {
+                  fontSize: "clamp(2rem, 8vw, 5rem)",
+                  textWrap: "balance",
+                  animationDelay: "60ms",
+                } as React.CSSProperties
+              }
             >
               Limbah ternak
               <br />
@@ -189,10 +217,12 @@ export default function LandingPage() {
 
             <p
               className="font-land-heading font-bold text-land-clay mb-8 hero-fade-up"
-              style={{
-                fontSize: "clamp(1.25rem, 3.5vw, 2.125rem)",
-                animationDelay: "140ms",
-              } as React.CSSProperties}
+              style={
+                {
+                  fontSize: "clamp(1.25rem, 3.5vw, 2.125rem)",
+                  animationDelay: "140ms",
+                } as React.CSSProperties
+              }
             >
               Kami bantu jualkan.
             </p>
@@ -201,7 +231,8 @@ export default function LandingPage() {
               className="text-land-muted text-lg leading-relaxed max-w-lg mb-12 hero-fade-up"
               style={{ animationDelay: "220ms" } as React.CSSProperties}
             >
-              Hubungkan sisa pakan, kotoran ternak, dan produk kandangmu dengan petani yang butuh pupuk organik berkualitas.
+              Hubungkan sisa pakan, kotoran ternak, dan produk kandangmu dengan
+              petani yang butuh pupuk organik berkualitas.
             </p>
 
             {/* CTAs */}
@@ -218,7 +249,11 @@ export default function LandingPage() {
                   strokeWidth="2"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
                 </svg>
               </Link>
               <Link href="/marketplace" className="btn-clay-secondary">
@@ -255,14 +290,16 @@ export default function LandingPage() {
 
             <div className="w-full lg:w-[48%] pt-2 lg:pt-14">
               <p className="text-land-warm/80 text-base md:text-lg leading-relaxed">
-                Kami tidak sekadar platform jual-beli. AgroWaste lahir dari kegelisahan akan menumpuknya limbah organik yang mencemari lingkungan. Kami percaya, dengan sentuhan sirkular, apa yang tadinya sisa bisa menjadi nyawa baru bagi tanah Nusantara.
+                Kami tidak sekadar platform jual-beli. AgroWaste lahir dari
+                kegelisahan akan menumpuknya limbah organik yang mencemari
+                lingkungan. Kami percaya, dengan sentuhan sirkular, apa yang
+                tadinya sisa bisa menjadi nyawa baru bagi tanah Nusantara.
               </p>
             </div>
           </div>
 
           {/* 5-card layout */}
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10 mt-4 lg:items-center">
-            
             {/* Card 1 */}
             <div className="w-full h-[200px] md:h-[280px] rounded-[32px] overflow-hidden relative shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center justify-center">
               <img
@@ -286,7 +323,9 @@ export default function LandingPage() {
                     `+${activeSellers.value}`
                   )}
                 </div>
-                <div className="font-bold text-xs text-land-ink mt-0.5 uppercase tracking-wider">Mitra Peternak</div>
+                <div className="font-bold text-xs text-land-ink mt-0.5 uppercase tracking-wider">
+                  Mitra Peternak
+                </div>
                 <p className="text-[10px] text-land-muted mt-1 leading-normal font-medium">
                   Bergabung menyalurkan limbah ternak produktif.
                 </p>
@@ -299,7 +338,9 @@ export default function LandingPage() {
                     `${wasteMetric.value} ${wasteMetric.unit}`
                   )}
                 </div>
-                <div className="font-bold text-xs text-[#1E3E2A] mt-0.5 uppercase tracking-wider">Ton Diolah</div>
+                <div className="font-bold text-xs text-[#1E3E2A] mt-0.5 uppercase tracking-wider">
+                  Ton Diolah
+                </div>
                 <p className="text-[10px] text-land-muted mt-1 leading-normal font-medium">
                   Berhasil dikonversi menjadi pupuk berkualitas.
                 </p>
@@ -337,7 +378,8 @@ export default function LandingPage() {
                   )}
                 </h3>
                 <p className="text-[12px] text-white/70 mt-2.5 leading-relaxed font-medium">
-                  Reduksi karbon dari pengolahan limbah organik sebanding dengan penyerapan emisi oleh belasan ribu pohon.
+                  Reduksi karbon dari pengolahan limbah organik sebanding dengan
+                  penyerapan emisi oleh belasan ribu pohon.
                 </p>
               </div>
               <div className="relative z-10 self-end">
@@ -360,7 +402,6 @@ export default function LandingPage() {
                 Pertanian Sirkular Berkelanjutan
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -377,10 +418,12 @@ export default function LandingPage() {
 
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <h2 className="text-3xl md:text-5xl font-land-heading font-bold max-w-2xl leading-tight">
-              Temukan peternak organik terdekat dari <span className="text-emerald-400">lokasi Anda.</span>
+              Temukan peternak organik terdekat dari{" "}
+              <span className="text-emerald-400">lokasi Anda.</span>
             </h2>
             <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-[#E8E0D5]">
-              SISTEM GIS: <span className="text-emerald-400 font-bold">AKTIF</span>
+              SISTEM GIS:{" "}
+              <span className="text-emerald-400 font-bold">AKTIF</span>
             </div>
           </div>
 
@@ -391,7 +434,7 @@ export default function LandingPage() {
                 userCoords={userCoords}
                 sellers={sortedSellers}
                 activeSellerId={activeSellerId}
-                onSelectSeller={(s) => router.push('/sellers/' + s.userId)}
+                onSelectSeller={(s) => router.push("/sellers/" + s.userId)}
                 className="w-full h-full"
               />
             </div>
@@ -401,30 +444,40 @@ export default function LandingPage() {
               {/* Geolocation Status Card */}
               <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 flex flex-col justify-between relative overflow-hidden group">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Status Lokasi Anda</span>
+                  <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest">
+                    Status Lokasi Anda
+                  </span>
                   <span
                     className={`w-2.5 h-2.5 rounded-full ${
                       geoStatus === "granted"
                         ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] animate-pulse"
                         : geoStatus === "prompting"
-                        ? "bg-amber-400 animate-pulse"
-                        : "bg-red-400"
+                          ? "bg-amber-400 animate-pulse"
+                          : "bg-red-400"
                     }`}
                   />
                 </div>
 
                 {geoStatus === "granted" && userCoords ? (
                   <div className="space-y-1">
-                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Koordinat Anda:</div>
+                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                      Koordinat Anda:
+                    </div>
                     <div className="text-sm font-mono text-emerald-300 font-tabular">
-                      {userCoords[1].toFixed(5)}° S, {userCoords[0].toFixed(5)}° E
+                      {userCoords[1].toFixed(5)}° S, {userCoords[0].toFixed(5)}°
+                      E
                     </div>
                   </div>
                 ) : geoStatus === "prompting" ? (
-                  <p className="text-xs text-white/80">Meminta izin lokasi perangkat...</p>
+                  <p className="text-xs text-white/80">
+                    Meminta izin lokasi perangkat...
+                  </p>
                 ) : (
                   <div className="space-y-2.5">
-                    <p className="text-xs text-white/60">Akses lokasi tidak diaktifkan. Aktifkan GPS untuk melacak peternak terdekat.</p>
+                    <p className="text-xs text-white/60">
+                      Akses lokasi tidak diaktifkan. Aktifkan GPS untuk melacak
+                      peternak terdekat.
+                    </p>
                     <button
                       onClick={requestLocation}
                       className="px-3.5 py-2 bg-land-accent hover:bg-land-accent-hover text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
@@ -437,15 +490,21 @@ export default function LandingPage() {
 
               {/* Nearest Sellers List */}
               <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-6 flex-1 flex flex-col justify-start overflow-hidden min-h-[280px]">
-                <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-4 block">Peternak Terdekat</span>
+                <span className="text-[11px] font-bold text-white/60 uppercase tracking-widest mb-4 block">
+                  Peternak Terdekat
+                </span>
 
                 {loadingSellers ? (
                   <div className="flex flex-col items-center justify-center py-10 flex-1 animate-pulse">
                     <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-                    <span className="text-[10px] font-bold text-white/50">Mencari peternak...</span>
+                    <span className="text-[10px] font-bold text-white/50">
+                      Mencari peternak...
+                    </span>
                   </div>
                 ) : sortedSellers.length === 0 ? (
-                  <p className="text-xs text-white/50 italic py-10 text-center">Tidak ada lokasi peternak terverifikasi.</p>
+                  <p className="text-xs text-white/50 italic py-10 text-center">
+                    Tidak ada lokasi peternak terverifikasi.
+                  </p>
                 ) : (
                   <div className="space-y-3 overflow-y-auto max-h-[280px] pr-1">
                     {sortedSellers.slice(0, 3).map((s) => (
@@ -459,7 +518,9 @@ export default function LandingPage() {
                         }`}
                       >
                         <div className="overflow-hidden">
-                          <h4 className="font-bold text-sm truncate leading-snug">{s.name}</h4>
+                          <h4 className="font-bold text-sm truncate leading-snug">
+                            {s.name}
+                          </h4>
                           <p className="text-[10px] text-white/50 truncate mt-0.5">
                             {s.kabupaten}, {s.provinsi}
                           </p>
@@ -467,10 +528,15 @@ export default function LandingPage() {
                         <div className="text-right shrink-0">
                           {s.distance !== undefined ? (
                             <span className="text-xs font-bold text-emerald-300 font-tabular block">
-                              {s.distance.toFixed(1)} <span className="text-[10px] font-normal text-white/50">km</span>
+                              {s.distance.toFixed(1)}{" "}
+                              <span className="text-[10px] font-normal text-white/50">
+                                km
+                              </span>
                             </span>
                           ) : (
-                            <span className="text-[10px] text-white/40">Lokasi</span>
+                            <span className="text-[10px] text-white/40">
+                              Lokasi
+                            </span>
                           )}
                           <Link
                             href={`/sellers/${s.userId}`}

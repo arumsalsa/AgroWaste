@@ -1,21 +1,23 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const authCookie = request.cookies.get('auth');
+  const authCookie = request.cookies.get("auth");
   const pathname = request.nextUrl.pathname;
 
-  const protectedRoutes = ['/pesanan', '/cart', '/checkout'];
-  const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
+  const protectedRoutes = ["/pesanan", "/cart", "/checkout"];
+  const isProtected = protectedRoutes.some((route) =>
+    pathname.startsWith(route),
+  );
 
   if (isProtected && !authCookie) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('callbackUrl', pathname);
+    const url = new URL("/login", request.url);
+    url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 
-  if (pathname === '/' && authCookie) {
-    return NextResponse.redirect(new URL('/home', request.url));
+  if (pathname === "/" && authCookie) {
+    return NextResponse.redirect(new URL("/home", request.url));
   }
 
   return NextResponse.next();
@@ -23,10 +25,10 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/home',
-    '/home/:path*',
-    '/pesanan/:path*',
-    '/cart/:path*',
-    '/checkout/:path*',
+    "/home",
+    "/home/:path*",
+    "/pesanan/:path*",
+    "/cart/:path*",
+    "/checkout/:path*",
   ],
 };

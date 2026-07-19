@@ -3,7 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2, Sprout, ShieldCheck, Store, Check, ArrowRight, Ticket, Leaf } from "lucide-react";
+import {
+  Trash2,
+  Sprout,
+  ShieldCheck,
+  Store,
+  Check,
+  ArrowRight,
+  Ticket,
+  Leaf,
+} from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -27,19 +36,21 @@ interface CartItem {
 
 function formatRupiah(n: string | number) {
   return new Intl.NumberFormat("id-ID", {
-    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
   }).format(Number(n));
 }
 
-const SHIPPING   = 24500;
-const ADMIN_FEE  = 2000;
+const SHIPPING = 24500;
+const ADMIN_FEE = 2000;
 
 export default function CartContent() {
   const router = useRouter();
 
-  const [items, setItems]     = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,17 +75,19 @@ export default function CartContent() {
 
   const subtotal = items.reduce(
     (acc, item) => acc + Number(item.product.price) * Number(item.quantity_kg),
-    0
+    0,
   );
 
   const handleQtyChange = async (item: CartItem, delta: number) => {
-    const step    = Math.max(1, parseFloat(item.product.min_order_kg));
+    const step = Math.max(1, parseFloat(item.product.min_order_kg));
     const current = parseFloat(item.quantity_kg);
-    const newQty  = Math.max(step, current + delta * step);
+    const newQty = Math.max(step, current + delta * step);
     if (newQty === current) return;
 
     setItems((prev) =>
-      prev.map((i) => i.id === item.id ? { ...i, quantity_kg: String(newQty) } : i)
+      prev.map((i) =>
+        i.id === item.id ? { ...i, quantity_kg: String(newQty) } : i,
+      ),
     );
     setUpdating(item.id);
 
@@ -85,12 +98,16 @@ export default function CartContent() {
       });
       if (!res.ok) {
         setItems((prev) =>
-          prev.map((i) => i.id === item.id ? { ...i, quantity_kg: String(current) } : i)
+          prev.map((i) =>
+            i.id === item.id ? { ...i, quantity_kg: String(current) } : i,
+          ),
         );
       }
     } catch {
       setItems((prev) =>
-        prev.map((i) => i.id === item.id ? { ...i, quantity_kg: String(current) } : i)
+        prev.map((i) =>
+          i.id === item.id ? { ...i, quantity_kg: String(current) } : i,
+        ),
       );
     } finally {
       setUpdating(null);
@@ -121,7 +138,10 @@ export default function CartContent() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-6">
               {[1, 2].map((i) => (
-                <div key={i} className="bg-white border border-[#E8E0D5]/60 rounded-[32px] p-6 animate-pulse">
+                <div
+                  key={i}
+                  className="bg-white border border-[#E8E0D5]/60 rounded-[32px] p-6 animate-pulse"
+                >
                   <div className="h-6 bg-[#E8E0D5] rounded-full w-1/2 mb-6" />
                   <div className="flex gap-6">
                     <div className="w-24 h-24 bg-[#E8E0D5] rounded-2xl shrink-0" />
@@ -154,7 +174,12 @@ export default function CartContent() {
       <div className="flex-1 flex items-center justify-center py-32">
         <div className="text-center">
           <p className="text-land-muted font-bold text-lg mb-2">{error}</p>
-          <Link href="/marketplace" className="text-[#009A44] font-bold text-sm hover:underline">← Kembali ke Marketplace</Link>
+          <Link
+            href="/marketplace"
+            className="text-[#009A44] font-bold text-sm hover:underline"
+          >
+            ← Kembali ke Marketplace
+          </Link>
         </div>
       </div>
     );
@@ -165,13 +190,21 @@ export default function CartContent() {
       <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12">
           <div className="mb-10 pb-6 border-b border-[#E8E0D5]/60">
-            <h1 className="text-4xl md:text-5xl font-land-heading font-bold text-land-ink tracking-tight mb-2">Keranjang Belanja</h1>
-            <p className="text-land-muted text-sm">Dukung keberlanjutan pertanian dengan memanfaatkan limbah ternak.</p>
+            <h1 className="text-4xl md:text-5xl font-land-heading font-bold text-land-ink tracking-tight mb-2">
+              Keranjang Belanja
+            </h1>
+            <p className="text-land-muted text-sm">
+              Dukung keberlanjutan pertanian dengan memanfaatkan limbah ternak.
+            </p>
           </div>
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Leaf className="w-16 h-16 text-[#E8E0D5] mb-6" />
-            <p className="text-xl font-bold text-land-ink mb-2">Keranjang masih kosong</p>
-            <p className="text-land-muted text-sm mb-8">Mulai belanja produk pupuk organik berkualitas.</p>
+            <p className="text-xl font-bold text-land-ink mb-2">
+              Keranjang masih kosong
+            </p>
+            <p className="text-land-muted text-sm mb-8">
+              Mulai belanja produk pupuk organik berkualitas.
+            </p>
             <Link href="/marketplace" className="btn-clay-primary px-8 py-3">
               Jelajahi Marketplace
             </Link>
@@ -181,17 +214,22 @@ export default function CartContent() {
     );
   }
 
-  const co2 = Math.round(items.reduce((a, i) => a + parseFloat(i.quantity_kg) * 0.7, 0));
+  const co2 = Math.round(
+    items.reduce((a, i) => a + parseFloat(i.quantity_kg) * 0.7, 0),
+  );
 
   return (
     <div className="flex-1 animate-fade-in pb-24 bg-land-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12">
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-10 pb-6 border-b border-[#E8E0D5]/60">
           <div>
-            <h1 className="text-4xl md:text-5xl font-land-heading font-bold text-land-ink tracking-tight mb-2">Keranjang Belanja</h1>
-            <p className="text-land-muted text-sm">Dukung keberlanjutan pertanian dengan memanfaatkan limbah ternak.</p>
+            <h1 className="text-4xl md:text-5xl font-land-heading font-bold text-land-ink tracking-tight mb-2">
+              Keranjang Belanja
+            </h1>
+            <p className="text-land-muted text-sm">
+              Dukung keberlanjutan pertanian dengan memanfaatkan limbah ternak.
+            </p>
           </div>
           <div className="px-4 py-2 bg-white border border-[#E8E0D5] rounded-full text-xs font-bold text-land-muted tracking-wider uppercase shadow-sm">
             {items.length} Barang Terpilih
@@ -199,17 +237,27 @@ export default function CartContent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
           {/* Left Column — Cart Items */}
           <div className="lg:col-span-2 space-y-6">
             {items.map((item) => {
-              const farmerName = item.product.peternak_profile?.nama_peternakan ?? "Peternak AgroWaste";
-              const badge      = item.product.peternak_profile?.badge;
-              const isVerified = !badge || badge === "none" || badge === "verified" || badge === "terverifikasi";
-              const badgeLabel = isVerified ? "Produsen Terverifikasi" : "Pilihan Berkelanjutan";
-              const step       = Math.max(1, parseFloat(item.product.min_order_kg));
-              const qty        = parseFloat(item.quantity_kg);
-              const descParts  = [item.product.kondisi, item.product.jenis_ternak].filter(Boolean);
+              const farmerName =
+                item.product.peternak_profile?.nama_peternakan ??
+                "Peternak AgroWaste";
+              const badge = item.product.peternak_profile?.badge;
+              const isVerified =
+                !badge ||
+                badge === "none" ||
+                badge === "verified" ||
+                badge === "terverifikasi";
+              const badgeLabel = isVerified
+                ? "Produsen Terverifikasi"
+                : "Pilihan Berkelanjutan";
+              const step = Math.max(1, parseFloat(item.product.min_order_kg));
+              const qty = parseFloat(item.quantity_kg);
+              const descParts = [
+                item.product.kondisi,
+                item.product.jenis_ternak,
+              ].filter(Boolean);
 
               return (
                 <div
@@ -219,20 +267,28 @@ export default function CartContent() {
                   {/* Farmer Info Header */}
                   <div className="bg-[#F0EDE6]/30 px-6 py-4 border-b border-[#E8E0D5]/50 flex flex-wrap justify-between items-center gap-3">
                     <div className="flex items-center gap-2.5">
-                      <img src="/LOGO.png" alt="" className="w-6 h-6 object-contain" />
+                      <img
+                        src="/LOGO.png"
+                        alt=""
+                        className="w-6 h-6 object-contain"
+                      />
                       <span className="text-sm font-bold text-land-ink flex items-center gap-1.5">
                         <Store className="w-4 h-4 text-land-clay" />
                         {farmerName}
                       </span>
                     </div>
-                    <div className={`text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border flex items-center gap-1.5 ${
-                      isVerified
-                        ? "bg-[#E6F5EC] border-[#B2DFCB] text-[#009A44]"
-                        : "bg-blue-50 border-blue-200 text-blue-600"
-                    }`}>
-                      {isVerified
-                        ? <Check className="w-3.5 h-3.5 text-[#009A44]" />
-                        : <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />}
+                    <div
+                      className={`text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border flex items-center gap-1.5 ${
+                        isVerified
+                          ? "bg-[#E6F5EC] border-[#B2DFCB] text-[#009A44]"
+                          : "bg-blue-50 border-blue-200 text-blue-600"
+                      }`}
+                    >
+                      {isVerified ? (
+                        <Check className="w-3.5 h-3.5 text-[#009A44]" />
+                      ) : (
+                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                      )}
                       {badgeLabel}
                     </div>
                   </div>
@@ -248,14 +304,20 @@ export default function CartContent() {
                     <div className="flex-1 flex flex-col justify-between min-w-0">
                       <div className="flex flex-col md:flex-row justify-between items-start gap-2">
                         <div className="min-w-0">
-                          <h3 className="font-land-heading text-lg sm:text-xl font-bold text-land-ink leading-snug truncate sm:whitespace-normal">{item.product.name}</h3>
+                          <h3 className="font-land-heading text-lg sm:text-xl font-bold text-land-ink leading-snug truncate sm:whitespace-normal">
+                            {item.product.name}
+                          </h3>
                           <p className="text-xs text-land-muted mt-0.5">
-                            {descParts.length > 0 ? descParts.join(" • ") : `${qty} ${item.product.unit}`}
+                            {descParts.length > 0
+                              ? descParts.join(" • ")
+                              : `${qty} ${item.product.unit}`}
                           </p>
                         </div>
                         <div className="text-base sm:text-xl font-bold text-[#009A44] font-tabular whitespace-nowrap mt-1 md:mt-0">
                           {formatRupiah(item.product.price)}
-                          <span className="text-xs font-normal text-land-muted">/{item.product.unit}</span>
+                          <span className="text-xs font-normal text-land-muted">
+                            /{item.product.unit}
+                          </span>
                         </div>
                       </div>
 
@@ -266,7 +328,9 @@ export default function CartContent() {
                             onClick={() => handleQtyChange(item, -1)}
                             disabled={updating === item.id || qty <= step}
                             className="w-8 h-8 rounded-full border border-[#E8E0D5] flex items-center justify-center text-land-ink hover:bg-land-warm hover:border-land-clay transition-all duration-200 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
-                          >-</button>
+                          >
+                            -
+                          </button>
                           <span className="w-20 text-center text-sm font-bold text-land-ink font-tabular">
                             {qty} {item.product.unit}
                           </span>
@@ -274,7 +338,9 @@ export default function CartContent() {
                             onClick={() => handleQtyChange(item, 1)}
                             disabled={updating === item.id}
                             className="w-8 h-8 rounded-full border border-[#E8E0D5] flex items-center justify-center text-land-ink hover:bg-land-warm hover:border-land-clay transition-all duration-200 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
-                          >+</button>
+                          >
+                            +
+                          </button>
                         </div>
                         <button
                           onClick={() => handleDelete(item.id)}
@@ -293,7 +359,6 @@ export default function CartContent() {
 
           {/* Right Column — Summary */}
           <div className="lg:col-span-1 space-y-6">
-
             {/* Impact Metric Card */}
             <div className="bg-[#2C3930] text-[#FBFAF7] rounded-[32px] p-6 shadow-md relative overflow-hidden flex flex-col justify-between min-h-[220px] group hover:-translate-y-1 transition-transform duration-300">
               <div className="absolute -right-10 -top-10 w-44 h-44 bg-[#009A44] rounded-full blur-3xl opacity-35 group-hover:scale-110 transition-transform duration-700 pointer-events-none" />
@@ -302,42 +367,64 @@ export default function CartContent() {
                   <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                     <Sprout className="w-4 h-4 text-[#4ADE80]" />
                   </div>
-                  <span className="font-bold text-xs uppercase tracking-widest text-[#4ADE80]">Dampak Lingkungan</span>
+                  <span className="font-bold text-xs uppercase tracking-widest text-[#4ADE80]">
+                    Dampak Lingkungan
+                  </span>
                 </div>
                 <div className="flex items-baseline gap-1.5 mb-3">
-                  <span className="text-5xl font-bold font-land-heading tracking-tight">{co2}</span>
-                  <span className="text-base font-bold opacity-90">kg CO₂e Berkurang</span>
+                  <span className="text-5xl font-bold font-land-heading tracking-tight">
+                    {co2}
+                  </span>
+                  <span className="text-base font-bold opacity-90">
+                    kg CO₂e Berkurang
+                  </span>
                 </div>
               </div>
               <p className="text-xs leading-relaxed text-[#FBFAF7]/80 relative z-10 pt-4 border-t border-white/10">
-                Membeli produk ini berkontribusi pada reduksi emisi metana (dalam satuan CO₂e) dan mencegah emisi gas rumah kaca berbahaya.
+                Membeli produk ini berkontribusi pada reduksi emisi metana
+                (dalam satuan CO₂e) dan mencegah emisi gas rumah kaca berbahaya.
               </p>
             </div>
 
             {/* Billing */}
             <div className="bg-white border border-[#E8E0D5]/80 rounded-[32px] p-6 shadow-sm">
-              <h3 className="font-land-heading text-xl font-bold text-land-ink mb-6">Ringkasan Belanja</h3>
+              <h3 className="font-land-heading text-xl font-bold text-land-ink mb-6">
+                Ringkasan Belanja
+              </h3>
 
               <div className="space-y-4 text-sm border-b border-dashed border-[#E8E0D5] pb-6 mb-6">
                 <div className="flex justify-between">
                   <span className="text-land-muted">Subtotal Produk</span>
-                  <span className="font-bold text-land-ink font-tabular">{formatRupiah(subtotal)}</span>
+                  <span className="font-bold text-land-ink font-tabular">
+                    {formatRupiah(subtotal)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-land-muted">Ongkir Layanan (GIS)</span>
-                  <span className="font-bold text-land-ink font-tabular">{formatRupiah(SHIPPING)}</span>
+                  <span className="font-bold text-land-ink font-tabular">
+                    {formatRupiah(SHIPPING)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-land-muted">Biaya Administrasi</span>
-                  <span className="font-bold text-land-ink font-tabular">{formatRupiah(ADMIN_FEE)}</span>
+                  <span className="font-bold text-land-ink font-tabular">
+                    {formatRupiah(ADMIN_FEE)}
+                  </span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <span className="text-base font-bold text-land-ink">Total Tagihan</span>
-                <span className="text-2xl font-bold text-[#009A44] font-tabular">{formatRupiah(subtotal + SHIPPING + ADMIN_FEE)}</span>
+                <span className="text-base font-bold text-land-ink">
+                  Total Tagihan
+                </span>
+                <span className="text-2xl font-bold text-[#009A44] font-tabular">
+                  {formatRupiah(subtotal + SHIPPING + ADMIN_FEE)}
+                </span>
               </div>
-              <Link href="/checkout" className="btn-clay-primary py-4 w-full flex items-center justify-center gap-2 mb-4">
+              <Link
+                href="/checkout"
+                className="btn-clay-primary py-4 w-full flex items-center justify-center gap-2 mb-4"
+              >
                 Lanjut ke Pembayaran
                 <ArrowRight className="w-5 h-5" />
               </Link>
@@ -348,10 +435,8 @@ export default function CartContent() {
               <ShieldCheck className="w-4 h-4 text-[#009A44]" />
               Pembayaran aman dengan enkripsi SSL 256-bit
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );

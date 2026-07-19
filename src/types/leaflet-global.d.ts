@@ -42,9 +42,18 @@ interface LeafletMouseEvent {
 
 interface LeafletStatic {
   map(id: string): LeafletMap;
-  tileLayer(url: string, options?: Record<string, unknown>): { addTo(map: LeafletMap): void };
-  marker(latlng: [number, number], options?: Record<string, unknown>): LeafletMarker;
-  polyline(latlngs: [number, number][], options?: Record<string, unknown>): { addTo(map: LeafletMap): void };
+  tileLayer(
+    url: string,
+    options?: Record<string, unknown>,
+  ): { addTo(map: LeafletMap): void };
+  marker(
+    latlng: [number, number],
+    options?: Record<string, unknown>,
+  ): LeafletMarker;
+  polyline(
+    latlngs: [number, number][],
+    options?: Record<string, unknown>,
+  ): { addTo(map: LeafletMap): void };
   latLngBounds(latlngs: [number, number][]): LeafletBounds;
   icon(options: Record<string, unknown>): unknown;
   Marker: new (...args: unknown[]) => LeafletMarker;

@@ -21,11 +21,15 @@ function CustomTimeframeDropdown({
     { key: "1y", label: "1 Tahun Terakhir" },
   ];
 
-  const currentLabel = options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
+  const currentLabel =
+    options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -35,22 +39,47 @@ function CustomTimeframeDropdown({
 
   const isSeller = colorScheme === "seller";
   const primaryColor = isSeller ? "text-seller-primary" : "text-admin-primary";
-  const activeBg = isSeller ? "bg-seller-primary-light text-seller-primary" : "bg-admin-primary-light text-admin-primary";
+  const activeBg = isSeller
+    ? "bg-seller-primary-light text-seller-primary"
+    : "bg-admin-primary-light text-admin-primary";
 
   return (
-    <div className="relative shrink-0 self-start sm:self-auto" ref={dropdownRef}>
+    <div
+      className="relative shrink-0 self-start sm:self-auto"
+      ref={dropdownRef}
+    >
       {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white hover:bg-[#F4F1EA] border border-black/10 text-gray-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-2 transition-all duration-200 active:scale-95"
       >
-        <svg className={`w-3.5 h-3.5 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <svg
+          className={`w-3.5 h-3.5 ${primaryColor}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
         <span>{currentLabel}</span>
-        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        <svg
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
@@ -73,8 +102,18 @@ function CustomTimeframeDropdown({
               >
                 <span>{opt.label}</span>
                 {isSelected && (
-                  <svg className={`w-4 h-4 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg
+                    className={`w-4 h-4 ${primaryColor}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </button>
@@ -96,12 +135,18 @@ interface DashboardStats {
 
 function formatRupiah(n: string | number) {
   return new Intl.NumberFormat("id-ID", {
-    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
   }).format(Number(n));
 }
 
 // build bars based on timeRange
-function buildBars(chartData: DashboardStats["chart_data"], totalRevInDB: number, timeRange: "7d" | "1m" | "1y") {
+function buildBars(
+  chartData: DashboardStats["chart_data"],
+  totalRevInDB: number,
+  timeRange: "7d" | "1m" | "1y",
+) {
   const rawData = chartData || [];
 
   if (timeRange === "1m") {
@@ -115,7 +160,9 @@ function buildBars(chartData: DashboardStats["chart_data"], totalRevInDB: number
 
     rawData.forEach((item) => {
       const itemDate = new Date(item.date);
-      const diffDays = Math.floor((now.getTime() - itemDate.getTime()) / (1000 * 3600 * 24));
+      const diffDays = Math.floor(
+        (now.getTime() - itemDate.getTime()) / (1000 * 3600 * 24),
+      );
       if (diffDays >= 0 && diffDays < 28) {
         const weekIdx = Math.floor(diffDays / 7);
         if (weekIdx >= 0 && weekIdx < 4) {
@@ -137,9 +184,23 @@ function buildBars(chartData: DashboardStats["chart_data"], totalRevInDB: number
   }
 
   if (timeRange === "1y") {
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Agu",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ];
     const currentMonth = new Date().getMonth();
-    const monthBuckets: { label: string; monthIdx: number; value: number }[] = [];
+    const monthBuckets: { label: string; monthIdx: number; value: number }[] =
+      [];
 
     for (let i = 11; i >= 0; i--) {
       const mIdx = (currentMonth - i + 12) % 12;
@@ -175,7 +236,10 @@ function buildBars(chartData: DashboardStats["chart_data"], totalRevInDB: number
     d.setDate(d.getDate() - i);
     const key = d.toISOString().slice(0, 10);
     const match = rawData.find((c) => c.date === key);
-    result.push({ label: days[d.getDay()], value: Number(match?.revenue ?? 0) });
+    result.push({
+      label: days[d.getDay()],
+      value: Number(match?.revenue ?? 0),
+    });
   }
 
   const hasData = result.some((r) => r.value > 0);
@@ -191,9 +255,9 @@ function buildBars(chartData: DashboardStats["chart_data"], totalRevInDB: number
 }
 
 export default function AnalyticsPage() {
-  const [stats,     setStats]     = useState<DashboardStats | null>(null);
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState<string | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<"7d" | "1m" | "1y">("7d");
 
   useEffect(() => {
@@ -207,7 +271,13 @@ export default function AnalyticsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const bars         = stats ? buildBars(stats.chart_data, Number(stats.total_pendapatan || 0), timeRange) : [];
+  const bars = stats
+    ? buildBars(
+        stats.chart_data,
+        Number(stats.total_pendapatan || 0),
+        timeRange,
+      )
+    : [];
   const hasChartData = bars.some((b) => b.value > 0);
 
   const skeletonCard = (
@@ -223,8 +293,12 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">Analitik Penjualan</h2>
-          <p className="text-sm text-seller-textsecondary">Lacak performa bisnis limbah pertanian Anda.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">
+            Analitik Penjualan
+          </h2>
+          <p className="text-sm text-seller-textsecondary">
+            Lacak performa bisnis limbah pertanian Anda.
+          </p>
         </div>
       </div>
 
@@ -238,17 +312,33 @@ export default function AnalyticsPage() {
       {/* KPI Cards */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {skeletonCard}{skeletonCard}{skeletonCard}{skeletonCard}
+          {skeletonCard}
+          {skeletonCard}
+          {skeletonCard}
+          {skeletonCard}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
           {/* Total Pendapatan */}
           <div className="bg-seller-surfacewhite border border-seller-hairline p-5 rounded-2xl">
             <div className="w-10 h-10 rounded-lg bg-seller-primary-light text-seller-primary flex items-center justify-center mb-4">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">Total Pendapatan</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">
+              Total Pendapatan
+            </span>
             <h3 className="text-xl font-bold text-seller-textprimary font-tabular">
               {stats ? formatRupiah(stats.total_pendapatan) : "—"}
             </h3>
@@ -257,20 +347,50 @@ export default function AnalyticsPage() {
           {/* Volume Limbah Terjual */}
           <div className="bg-seller-surfacewhite border border-seller-hairline p-5 rounded-2xl">
             <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">Volume Limbah Terjual</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">
+              Volume Limbah Terjual
+            </span>
             <h3 className="text-xl font-bold text-seller-textprimary font-tabular">
-              {stats ? `${Number(stats.total_terjual_kg).toLocaleString("id-ID")} kg` : "—"}
+              {stats
+                ? `${Number(stats.total_terjual_kg).toLocaleString("id-ID")} kg`
+                : "—"}
             </h3>
           </div>
 
           {/* Total Produk */}
           <div className="bg-seller-surfacewhite border border-seller-hairline p-5 rounded-2xl">
             <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                />
+              </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">Total Produk</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">
+              Total Produk
+            </span>
             <h3 className="text-xl font-bold text-seller-textprimary font-tabular">
               {stats ? `${stats.total_produk} Produk` : "—"}
             </h3>
@@ -279,14 +399,27 @@ export default function AnalyticsPage() {
           {/* Pesanan Baru */}
           <div className="bg-seller-surfacewhite border border-seller-hairline p-5 rounded-2xl">
             <div className="w-10 h-10 rounded-lg bg-seller-primary-light text-seller-primary flex items-center justify-center mb-4">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
+              </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">Pesanan Baru</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary block mb-1">
+              Pesanan Baru
+            </span>
             <h3 className="text-xl font-bold text-seller-textprimary font-tabular">
               {stats ? `${stats.pesanan_baru} Pesanan` : "—"}
             </h3>
           </div>
-
         </div>
       )}
 
@@ -294,24 +427,37 @@ export default function AnalyticsPage() {
       <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h3 className="text-lg font-bold text-seller-textprimary">Tren Pendapatan</h3>
+            <h3 className="text-lg font-bold text-seller-textprimary">
+              Tren Pendapatan
+            </h3>
             <p className="text-xs text-seller-textsecondary mt-0.5">
               {timeRange === "7d" && "Pendapatan harian dalam 7 hari terakhir."}
-              {timeRange === "1m" && "Pendapatan mingguan dalam 1 bulan terakhir."}
-              {timeRange === "1y" && "Pendapatan bulanan dalam 1 tahun terakhir."}
+              {timeRange === "1m" &&
+                "Pendapatan mingguan dalam 1 bulan terakhir."}
+              {timeRange === "1y" &&
+                "Pendapatan bulanan dalam 1 tahun terakhir."}
             </p>
           </div>
 
           {/* Custom Timeframe Selector Dropdown */}
-          <CustomTimeframeDropdown value={timeRange} onChange={setTimeRange} colorScheme="seller" />
+          <CustomTimeframeDropdown
+            value={timeRange}
+            onChange={setTimeRange}
+            colorScheme="seller"
+          />
         </div>
 
         {loading && (
           <div className="h-48 flex items-end justify-between gap-2 px-2">
             {[40, 60, 45, 85, 55, 75, 35].map((h, i) => (
               <div key={i} className="w-full flex flex-col items-center gap-2">
-                <div className="w-full rounded-t-sm bg-[#EAE6E1] animate-pulse" style={{ height: `${h}%` }} />
-                <span className="text-[10px] font-bold text-seller-textsecondary">...</span>
+                <div
+                  className="w-full rounded-t-sm bg-[#EAE6E1] animate-pulse"
+                  style={{ height: `${h}%` }}
+                />
+                <span className="text-[10px] font-bold text-seller-textsecondary">
+                  ...
+                </span>
               </div>
             ))}
           </div>
@@ -319,9 +465,25 @@ export default function AnalyticsPage() {
 
         {!loading && !hasChartData && (
           <div className="h-48 flex flex-col items-center justify-center text-center border border-dashed border-seller-hairline rounded-xl">
-            <svg className="w-10 h-10 text-seller-hairline mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-            <p className="text-sm font-bold text-seller-textsecondary">Belum ada data penjualan</p>
-            <p className="text-xs text-seller-textsecondary/70 mt-1">Grafik akan muncul setelah ada transaksi selesai.</p>
+            <svg
+              className="w-10 h-10 text-seller-hairline mb-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            <p className="text-sm font-bold text-seller-textsecondary">
+              Belum ada data penjualan
+            </p>
+            <p className="text-xs text-seller-textsecondary/70 mt-1">
+              Grafik akan muncul setelah ada transaksi selesai.
+            </p>
           </div>
         )}
 
@@ -356,7 +518,11 @@ export default function AnalyticsPage() {
                       const isZero = bar.value === 0;
                       const itemWidth = `${100 / bars.length}%`;
                       return (
-                        <div key={i} className="flex flex-col items-center h-full justify-end group/bar relative" style={{ width: itemWidth }}>
+                        <div
+                          key={i}
+                          className="flex flex-col items-center h-full justify-end group/bar relative"
+                          style={{ width: itemWidth }}
+                        >
                           {/* Tooltip Badge */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#1E293B] text-white text-[10px] px-2.5 py-1 rounded-lg pointer-events-none whitespace-nowrap font-bold shadow-xl z-30 opacity-0 group-hover/bar:opacity-100 group-hover/bar:-translate-y-1 transition-all duration-200">
                             {formatRupiah(bar.value)}
@@ -382,7 +548,11 @@ export default function AnalyticsPage() {
               {/* X-Axis Dates Row (Pixel Perfect Alignment) */}
               <div className="pl-12 pr-2 flex justify-between text-[11px] font-bold text-seller-textsecondary pt-2 uppercase tracking-wider border-t border-seller-hairline">
                 {bars.map((bar, i) => (
-                  <div key={i} className="flex justify-center text-center truncate" style={{ width: `${100 / bars.length}%` }}>
+                  <div
+                    key={i}
+                    className="flex justify-center text-center truncate"
+                    style={{ width: `${100 / bars.length}%` }}
+                  >
                     <span>{bar.label}</span>
                   </div>
                 ))}
@@ -395,35 +565,94 @@ export default function AnalyticsPage() {
       {/* Rekomendasi Cerdas */}
       <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-seller-textprimary">Rekomendasi Cerdas</h3>
-          <svg className="w-5 h-5 text-seller-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" /></svg>
+          <h3 className="text-lg font-bold text-seller-textprimary">
+            Rekomendasi Cerdas
+          </h3>
+          <svg
+            className="w-5 h-5 text-seller-primary"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
+          </svg>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl border border-seller-hairline bg-seller-primary-light/50 flex gap-4">
             <div className="w-8 h-8 rounded-full bg-seller-primary/10 text-seller-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-seller-textprimary mb-1">Lengkapi Profil Produk</h4>
-              <p className="text-xs text-seller-textsecondary leading-relaxed">Produk dengan deskripsi lengkap dan lokasi yang jelas lebih mudah ditemukan pembeli di marketplace.</p>
+              <h4 className="text-xs font-bold text-seller-textprimary mb-1">
+                Lengkapi Profil Produk
+              </h4>
+              <p className="text-xs text-seller-textsecondary leading-relaxed">
+                Produk dengan deskripsi lengkap dan lokasi yang jelas lebih
+                mudah ditemukan pembeli di marketplace.
+              </p>
             </div>
           </div>
           <div className="p-4 rounded-xl border border-seller-hairline bg-[#FDF9F0] flex gap-4">
             <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-seller-textprimary mb-1">Proses Pesanan Cepat</h4>
-              <p className="text-xs text-seller-textsecondary leading-relaxed">Terima atau tolak pesanan masuk sesegera mungkin untuk menjaga kepercayaan pembeli.</p>
+              <h4 className="text-xs font-bold text-seller-textprimary mb-1">
+                Proses Pesanan Cepat
+              </h4>
+              <p className="text-xs text-seller-textsecondary leading-relaxed">
+                Terima atau tolak pesanan masuk sesegera mungkin untuk menjaga
+                kepercayaan pembeli.
+              </p>
             </div>
           </div>
           <div className="p-4 rounded-xl border border-seller-hairline bg-blue-50 flex gap-4">
             <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                />
+              </svg>
             </div>
             <div>
-              <h4 className="text-xs font-bold text-seller-textprimary mb-1">Update Stok Rutin</h4>
-              <p className="text-xs text-seller-textsecondary leading-relaxed">Perbarui ketersediaan stok secara berkala agar pembeli tidak memesan produk yang sudah habis.</p>
+              <h4 className="text-xs font-bold text-seller-textprimary mb-1">
+                Update Stok Rutin
+              </h4>
+              <p className="text-xs text-seller-textsecondary leading-relaxed">
+                Perbarui ketersediaan stok secara berkala agar pembeli tidak
+                memesan produk yang sudah habis.
+              </p>
             </div>
           </div>
         </div>

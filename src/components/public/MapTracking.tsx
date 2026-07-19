@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 
 export interface MapTrackingProps {
   startCoords: [number, number]; // [longitude, latitude] of Store
-  endCoords: [number, number];   // [longitude, latitude] of Home
+  endCoords: [number, number]; // [longitude, latitude] of Home
   courierCoords: [number, number]; // [longitude, latitude] of Truck
   className?: string;
 }
@@ -54,7 +54,8 @@ export default function MapTracking({
 
   // init map instance
   useEffect(() => {
-    if (!maplibreLoaded || !containerRef.current || mapInstanceRef.current) return;
+    if (!maplibreLoaded || !containerRef.current || mapInstanceRef.current)
+      return;
 
     // center between start and end
     const centerLng = (startCoords[0] + endCoords[0]) / 2;
@@ -70,7 +71,10 @@ export default function MapTracking({
       },
     });
 
-    map.addControl(new (window as any).maplibregl.NavigationControl(), "top-right");
+    map.addControl(
+      new (window as any).maplibregl.NavigationControl(),
+      "top-right",
+    );
 
     // draw route line after style loads
     const onStyleLoad = () => {
@@ -85,11 +89,11 @@ export default function MapTracking({
             type: "LineString",
             coordinates: [
               startCoords,
-              [112.65900, -7.90000],
-              [112.65600, -7.91500],
-              [112.64500, -7.92500],
+              [112.659, -7.9],
+              [112.656, -7.915],
+              [112.645, -7.925],
               courierCoords,
-              [112.61800, -7.92800],
+              [112.618, -7.928],
               endCoords,
             ],
           },
@@ -139,18 +143,23 @@ export default function MapTracking({
 
     // pickup marker
     const startEl = document.createElement("div");
-    startEl.className = "flex flex-col items-center select-none pointer-events-none";
+    startEl.className =
+      "flex flex-col items-center select-none pointer-events-none";
     startEl.innerHTML = `
       <span style="font-family: system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 700; color: #1E293B; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(255,255,255,0.9), 0 0 4px rgba(255,255,255,0.4);">Store</span>
       <div style="width: 14px; height: 14px; border-radius: 50%; background-color: #00C282; border: 2.5px solid #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.25);"></div>
     `;
-    startMarkerRef.current = new (window as any).maplibregl.Marker({ element: startEl, anchor: "bottom" })
+    startMarkerRef.current = new (window as any).maplibregl.Marker({
+      element: startEl,
+      anchor: "bottom",
+    })
       .setLngLat(startCoords)
       .addTo(map);
 
     // destination marker
     const endEl = document.createElement("div");
-    endEl.className = "flex flex-col items-center select-none pointer-events-none";
+    endEl.className =
+      "flex flex-col items-center select-none pointer-events-none";
     endEl.innerHTML = `
       <span style="font-family: system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 700; color: #1E293B; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(255,255,255,0.9), 0 0 4px rgba(255,255,255,0.4);">Home</span>
       <div style="display: flex; justify-content: center; align-items: center; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.25));">
@@ -160,19 +169,26 @@ export default function MapTracking({
         </svg>
       </div>
     `;
-    endMarkerRef.current = new (window as any).maplibregl.Marker({ element: endEl, anchor: "bottom" })
+    endMarkerRef.current = new (window as any).maplibregl.Marker({
+      element: endEl,
+      anchor: "bottom",
+    })
       .setLngLat(endCoords)
       .addTo(map);
 
     // courier marker
     const courierEl = document.createElement("div");
-    courierEl.className = "w-10 h-10 rounded-full bg-[#3B82F6] border-2.5 border-white shadow-lg flex items-center justify-center text-white relative z-10 cursor-pointer hover:scale-105 transition-transform duration-200";
+    courierEl.className =
+      "w-10 h-10 rounded-full bg-[#3B82F6] border-2.5 border-white shadow-lg flex items-center justify-center text-white relative z-10 cursor-pointer hover:scale-105 transition-transform duration-200";
     courierEl.innerHTML = `
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M19 8h-2V5c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v12h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm9-8v3H3V5h12v5zm3 8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm1.5-6h-3.5v-3h1.5l2 3z"/>
       </svg>
     `;
-    courierMarkerRef.current = new (window as any).maplibregl.Marker({ element: courierEl, anchor: "center" })
+    courierMarkerRef.current = new (window as any).maplibregl.Marker({
+      element: courierEl,
+      anchor: "center",
+    })
       .setLngLat(courierCoords)
       .addTo(map);
 
@@ -188,12 +204,16 @@ export default function MapTracking({
   }, [maplibreLoaded, startCoords, endCoords, courierCoords]);
 
   return (
-    <div className={`relative w-full h-full min-h-[300px] overflow-hidden ${className}`}>
+    <div
+      className={`relative w-full h-full min-h-[300px] overflow-hidden ${className}`}
+    >
       <div ref={containerRef} className="w-full h-full" />
       {!maplibreLoaded && (
         <div className="absolute inset-0 bg-land-ink/20 flex flex-col items-center justify-center backdrop-blur-xs z-30 rounded-2xl">
           <div className="w-10 h-10 border-4 border-land-accent border-t-transparent rounded-full animate-spin mb-2"></div>
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Memuat Peta Pelacakan...</span>
+          <span className="text-xs font-bold text-white uppercase tracking-wider">
+            Memuat Peta Pelacakan...
+          </span>
         </div>
       )}
     </div>

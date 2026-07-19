@@ -1,5 +1,5 @@
 const TOKEN_KEY = "agrowaste_token";
-const USER_KEY  = "agrowaste_user";
+const USER_KEY = "agrowaste_user";
 
 export interface AuthUser {
   id: string;

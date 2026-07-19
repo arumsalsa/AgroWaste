@@ -204,7 +204,10 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                 <img
                   className={card.iconClassName}
                   alt=""
-                  src={(card.iconSrc as { src?: string })?.src ?? (card.iconSrc as string)}
+                  src={
+                    (card.iconSrc as { src?: string })?.src ??
+                    (card.iconSrc as string)
+                  }
                   aria-hidden="true"
                 />
               </div>
@@ -220,7 +223,10 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                   <img
                     className="relative w-[11.67px] h-[7px]"
                     alt=""
-                    src={(card.trendIconSrc as { src?: string })?.src ?? (card.trendIconSrc as string)}
+                    src={
+                      (card.trendIconSrc as { src?: string })?.src ??
+                      (card.trendIconSrc as string)
+                    }
                     aria-hidden="true"
                   />
                 </div>
@@ -287,13 +293,26 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
           <div className="min-w-full">
             <div
               className="grid bg-[#faf2ee] border-b border-[#bdcaba] w-full items-center"
-              style={{ gridTemplateColumns: "minmax(250px, 2.5fr) minmax(120px, 1.5fr) minmax(120px, 1.5fr) minmax(150px, 1.5fr) 80px" }}
+              style={{
+                gridTemplateColumns:
+                  "minmax(250px, 2.5fr) minmax(120px, 1.5fr) minmax(120px, 1.5fr) minmax(150px, 1.5fr) 80px",
+              }}
             >
-              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">User Name</div>
-              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">Role</div>
-              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">Status</div>
-              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">Joined Date</div>
-              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs text-right">Actions</div>
+              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">
+                User Name
+              </div>
+              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">
+                Role
+              </div>
+              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">
+                Status
+              </div>
+              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs">
+                Joined Date
+              </div>
+              <div className="px-6 py-4 font-semibold text-[#6e7b6c] text-xs text-right">
+                Actions
+              </div>
             </div>
             <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto] -mt-px">
               {filteredUsers.map((user, index) => (
@@ -302,7 +321,10 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                   className={`grid w-full items-center ${
                     index !== 0 ? "-mt-px border-t border-[#bdcaba4c]" : ""
                   }`}
-                  style={{ gridTemplateColumns: "minmax(250px, 2.5fr) minmax(120px, 1.5fr) minmax(120px, 1.5fr) minmax(150px, 1.5fr) 80px" }}
+                  style={{
+                    gridTemplateColumns:
+                      "minmax(250px, 2.5fr) minmax(120px, 1.5fr) minmax(120px, 1.5fr) minmax(150px, 1.5fr) 80px",
+                  }}
                 >
                   <div className="flex items-center gap-3 px-6 py-4">
                     <div
@@ -310,19 +332,25 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                         user.avatarType === "image" ? "overflow-hidden" : ""
                       }`}
                     >
-                      {user.avatarType === "image" && user.avatarImageClassName ? (
+                      {user.avatarType === "image" &&
+                      user.avatarImageClassName ? (
                         <div className={user.avatarImageClassName} />
                       ) : (
                         <img
                           className="relative w-4 h-4"
                           alt=""
-                          src={(user.avatarIconSrc as { src?: string })?.src ?? (user.avatarIconSrc as string)}
+                          src={
+                            (user.avatarIconSrc as { src?: string })?.src ??
+                            (user.avatarIconSrc as string)
+                          }
                           aria-hidden="true"
                         />
                       )}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <div className={`font-semibold ${user.nameTextClass ?? "text-[#1e1b19]"} text-base truncate`}>
+                      <div
+                        className={`font-semibold ${user.nameTextClass ?? "text-[#1e1b19]"} text-base truncate`}
+                      >
                         {user.name}
                       </div>
                       <div className="font-semibold text-[#6e7b6cb2] text-xs truncate">
@@ -331,15 +359,23 @@ export const UserManagementOverviewSection = (): React.ReactElement => {
                     </div>
                   </div>
                   <div className="flex items-center px-6 py-4">
-                    <div className={`inline-flex items-center justify-center px-3 py-1 ${user.roleBgClass} rounded-full`}>
-                      <div className={`font-semibold ${user.roleTextClass} text-xs`}>
+                    <div
+                      className={`inline-flex items-center justify-center px-3 py-1 ${user.roleBgClass} rounded-full`}
+                    >
+                      <div
+                        className={`font-semibold ${user.roleTextClass} text-xs`}
+                      >
                         {user.role}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 px-6 py-4">
-                    <div className={`w-2 h-2 ${user.statusDotClass} rounded-full flex-shrink-0`} />
-                    <div className={`font-normal ${user.statusTextClass} text-base`}>
+                    <div
+                      className={`w-2 h-2 ${user.statusDotClass} rounded-full flex-shrink-0`}
+                    />
+                    <div
+                      className={`font-normal ${user.statusTextClass} text-base`}
+                    >
                       {user.status}
                     </div>
                   </div>

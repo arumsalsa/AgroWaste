@@ -29,7 +29,7 @@ export default function SellerDashboardShell({
       {/* Konten Utama */}
       <main className="flex-1 min-w-0 w-full flex flex-col min-h-screen ml-0 lg:ml-64">
         <Topbar onMenuToggle={() => setMobileOpen((v) => !v)} />
-        
+
         {/* Area Konten Dinamis */}
         <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">

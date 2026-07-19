@@ -3,7 +3,8 @@ import { Footer } from "@/components/public/Footer";
 
 export const metadata = {
   title: "AgroWaste | Platform Pertanian Sirkular",
-  description: "Platform ekonomi sirkular pertama di Indonesia yang menghubungkan peternak dengan pembeli.",
+  description:
+    "Platform ekonomi sirkular pertama di Indonesia yang menghubungkan peternak dengan pembeli.",
 };
 
 export default function PublicLayout({
@@ -16,9 +17,7 @@ export default function PublicLayout({
       <Header />
 
       {/* Konten Utama */}
-      <main className="flex-1 flex flex-col mt-16">
-        {children}
-      </main>
+      <main className="flex-1 flex flex-col mt-16">{children}</main>
 
       <Footer />
     </div>

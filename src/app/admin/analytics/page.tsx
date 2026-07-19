@@ -22,11 +22,15 @@ function CustomTimeframeDropdown({
     { key: "1y", label: "1 Tahun Terakhir" },
   ];
 
-  const currentLabel = options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
+  const currentLabel =
+    options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -36,21 +40,46 @@ function CustomTimeframeDropdown({
 
   const isSeller = colorScheme === "seller";
   const primaryColor = isSeller ? "text-seller-primary" : "text-admin-primary";
-  const activeBg = isSeller ? "bg-seller-primary-light text-seller-primary" : "bg-admin-primary-light text-admin-primary";
+  const activeBg = isSeller
+    ? "bg-seller-primary-light text-seller-primary"
+    : "bg-admin-primary-light text-admin-primary";
 
   return (
-    <div className="relative shrink-0 self-start sm:self-auto" ref={dropdownRef}>
+    <div
+      className="relative shrink-0 self-start sm:self-auto"
+      ref={dropdownRef}
+    >
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white hover:bg-[#F4F1EA] border border-black/10 text-gray-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-2 transition-all duration-200 active:scale-95"
       >
-        <svg className={`w-3.5 h-3.5 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <svg
+          className={`w-3.5 h-3.5 ${primaryColor}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
         <span>{currentLabel}</span>
-        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        <svg
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
@@ -72,8 +101,18 @@ function CustomTimeframeDropdown({
               >
                 <span>{opt.label}</span>
                 {isSelected && (
-                  <svg className={`w-4 h-4 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg
+                    className={`w-4 h-4 ${primaryColor}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </button>
@@ -135,13 +174,19 @@ export default function AdminAnalytics() {
   const activeSellers = data ? data.active_sellers_count : 0;
 
   const sdg12Target = 640; // 640 tons SDG 12 annual target
-  const sdg12Pct = Math.min(Math.round((totalWasteTons / sdg12Target) * 100), 100);
+  const sdg12Pct = Math.min(
+    Math.round((totalWasteTons / sdg12Target) * 100),
+    100,
+  );
   const sdg12DashOffset = 251.2 * (1 - sdg12Pct / 100);
 
   // methane reduction estimate: CO2 saved × 0.036 m³
   const methaneReduced = Math.round(totalCo2 * 0.036);
   const sdg13Target = 28000; // 28,000 m³ SDG 13 annual target
-  const sdg13Pct = Math.min(Math.round((methaneReduced / sdg13Target) * 100), 100);
+  const sdg13Pct = Math.min(
+    Math.round((methaneReduced / sdg13Target) * 100),
+    100,
+  );
   const sdg13DashOffset = 251.2 * (1 - sdg13Pct / 100);
 
   const getCategoryLabel = (slug: string) => {
@@ -164,11 +209,31 @@ export default function AdminAnalytics() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Analitik Dampak Lingkungan</h2>
-          <p className="text-sm text-admin-textsecondary">Pemantauan pengurangan limbah tani dan mitigasi karbon secara real-time.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">
+            Analitik Dampak Lingkungan
+          </h2>
+          <p className="text-sm text-admin-textsecondary">
+            Pemantauan pengurangan limbah tani dan mitigasi karbon secara
+            real-time.
+          </p>
         </div>
-        <button onClick={fetchAnalytics} className="px-4 py-2 text-sm font-bold text-admin-primary bg-admin-surfacewhite border border-admin-hairline rounded-xl hover:bg-admin-warmbg flex items-center gap-2 transition-colors shadow-sm self-start">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18v3z"/></svg>
+        <button
+          onClick={fetchAnalytics}
+          className="px-4 py-2 text-sm font-bold text-admin-primary bg-admin-surfacewhite border border-admin-hairline rounded-xl hover:bg-admin-warmbg flex items-center gap-2 transition-colors shadow-sm self-start"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18v3z"
+            />
+          </svg>
           Segarkan Data
         </button>
       </div>
@@ -178,14 +243,35 @@ export default function AdminAnalytics() {
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 bg-admin-semgreen/10 text-admin-semgreen rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
+              </svg>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">TOTAL LIMBAH TERALIHKAN</span>
+          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">
+            TOTAL LIMBAH TERALIHKAN
+          </span>
           <div className="text-2xl font-bold font-tabular text-admin-textprimary tracking-tight mb-1">
-            {loading ? "..." : totalWasteTons.toLocaleString("id-ID", { maximumFractionDigits: 1 })} <span className="text-lg font-medium">Ton</span>
+            {loading
+              ? "..."
+              : totalWasteTons.toLocaleString("id-ID", {
+                  maximumFractionDigits: 1,
+                })}{" "}
+            <span className="text-lg font-medium">Ton</span>
           </div>
-          <p className="text-xs text-admin-textsecondary">Kumulatif Transaksi Selesai</p>
+          <p className="text-xs text-admin-textsecondary">
+            Kumulatif Transaksi Selesai
+          </p>
         </div>
 
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
@@ -194,24 +280,50 @@ export default function AdminAnalytics() {
               CO₂e
             </div>
           </div>
-          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">REDUKSI EMISI METANA (CO₂e)</span>
+          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">
+            REDUKSI EMISI METANA (CO₂e)
+          </span>
           <div className="text-2xl font-bold font-tabular text-admin-textprimary tracking-tight mb-1">
-            {loading ? "..." : totalCo2.toLocaleString("id-ID", { maximumFractionDigits: 1 })} <span className="text-lg font-medium">kgCO₂e</span>
+            {loading
+              ? "..."
+              : totalCo2.toLocaleString("id-ID", {
+                  maximumFractionDigits: 1,
+                })}{" "}
+            <span className="text-lg font-medium">kgCO₂e</span>
           </div>
-          <p className="text-xs text-admin-textsecondary">Reduksi Emisi Metana & Gas Rumah Kaca</p>
+          <p className="text-xs text-admin-textsecondary">
+            Reduksi Emisi Metana & Gas Rumah Kaca
+          </p>
         </div>
 
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 bg-admin-semamber/10 text-admin-semamber rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">PRODUSEN AKTIF</span>
+          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">
+            PRODUSEN AKTIF
+          </span>
           <div className="text-2xl font-bold font-tabular text-admin-textprimary tracking-tight mb-1">
-            {loading ? "..." : activeSellers} <span className="text-lg font-medium">Peternak</span>
+            {loading ? "..." : activeSellers}{" "}
+            <span className="text-lg font-medium">Peternak</span>
           </div>
-          <p className="text-xs text-admin-textsecondary">Jaringan Aktif Platform</p>
+          <p className="text-xs text-admin-textsecondary">
+            Jaringan Aktif Platform
+          </p>
         </div>
       </div>
 
@@ -221,10 +333,19 @@ export default function AdminAnalytics() {
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:w-3/5 flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
-              <h3 className="text-lg font-bold text-admin-textprimary">Distribusi Limbah berdasarkan Kategori</h3>
-              <p className="text-xs text-admin-textsecondary mt-0.5">Perbandingan volume total limbah tani yang terkelola berdasarkan kategorinya.</p>
+              <h3 className="text-lg font-bold text-admin-textprimary">
+                Distribusi Limbah berdasarkan Kategori
+              </h3>
+              <p className="text-xs text-admin-textsecondary mt-0.5">
+                Perbandingan volume total limbah tani yang terkelola berdasarkan
+                kategorinya.
+              </p>
             </div>
-            <CustomTimeframeDropdown value={timeRange} onChange={setTimeRange} colorScheme="admin" />
+            <CustomTimeframeDropdown
+              value={timeRange}
+              onChange={setTimeRange}
+              colorScheme="admin"
+            />
           </div>
 
           {/* Full Height Chart Container */}
@@ -254,18 +375,36 @@ export default function AdminAnalytics() {
                 {/* Vertical Bar Pillars */}
                 <div className="relative h-full flex items-end justify-around pb-6 pt-2 z-10">
                   {loading ? (
-                    <div className="text-xs text-admin-textsecondary italic py-10">Memuat grafik...</div>
+                    <div className="text-xs text-admin-textsecondary italic py-10">
+                      Memuat grafik...
+                    </div>
                   ) : !data || data.category_distribution.length === 0 ? (
-                    <div className="text-xs text-admin-textsecondary italic py-10">Belum ada transaksi limbah selesai.</div>
+                    <div className="text-xs text-admin-textsecondary italic py-10">
+                      Belum ada transaksi limbah selesai.
+                    </div>
                   ) : (
                     data.category_distribution.map((cat) => {
                       const totalCatVal = Number(cat.total);
-                      const maxVal = Math.max(...data.category_distribution.map((c) => Number(c.total)), 1);
-                      const heightPercent = Math.max((totalCatVal / maxVal) * 100, 10);
-                      const color = cat.category_name === "limbah_cair" ? "bg-blue-500 hover:bg-blue-600" : "bg-admin-primary hover:bg-[#009A44]";
+                      const maxVal = Math.max(
+                        ...data.category_distribution.map((c) =>
+                          Number(c.total),
+                        ),
+                        1,
+                      );
+                      const heightPercent = Math.max(
+                        (totalCatVal / maxVal) * 100,
+                        10,
+                      );
+                      const color =
+                        cat.category_name === "limbah_cair"
+                          ? "bg-blue-500 hover:bg-blue-600"
+                          : "bg-admin-primary hover:bg-[#009A44]";
 
                       return (
-                        <div key={cat.category_name} className="flex flex-col items-center w-[20%] h-full justify-end">
+                        <div
+                          key={cat.category_name}
+                          className="flex flex-col items-center w-[20%] h-full justify-end"
+                        >
                           {/* Bar Pillar with Hover Tooltip */}
                           <div
                             className={`w-full max-w-[36px] ${color} rounded-t-lg transition-all duration-300 shadow-md group/bar relative cursor-pointer`}
@@ -289,7 +428,10 @@ export default function AdminAnalytics() {
             {data && data.category_distribution.length > 0 && (
               <div className="pl-12 flex justify-around text-[10px] font-bold text-admin-textsecondary pt-2 uppercase tracking-wider border-t border-admin-hairline">
                 {data.category_distribution.map((cat) => (
-                  <span key={cat.category_name} className="truncate text-center w-[20%]">
+                  <span
+                    key={cat.category_name}
+                    className="truncate text-center w-[20%]"
+                  >
                     {getCategoryLabel(cat.category_name)}
                   </span>
                 ))}
@@ -300,7 +442,9 @@ export default function AdminAnalytics() {
           <div className="mt-6 flex flex-wrap gap-4 text-xs font-bold">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-admin-primary" />
-              <span className="text-admin-textsecondary">Limbah Padat & Lainnya</span>
+              <span className="text-admin-textsecondary">
+                Limbah Padat & Lainnya
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-400" />
@@ -311,29 +455,44 @@ export default function AdminAnalytics() {
 
         {/* Regional Growth */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:w-2/5 flex flex-col justify-between">
-          <h3 className="text-lg font-bold text-admin-textprimary mb-6">Pertumbuhan Regional</h3>
+          <h3 className="text-lg font-bold text-admin-textprimary mb-6">
+            Pertumbuhan Regional
+          </h3>
 
           <div className="space-y-5 flex-1">
             {loading ? (
-              <div className="text-xs text-admin-textsecondary italic">Memuat data wilayah...</div>
+              <div className="text-xs text-admin-textsecondary italic">
+                Memuat data wilayah...
+              </div>
             ) : !data || data.regional_distribution.length === 0 ? (
-              <div className="text-xs text-admin-textsecondary italic">Belum ada penyebaran wilayah transaksi.</div>
+              <div className="text-xs text-admin-textsecondary italic">
+                Belum ada penyebaran wilayah transaksi.
+              </div>
             ) : (
               data.regional_distribution.map((reg) => {
                 const regTotal = Number(reg.total);
-                const totalAll = data.regional_distribution.reduce((acc, curr) => acc + Number(curr.total), 0);
+                const totalAll = data.regional_distribution.reduce(
+                  (acc, curr) => acc + Number(curr.total),
+                  0,
+                );
                 const pct = totalAll > 0 ? (regTotal / totalAll) * 100 : 0;
-                
+
                 return (
                   <div key={reg.provinsi}>
                     <div className="flex justify-between text-[10px] font-bold mb-1.5">
-                      <span className="text-admin-textsecondary">{reg.provinsi}</span>
+                      <span className="text-admin-textsecondary">
+                        {reg.provinsi}
+                      </span>
                       <span className="text-admin-textprimary font-tabular">
-                        {regTotal.toLocaleString("id-ID")} kg ({pct.toFixed(1)}%)
+                        {regTotal.toLocaleString("id-ID")} kg ({pct.toFixed(1)}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-admin-warmbg h-2.5 rounded-full overflow-hidden">
-                      <div className="bg-admin-semgreen h-full rounded-full" style={{ width: `${pct}%` }} />
+                      <div
+                        className="bg-admin-semgreen h-full rounded-full"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
                 );
@@ -342,17 +501,33 @@ export default function AdminAnalytics() {
           </div>
 
           <div className="mt-6 p-5 bg-admin-primary-light border border-admin-primary/20 rounded-xl flex gap-3 items-start">
-            <svg className="w-5 h-5 text-admin-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg
+              className="w-5 h-5 text-admin-primary shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
             <p className="text-xs text-admin-textsecondary leading-relaxed">
-              <span className="font-bold text-admin-primary block mb-1">Wawasan Wilayah</span>
-              Pencegahan karbon dan kontribusi limbah terbanyak dikontribusikan dari wilayah Jawa Timur dan Jawa Barat.
+              <span className="font-bold text-admin-primary block mb-1">
+                Wawasan Wilayah
+              </span>
+              Pencegahan karbon dan kontribusi limbah terbanyak dikontribusikan
+              dari wilayah Jawa Timur dan Jawa Barat.
             </p>
           </div>
         </div>
       </div>
 
       <div className="text-center text-[10px] font-bold text-admin-textsecondary tracking-wider pt-4">
-        AgroWaste Impact Analytics Engine v4.2.0 — Diperbarui secara dinamis dari basis data
+        AgroWaste Impact Analytics Engine v4.2.0 — Diperbarui secara dinamis
+        dari basis data
       </div>
     </div>
   );

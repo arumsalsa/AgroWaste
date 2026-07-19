@@ -69,9 +69,15 @@ function getStatusBadge(status: string) {
     case "dijadwalkan":
       return { label: "Dijadwalkan", cls: "bg-gray-100 text-gray-700" };
     case "dalam_perjalanan":
-      return { label: "Dalam Perjalanan", cls: "bg-orange-100 text-orange-700" };
+      return {
+        label: "Dalam Perjalanan",
+        cls: "bg-orange-100 text-orange-700",
+      };
     case "terkirim":
-      return { label: "Selesai / Terkirim", cls: "bg-green-100 text-green-700" };
+      return {
+        label: "Selesai / Terkirim",
+        cls: "bg-green-100 text-green-700",
+      };
     default:
       return { label: status, cls: "bg-[#EAE6E1] text-[#555555]" };
   }
@@ -82,7 +88,9 @@ export default function ShipmentsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Semua");
-  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(
+    null,
+  );
 
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
@@ -90,10 +98,15 @@ export default function ShipmentsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [trackingNotes, setTrackingNotes] = useState("");
   const [showNotesModal, setShowNotesModal] = useState(false);
-  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{ id: string; status: string } | null>(null);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{
+    id: string;
+    status: string;
+  } | null>(null);
 
   // Proof photos & payment status map by shipment.id / order.id
-  const [proofDataMap, setProofDataMap] = useState<Record<string, ProofItem>>({});
+  const [proofDataMap, setProofDataMap] = useState<Record<string, ProofItem>>(
+    {},
+  );
 
   useEffect(() => {
     try {
@@ -108,7 +121,11 @@ export default function ShipmentsPage() {
 
   const updateProofData = (id: string, updates: Partial<ProofItem>) => {
     setProofDataMap((prev) => {
-      const current = prev[id] || { isOngkirPaid: false, fotoPickup: null, fotoDelivery: null };
+      const current = prev[id] || {
+        isOngkirPaid: false,
+        fotoPickup: null,
+        fotoDelivery: null,
+      };
       const updated = { ...current, ...updates };
       const next = { ...prev, [id]: updated };
       try {
@@ -208,35 +225,53 @@ export default function ShipmentsPage() {
       });
     }
 
-    const pickupMarker = L.marker([pLat, pLng]).addTo(map)
-      .bindPopup(`<b>Titik Penjemputan (Peternak):</b><br/>${peternakProfile?.nama_peternakan || "Peternak"}`)
+    const pickupMarker = L.marker([pLat, pLng])
+      .addTo(map)
+      .bindPopup(
+        `<b>Titik Penjemputan (Peternak):</b><br/>${peternakProfile?.nama_peternakan || "Peternak"}`,
+      )
       .openPopup();
 
-    const deliveryMarker = L.marker([dLat, dLng]).addTo(map)
-      .bindPopup(`<b>Titik Pengiriman (Pembeli):</b><br/>${selectedShipment.order?.alamat_pengiriman || "Alamat Pembeli"}`);
+    const deliveryMarker = L.marker([dLat, dLng])
+      .addTo(map)
+      .bindPopup(
+        `<b>Titik Pengiriman (Pembeli):</b><br/>${selectedShipment.order?.alamat_pengiriman || "Alamat Pembeli"}`,
+      );
 
-    const routeLine = L.polyline([[pLat, pLng], [dLat, dLng]], {
-      color: "#2F5A28",
-      weight: 4,
-      opacity: 0.8,
-      dashArray: "5, 10"
-    }).addTo(map);
+    const routeLine = L.polyline(
+      [
+        [pLat, pLng],
+        [dLat, dLng],
+      ],
+      {
+        color: "#2F5A28",
+        weight: 4,
+        opacity: 0.8,
+        dashArray: "5, 10",
+      },
+    ).addTo(map);
 
-    const bounds = L.latLngBounds([[pLat, pLng], [dLat, dLng]]);
+    const bounds = L.latLngBounds([
+      [pLat, pLng],
+      [dLat, dLng],
+    ]);
     map.fitBounds(bounds, { padding: [40, 40] });
-
   }, [leafletLoaded, selectedShipment, mapInstance]);
 
   const visibleShipments = useMemo(() => {
     return shipments.filter((s) => {
-      if (activeTab === "Sedang Berjalan" && s.status !== "dalam_perjalanan") return false;
+      if (activeTab === "Sedang Berjalan" && s.status !== "dalam_perjalanan")
+        return false;
       if (activeTab === "Selesai" && s.status !== "terkirim") return false;
-      if (activeTab === "Dijadwalkan" && s.status !== "dijadwalkan") return false;
+      if (activeTab === "Dijadwalkan" && s.status !== "dijadwalkan")
+        return false;
 
       const num = s.order?.order_number || s.id;
       const dest = s.order?.alamat_pengiriman || "";
       const query = search.toLowerCase();
-      return num.toLowerCase().includes(query) || dest.toLowerCase().includes(query);
+      return (
+        num.toLowerCase().includes(query) || dest.toLowerCase().includes(query)
+      );
     });
   }, [shipments, activeTab, search]);
 
@@ -251,7 +286,11 @@ export default function ShipmentsPage() {
     { label: "Selesai", count: countByStatus("terkirim") },
   ];
 
-  const handleUpdateStatus = async (id: string, newStatus: string, notes = "") => {
+  const handleUpdateStatus = async (
+    id: string,
+    newStatus: string,
+    notes = "",
+  ) => {
     setUpdatingId(id);
     try {
       const res = await apiFetch(`/logistik/shipments/${id}/status`, {
@@ -284,8 +323,12 @@ export default function ShipmentsPage() {
   return (
     <div className="space-y-8 animate-fade-in pb-20">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-courier-textprimary mb-1">Daftar Pengiriman</h2>
-        <p className="text-sm text-courier-textsecondary">Kelola rute, navigasi GPS, dan laporkan status pengiriman Anda.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-courier-textprimary mb-1">
+          Daftar Pengiriman
+        </h2>
+        <p className="text-sm text-courier-textsecondary">
+          Kelola rute, navigasi GPS, dan laporkan status pengiriman Anda.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -294,8 +337,18 @@ export default function ShipmentsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-courier-textsecondary">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
                 </svg>
               </span>
               <input
@@ -321,9 +374,13 @@ export default function ShipmentsPage() {
                 }`}
               >
                 {tab.label}
-                <span className={`px-1.5 py-0.5 text-[10px] rounded-full font-bold ${
-                  activeTab === tab.label ? "bg-courier-primary text-white" : "bg-[#EAE6E1] text-courier-textsecondary"
-                }`}>
+                <span
+                  className={`px-1.5 py-0.5 text-[10px] rounded-full font-bold ${
+                    activeTab === tab.label
+                      ? "bg-courier-primary text-white"
+                      : "bg-[#EAE6E1] text-courier-textsecondary"
+                  }`}
+                >
                   {tab.count}
                 </span>
               </button>
@@ -333,235 +390,338 @@ export default function ShipmentsPage() {
           {/* Shipment Cards */}
           <div className="space-y-4">
             {loading && (
-              <div className="p-12 text-center text-courier-textsecondary text-sm animate-pulse">Memuat daftar pengiriman...</div>
+              <div className="p-12 text-center text-courier-textsecondary text-sm animate-pulse">
+                Memuat daftar pengiriman...
+              </div>
             )}
             {!loading && visibleShipments.length === 0 && (
-              <div className="p-12 text-center text-courier-textsecondary text-sm">Tidak ada jadwal pengiriman ditemukan.</div>
+              <div className="p-12 text-center text-courier-textsecondary text-sm">
+                Tidak ada jadwal pengiriman ditemukan.
+              </div>
             )}
-            {!loading && visibleShipments.map((shipment) => {
-              const { label, cls } = getStatusBadge(shipment.status);
-              const orderNo = shipment.order?.order_number || shipment.id.slice(0, 8).toUpperCase();
-              const peternak = shipment.order?.peternak?.peternak_profile;
-              const productTitle = shipment.order?.order_items?.[0]?.product?.name || "Limbah Organik AgroWaste";
-              const isSelected = selectedShipment?.id === shipment.id;
+            {!loading &&
+              visibleShipments.map((shipment) => {
+                const { label, cls } = getStatusBadge(shipment.status);
+                const orderNo =
+                  shipment.order?.order_number ||
+                  shipment.id.slice(0, 8).toUpperCase();
+                const peternak = shipment.order?.peternak?.peternak_profile;
+                const productTitle =
+                  shipment.order?.order_items?.[0]?.product?.name ||
+                  "Limbah Organik AgroWaste";
+                const isSelected = selectedShipment?.id === shipment.id;
 
-              return (
-                <div
-                  key={shipment.id}
-                  onClick={() => setSelectedShipment(shipment)}
-                  className={`bg-courier-surfacewhite border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
-                    isSelected ? "border-courier-primary ring-1 ring-courier-primary" : "border-courier-hairline"
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-courier-warmbg text-courier-primary rounded-xl flex items-center justify-center border border-courier-hairline shrink-0">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-courier-textprimary text-lg">#{orderNo}</h3>
-                        <p className="text-xs text-courier-textsecondary mt-0.5">{formatDate(shipment.created_at)}</p>
-                      </div>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 ${cls}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                      {label}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div className="relative pl-6">
-                      <div className="absolute left-1.5 top-2 bottom-2 w-0.5 border-l-2 border-dotted border-courier-hairline"></div>
-                      
-                      <div className="relative mb-6">
-                        <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
-                        <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">PICKUP (PETERNAK)</span>
-                        <h4 className="text-sm font-bold text-courier-textprimary">{peternak?.nama_peternakan || shipment.order?.peternak?.name || "Peternak"}</h4>
-                        <p className="text-xs text-courier-textsecondary">
-                          {peternak?.kecamatan || ""}, {peternak?.kabupaten || ""}, {peternak?.provinsi || ""}
-                        </p>
-                      </div>
-
-                      <div className="relative">
-                        <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
-                        <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">DELIVERY (PEMBELI)</span>
-                        <h4 className="text-sm font-bold text-courier-textprimary">{shipment.order?.user?.name || "Pembeli"}</h4>
-                        <p className="text-xs text-courier-textsecondary truncate" title={shipment.order?.alamat_pengiriman || ""}>
-                          {shipment.order?.alamat_pengiriman || "Alamat tidak lengkap"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-courier-warmbg/50 p-4 rounded-xl border border-courier-hairline/50">
-                      <span className="text-[10px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-2">Item Pesanan</span>
-                      <h5 className="text-sm font-bold text-courier-primary mb-1">{productTitle}</h5>
-                      <p className="text-xs text-courier-textsecondary">Total Nilai: {formatRupiah(shipment.order?.total_price || 0)}</p>
-                      {shipment.tracking_notes && (
-                        <div className="mt-2 pt-2 border-t border-courier-hairline/50 text-[11px] text-courier-textsecondary">
-                          <span className="font-bold text-courier-textprimary block">Catatan Terakhir:</span>
-                          &quot;{shipment.tracking_notes}&quot;
+                return (
+                  <div
+                    key={shipment.id}
+                    onClick={() => setSelectedShipment(shipment)}
+                    className={`bg-courier-surfacewhite border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-courier-primary ring-1 ring-courier-primary"
+                        : "border-courier-hairline"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-courier-warmbg text-courier-primary rounded-xl flex items-center justify-center border border-courier-hairline shrink-0">
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                            />
+                          </svg>
                         </div>
+                        <div>
+                          <h3 className="font-bold text-courier-textprimary text-lg">
+                            #{orderNo}
+                          </h3>
+                          <p className="text-xs text-courier-textsecondary mt-0.5">
+                            {formatDate(shipment.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 ${cls}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                        {label}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      <div className="relative pl-6">
+                        <div className="absolute left-1.5 top-2 bottom-2 w-0.5 border-l-2 border-dotted border-courier-hairline"></div>
+
+                        <div className="relative mb-6">
+                          <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
+                          <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">
+                            PICKUP (PETERNAK)
+                          </span>
+                          <h4 className="text-sm font-bold text-courier-textprimary">
+                            {peternak?.nama_peternakan ||
+                              shipment.order?.peternak?.name ||
+                              "Peternak"}
+                          </h4>
+                          <p className="text-xs text-courier-textsecondary">
+                            {peternak?.kecamatan || ""},{" "}
+                            {peternak?.kabupaten || ""},{" "}
+                            {peternak?.provinsi || ""}
+                          </p>
+                        </div>
+
+                        <div className="relative">
+                          <div className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-courier-primary border-2 border-white shadow-sm"></div>
+                          <span className="text-[9px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-1">
+                            DELIVERY (PEMBELI)
+                          </span>
+                          <h4 className="text-sm font-bold text-courier-textprimary">
+                            {shipment.order?.user?.name || "Pembeli"}
+                          </h4>
+                          <p
+                            className="text-xs text-courier-textsecondary truncate"
+                            title={shipment.order?.alamat_pengiriman || ""}
+                          >
+                            {shipment.order?.alamat_pengiriman ||
+                              "Alamat tidak lengkap"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-courier-warmbg/50 p-4 rounded-xl border border-courier-hairline/50">
+                        <span className="text-[10px] font-bold text-courier-textsecondary tracking-wider uppercase block mb-2">
+                          Item Pesanan
+                        </span>
+                        <h5 className="text-sm font-bold text-courier-primary mb-1">
+                          {productTitle}
+                        </h5>
+                        <p className="text-xs text-courier-textsecondary">
+                          Total Nilai:{" "}
+                          {formatRupiah(shipment.order?.total_price || 0)}
+                        </p>
+                        {shipment.tracking_notes && (
+                          <div className="mt-2 pt-2 border-t border-courier-hairline/50 text-[11px] text-courier-textsecondary">
+                            <span className="font-bold text-courier-textprimary block">
+                              Catatan Terakhir:
+                            </span>
+                            &quot;{shipment.tracking_notes}&quot;
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Proof Photos & Ongkir Payment Status Section */}
+                    {(() => {
+                      const proofKey = shipment.order?.id || shipment.id;
+                      const proof = proofDataMap[proofKey] || {
+                        isOngkirPaid: false,
+                        fotoPickup: null,
+                        fotoDelivery: null,
+                      };
+
+                      return (
+                        <div className="mt-6 pt-5 border-t border-dashed border-courier-hairline space-y-4">
+                          {/* Status Pembayaran Ongkir */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-courier-warmbg/40 p-4 rounded-xl border border-courier-hairline/60">
+                            <div>
+                              <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block mb-0.5">
+                                Status Pembayaran Ongkir (Rp 24.500)
+                              </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span
+                                  className={`text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider ${
+                                    proof.isOngkirPaid
+                                      ? "bg-green-100 text-green-700 border border-green-200"
+                                      : "bg-amber-100 text-amber-800 border border-amber-200"
+                                  }`}
+                                >
+                                  {proof.isOngkirPaid
+                                    ? "LUNAS (DITERIMA KURIR)"
+                                    : "BELUM DIBAYAR (COD ONGKIR)"}
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateProofData(proofKey, {
+                                  isOngkirPaid: !proof.isOngkirPaid,
+                                });
+                              }}
+                              className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors border shadow-sm shrink-0 ${
+                                proof.isOngkirPaid
+                                  ? "bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
+                                  : "bg-[#009A44] hover:bg-emerald-700 text-white border-transparent"
+                              }`}
+                            >
+                              {proof.isOngkirPaid
+                                ? "Tandai Belum Lunas"
+                                : "Tandai Ongkir LUNAS"}
+                            </button>
+                          </div>
+
+                          {/* Uploaders Foto Bukti */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Bukti Foto Pengambilan */}
+                            <div className="p-3.5 bg-white border border-courier-hairline rounded-xl space-y-2">
+                              <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block">
+                                Foto Bukti Pengambilan (Peternak)
+                              </span>
+                              {proof.fotoPickup ? (
+                                <div className="relative rounded-lg overflow-hidden border border-courier-hairline h-32 bg-gray-100">
+                                  <img
+                                    src={proof.fotoPickup}
+                                    alt="Bukti Pengambilan"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateProofData(proofKey, {
+                                        fotoPickup: null,
+                                      });
+                                    }}
+                                    className="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-600 transition-colors"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : (
+                                <label
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-courier-hairline rounded-lg bg-courier-warmbg/30 hover:bg-courier-warmbg cursor-pointer transition-colors text-center p-2"
+                                >
+                                  <Camera className="w-5 h-5 text-courier-textsecondary mb-1" />
+                                  <span className="text-[11px] font-bold text-courier-primary">
+                                    Unggah Foto Pickup
+                                  </span>
+                                  <span className="text-[9px] text-courier-textsecondary">
+                                    Saat barang diambil dari peternak
+                                  </span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                          updateProofData(proofKey, {
+                                            fotoPickup: reader.result as string,
+                                          });
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              )}
+                            </div>
+
+                            {/* Bukti Foto Penyerahan */}
+                            <div className="p-3.5 bg-white border border-courier-hairline rounded-xl space-y-2">
+                              <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block">
+                                Foto Bukti Penyerahan (Pembeli)
+                              </span>
+                              {proof.fotoDelivery ? (
+                                <div className="relative rounded-lg overflow-hidden border border-courier-hairline h-32 bg-gray-100">
+                                  <img
+                                    src={proof.fotoDelivery}
+                                    alt="Bukti Penyerahan"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateProofData(proofKey, {
+                                        fotoDelivery: null,
+                                      });
+                                    }}
+                                    className="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-600 transition-colors"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : (
+                                <label
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-courier-hairline rounded-lg bg-courier-warmbg/30 hover:bg-courier-warmbg cursor-pointer transition-colors text-center p-2"
+                                >
+                                  <Camera className="w-5 h-5 text-courier-textsecondary mb-1" />
+                                  <span className="text-[11px] font-bold text-courier-primary">
+                                    Unggah Foto Penyerahan
+                                  </span>
+                                  <span className="text-[9px] text-courier-textsecondary">
+                                    Saat barang diterima oleh pembeli
+                                  </span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                          updateProofData(proofKey, {
+                                            fotoDelivery:
+                                              reader.result as string,
+                                          });
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Actions buttons */}
+                    <div className="mt-6 pt-5 border-t border-courier-hairline flex justify-end items-center gap-4">
+                      {shipment.status === "dijadwalkan" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openStatusConfirm(shipment.id, "dalam_perjalanan");
+                          }}
+                          disabled={updatingId === shipment.id}
+                          className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
+                        >
+                          Mulai Pengiriman
+                        </button>
+                      )}
+                      {shipment.status === "dalam_perjalanan" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openStatusConfirm(shipment.id, "terkirim");
+                          }}
+                          disabled={updatingId === shipment.id}
+                          className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
+                        >
+                          Konfirmasi Sampai Tujuan
+                        </button>
+                      )}
+                      {shipment.status === "terkirim" && (
+                        <span className="text-xs text-seller-semgreen font-bold flex items-center gap-1">
+                          ✓ Pengiriman Selesai
+                        </span>
                       )}
                     </div>
                   </div>
-
-                  {/* Proof Photos & Ongkir Payment Status Section */}
-                  {(() => {
-                    const proofKey = shipment.order?.id || shipment.id;
-                    const proof = proofDataMap[proofKey] || { isOngkirPaid: false, fotoPickup: null, fotoDelivery: null };
-
-                    return (
-                      <div className="mt-6 pt-5 border-t border-dashed border-courier-hairline space-y-4">
-                        {/* Status Pembayaran Ongkir */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-courier-warmbg/40 p-4 rounded-xl border border-courier-hairline/60">
-                          <div>
-                            <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block mb-0.5">Status Pembayaran Ongkir (Rp 24.500)</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider ${
-                                proof.isOngkirPaid ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
-                              }`}>
-                                {proof.isOngkirPaid ? 'LUNAS (DITERIMA KURIR)' : 'BELUM DIBAYAR (COD ONGKIR)'}
-                              </span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateProofData(proofKey, { isOngkirPaid: !proof.isOngkirPaid });
-                            }}
-                            className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors border shadow-sm shrink-0 ${
-                              proof.isOngkirPaid
-                                ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'
-                                : 'bg-[#009A44] hover:bg-emerald-700 text-white border-transparent'
-                            }`}
-                          >
-                            {proof.isOngkirPaid ? 'Tandai Belum Lunas' : 'Tandai Ongkir LUNAS'}
-                          </button>
-                        </div>
-
-                        {/* Uploaders Foto Bukti */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {/* Bukti Foto Pengambilan */}
-                          <div className="p-3.5 bg-white border border-courier-hairline rounded-xl space-y-2">
-                            <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block">Foto Bukti Pengambilan (Peternak)</span>
-                            {proof.fotoPickup ? (
-                              <div className="relative rounded-lg overflow-hidden border border-courier-hairline h-32 bg-gray-100">
-                                <img src={proof.fotoPickup} alt="Bukti Pengambilan" className="w-full h-full object-cover" />
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateProofData(proofKey, { fotoPickup: null });
-                                  }}
-                                  className="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-600 transition-colors"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ) : (
-                              <label onClick={(e) => e.stopPropagation()} className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-courier-hairline rounded-lg bg-courier-warmbg/30 hover:bg-courier-warmbg cursor-pointer transition-colors text-center p-2">
-                                <Camera className="w-5 h-5 text-courier-textsecondary mb-1" />
-                                <span className="text-[11px] font-bold text-courier-primary">Unggah Foto Pickup</span>
-                                <span className="text-[9px] text-courier-textsecondary">Saat barang diambil dari peternak</span>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => {
-                                        updateProofData(proofKey, { fotoPickup: reader.result as string });
-                                      };
-                                      reader.readAsDataURL(file);
-                                    }
-                                  }}
-                                />
-                              </label>
-                            )}
-                          </div>
-
-                          {/* Bukti Foto Penyerahan */}
-                          <div className="p-3.5 bg-white border border-courier-hairline rounded-xl space-y-2">
-                            <span className="text-[10px] font-bold text-courier-textsecondary uppercase tracking-wider block">Foto Bukti Penyerahan (Pembeli)</span>
-                            {proof.fotoDelivery ? (
-                              <div className="relative rounded-lg overflow-hidden border border-courier-hairline h-32 bg-gray-100">
-                                <img src={proof.fotoDelivery} alt="Bukti Penyerahan" className="w-full h-full object-cover" />
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateProofData(proofKey, { fotoDelivery: null });
-                                  }}
-                                  className="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-600 transition-colors"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ) : (
-                              <label onClick={(e) => e.stopPropagation()} className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-courier-hairline rounded-lg bg-courier-warmbg/30 hover:bg-courier-warmbg cursor-pointer transition-colors text-center p-2">
-                                <Camera className="w-5 h-5 text-courier-textsecondary mb-1" />
-                                <span className="text-[11px] font-bold text-courier-primary">Unggah Foto Penyerahan</span>
-                                <span className="text-[9px] text-courier-textsecondary">Saat barang diterima oleh pembeli</span>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => {
-                                        updateProofData(proofKey, { fotoDelivery: reader.result as string });
-                                      };
-                                      reader.readAsDataURL(file);
-                                    }
-                                  }}
-                                />
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Actions buttons */}
-                  <div className="mt-6 pt-5 border-t border-courier-hairline flex justify-end items-center gap-4">
-                    {shipment.status === "dijadwalkan" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openStatusConfirm(shipment.id, "dalam_perjalanan");
-                        }}
-                        disabled={updatingId === shipment.id}
-                        className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
-                      >
-                        Mulai Pengiriman
-                      </button>
-                    )}
-                    {shipment.status === "dalam_perjalanan" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openStatusConfirm(shipment.id, "terkirim");
-                        }}
-                        disabled={updatingId === shipment.id}
-                        className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
-                      >
-                        Konfirmasi Sampai Tujuan
-                      </button>
-                    )}
-                    {shipment.status === "terkirim" && (
-                      <span className="text-xs text-seller-semgreen font-bold flex items-center gap-1">
-                        ✓ Pengiriman Selesai
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
@@ -569,26 +729,48 @@ export default function ShipmentsPage() {
         <div className="lg:col-span-5 xl:col-span-4 space-y-6">
           <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm sticky top-24">
             <div className="p-4 flex justify-between items-center border-b border-courier-hairline bg-white">
-              <h3 className="font-bold text-courier-textprimary text-sm">GIS Active Tracking</h3>
-              <span className="bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider animate-pulse">LIVE</span>
+              <h3 className="font-bold text-courier-textprimary text-sm">
+                GIS Active Tracking
+              </h3>
+              <span className="bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider animate-pulse">
+                LIVE
+              </span>
             </div>
-            
+
             {/* Real GIS Leaflet map div */}
-            <div id="gis-map" className="h-80 w-full bg-[#EAE6E1]" style={{ zIndex: 1, minHeight: "320px" }} />
+            <div
+              id="gis-map"
+              className="h-80 w-full bg-[#EAE6E1]"
+              style={{ zIndex: 1, minHeight: "320px" }}
+            />
 
             {selectedShipment ? (
               <div className="p-5 space-y-4 bg-white">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-courier-textsecondary">Rute ID</span>
-                  <span className="font-bold text-courier-textprimary">#{selectedShipment.order?.order_number || selectedShipment.id.slice(0, 8).toUpperCase()}</span>
+                  <span className="font-bold text-courier-textsecondary">
+                    Rute ID
+                  </span>
+                  <span className="font-bold text-courier-textprimary">
+                    #
+                    {selectedShipment.order?.order_number ||
+                      selectedShipment.id.slice(0, 8).toUpperCase()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-courier-textsecondary">Penerima</span>
-                  <span className="font-bold text-courier-textprimary">{selectedShipment.order?.user?.name || "Mitra Pembeli"}</span>
+                  <span className="font-bold text-courier-textsecondary">
+                    Penerima
+                  </span>
+                  <span className="font-bold text-courier-textprimary">
+                    {selectedShipment.order?.user?.name || "Mitra Pembeli"}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-courier-textsecondary">Status GPS</span>
-                  <span className="font-bold text-courier-primary">Terhubung</span>
+                  <span className="font-bold text-courier-textsecondary">
+                    Status GPS
+                  </span>
+                  <span className="font-bold text-courier-primary">
+                    Terhubung
+                  </span>
                 </div>
                 <div className="h-1.5 bg-courier-warmbg rounded-full overflow-hidden">
                   <div
@@ -598,8 +780,8 @@ export default function ShipmentsPage() {
                         selectedShipment.status === "terkirim"
                           ? "100%"
                           : selectedShipment.status === "dalam_perjalanan"
-                          ? "50%"
-                          : "10%",
+                            ? "50%"
+                            : "10%",
                     }}
                   ></div>
                 </div>
@@ -618,10 +800,14 @@ export default function ShipmentsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-courier-surfacewhite w-full max-w-sm rounded-2xl border border-courier-hairline overflow-hidden p-6 text-center space-y-4 animate-fade-in shadow-xl">
             <h3 className="text-lg font-bold text-courier-textprimary">
-              {pendingStatusUpdate.status === "dalam_perjalanan" ? "Mulai Pengantaran" : "Pengantaran Selesai"}
+              {pendingStatusUpdate.status === "dalam_perjalanan"
+                ? "Mulai Pengantaran"
+                : "Pengantaran Selesai"}
             </h3>
             <p className="text-xs text-courier-textsecondary">
-              Beri catatan pelacakan tambahan (misal: &quot;Barang sudah dimuat di pickup&quot; atau &quot;Diterima oleh Bpk. Ahmad di kebun&quot;).
+              Beri catatan pelacakan tambahan (misal: &quot;Barang sudah dimuat
+              di pickup&quot; atau &quot;Diterima oleh Bpk. Ahmad di
+              kebun&quot;).
             </p>
             <textarea
               value={trackingNotes}
@@ -644,7 +830,11 @@ export default function ShipmentsPage() {
               <button
                 type="button"
                 onClick={() =>
-                  handleUpdateStatus(pendingStatusUpdate.id, pendingStatusUpdate.status, trackingNotes)
+                  handleUpdateStatus(
+                    pendingStatusUpdate.id,
+                    pendingStatusUpdate.status,
+                    trackingNotes,
+                  )
                 }
                 className="px-5 py-2 bg-courier-primary hover:bg-green-800 text-white rounded-lg text-xs font-bold transition-colors"
               >

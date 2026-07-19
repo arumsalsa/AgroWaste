@@ -22,11 +22,15 @@ function CustomTimeframeDropdown({
     { key: "1y", label: "1 Tahun Terakhir" },
   ];
 
-  const currentLabel = options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
+  const currentLabel =
+    options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -36,22 +40,47 @@ function CustomTimeframeDropdown({
 
   const isSeller = colorScheme === "seller";
   const primaryColor = isSeller ? "text-seller-primary" : "text-admin-primary";
-  const activeBg = isSeller ? "bg-seller-primary-light text-seller-primary" : "bg-admin-primary-light text-admin-primary";
+  const activeBg = isSeller
+    ? "bg-seller-primary-light text-seller-primary"
+    : "bg-admin-primary-light text-admin-primary";
 
   return (
-    <div className="relative shrink-0 self-start sm:self-auto" ref={dropdownRef}>
+    <div
+      className="relative shrink-0 self-start sm:self-auto"
+      ref={dropdownRef}
+    >
       {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white hover:bg-[#F4F1EA] border border-black/10 text-gray-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-2 transition-all duration-200 active:scale-95"
       >
-        <svg className={`w-3.5 h-3.5 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <svg
+          className={`w-3.5 h-3.5 ${primaryColor}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
         <span>{currentLabel}</span>
-        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        <svg
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
@@ -74,8 +103,18 @@ function CustomTimeframeDropdown({
               >
                 <span>{opt.label}</span>
                 {isSelected && (
-                  <svg className={`w-4 h-4 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg
+                    className={`w-4 h-4 ${primaryColor}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </button>
@@ -150,7 +189,9 @@ export default function AdminDashboard() {
 
       rawData.forEach((item) => {
         const itemDate = new Date(item.date);
-        const diffDays = Math.floor((now.getTime() - itemDate.getTime()) / (1000 * 3600 * 24));
+        const diffDays = Math.floor(
+          (now.getTime() - itemDate.getTime()) / (1000 * 3600 * 24),
+        );
         if (diffDays >= 0 && diffDays < 28) {
           const weekIdx = Math.floor(diffDays / 7);
           if (weekIdx >= 0 && weekIdx < 4) {
@@ -170,18 +211,37 @@ export default function AdminDashboard() {
       const maxVal = Math.max(...weekBuckets.map((w) => w.count), 1);
       return weekBuckets.map((w) => ({
         ...w,
-        pct: w.count > 0 ? Math.max(Math.round((w.count / maxVal) * 100), 10) : 6,
+        pct:
+          w.count > 0 ? Math.max(Math.round((w.count / maxVal) * 100), 10) : 6,
       }));
     }
 
     if (timeRange === "1y") {
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agu",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
+      ];
       const currentMonth = new Date().getMonth();
-      const monthBuckets: { label: string; monthIdx: number; count: number }[] = [];
+      const monthBuckets: { label: string; monthIdx: number; count: number }[] =
+        [];
 
       for (let i = 11; i >= 0; i--) {
         const mIdx = (currentMonth - i + 12) % 12;
-        monthBuckets.push({ label: monthNames[mIdx], monthIdx: mIdx, count: 0 });
+        monthBuckets.push({
+          label: monthNames[mIdx],
+          monthIdx: mIdx,
+          count: 0,
+        });
       }
 
       rawData.forEach((item) => {
@@ -197,14 +257,15 @@ export default function AdminDashboard() {
       if (!hasDBData && totalTxInDB > 0) {
         const base = Math.max(1, Math.floor(totalTxInDB / 12));
         monthBuckets.forEach((m, idx) => {
-          m.count = Math.max(1, Math.round(base * (0.6 + (idx * 0.08))));
+          m.count = Math.max(1, Math.round(base * (0.6 + idx * 0.08)));
         });
       }
 
       const maxVal = Math.max(...monthBuckets.map((m) => m.count), 1);
       return monthBuckets.map((m) => ({
         ...m,
-        pct: m.count > 0 ? Math.max(Math.round((m.count / maxVal) * 100), 10) : 6,
+        pct:
+          m.count > 0 ? Math.max(Math.round((m.count / maxVal) * 100), 10) : 6,
       }));
     }
 
@@ -215,7 +276,10 @@ export default function AdminDashboard() {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
       const iso = d.toISOString().split("T")[0];
-      const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+      const label = d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+      });
       const found = rawData.find((c) => c.date === iso);
       const count = found ? Number(found.total || 0) : 0;
       dates.push({ date: iso, label, count });
@@ -225,7 +289,7 @@ export default function AdminDashboard() {
     if (!hasData && totalTxInDB > 0) {
       const base = Math.max(1, Math.floor(totalTxInDB / 7));
       dates.forEach((d, idx) => {
-        d.count = Math.max(1, Math.round(base * (0.7 + (idx * 0.1))));
+        d.count = Math.max(1, Math.round(base * (0.7 + idx * 0.1)));
       });
     }
 
@@ -241,11 +305,19 @@ export default function AdminDashboard() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Ringkasan Platform</h2>
-          <p className="text-sm text-admin-textsecondary">Metrik performa dan aktivitas ekosistem AgroWaste dalam 30 hari terakhir.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">
+            Ringkasan Platform
+          </h2>
+          <p className="text-sm text-admin-textsecondary">
+            Metrik performa dan aktivitas ekosistem AgroWaste dalam 30 hari
+            terakhir.
+          </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/admin/users" className="px-4 py-2 bg-admin-primary text-white text-sm font-bold rounded-xl hover:bg-admin-primary-hover transition-colors shadow-md shadow-admin-primary/20 w-full sm:w-auto text-center">
+          <Link
+            href="/admin/users"
+            className="px-4 py-2 bg-admin-primary text-white text-sm font-bold rounded-xl hover:bg-admin-primary-hover transition-colors shadow-md shadow-admin-primary/20 w-full sm:w-auto text-center"
+          >
             Kelola Pengguna
           </Link>
         </div>
@@ -257,17 +329,45 @@ export default function AdminDashboard() {
         <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-2 sm:mb-4">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
-              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+              <svg
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
               {loading ? "..." : "12%"}
             </span>
           </div>
           <div>
-            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Total Pengguna</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">
+              Total Pengguna
+            </span>
             <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
-              {loading ? "..." : (stats?.total_users.toLocaleString("id-ID") ?? "0")}
+              {loading
+                ? "..."
+                : (stats?.total_users.toLocaleString("id-ID") ?? "0")}
             </h3>
           </div>
         </div>
@@ -276,17 +376,45 @@ export default function AdminDashboard() {
         <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-2 sm:mb-4">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
-              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+              <svg
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
               {loading ? "..." : "5%"}
             </span>
           </div>
           <div>
-            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Total Transaksi</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">
+              Total Transaksi
+            </span>
             <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
-              {loading ? "..." : (stats?.total_transaksi.toLocaleString("id-ID") ?? "0")}
+              {loading
+                ? "..."
+                : (stats?.total_transaksi.toLocaleString("id-ID") ?? "0")}
             </h3>
           </div>
         </div>
@@ -295,15 +423,41 @@ export default function AdminDashboard() {
         <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-2 sm:mb-4">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
-              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+              <svg
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
               {loading ? "..." : "18%"}
             </span>
           </div>
           <div>
-            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Nilai Transaksi</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">
+              Nilai Transaksi
+            </span>
             <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
               {loading ? "..." : formatRupiah(stats?.total_pendapatan ?? 0)}
             </h3>
@@ -314,17 +468,47 @@ export default function AdminDashboard() {
         <div className="bg-admin-surfacewhite border border-admin-hairline p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
           <div className="flex justify-between items-start mb-2 sm:mb-4">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-admin-primary-light text-admin-primary flex items-center justify-center group-hover:bg-admin-primary/20 transition-colors">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-admin-semgreen bg-green-50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg flex items-center gap-0.5 sm:gap-1">
-              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+              <svg
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
               {loading ? "..." : "100%"}
             </span>
           </div>
           <div>
-            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">Dampak Lingkungan</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider block mb-0.5 sm:mb-1">
+              Dampak Lingkungan
+            </span>
             <h3 className="text-lg sm:text-2xl font-bold text-admin-textprimary font-tabular">
-              {loading ? "..." : stats?.total_limbah_kg ? `${(Number(stats.total_limbah_kg) / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Ton` : "0 Ton"}
+              {loading
+                ? "..."
+                : stats?.total_limbah_kg
+                  ? `${(Number(stats.total_limbah_kg) / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Ton`
+                  : "0 Ton"}
             </h3>
           </div>
         </div>
@@ -336,16 +520,25 @@ export default function AdminDashboard() {
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
             <div>
-              <h3 className="text-lg font-bold text-admin-textprimary">Perkembangan Platform</h3>
+              <h3 className="text-lg font-bold text-admin-textprimary">
+                Perkembangan Platform
+              </h3>
               <p className="text-xs text-admin-textsecondary mt-0.5">
-                {timeRange === "7d" && "Grafik jumlah transaksi harian AgroWaste dalam 7 hari terakhir."}
-                {timeRange === "1m" && "Grafik jumlah transaksi mingguan AgroWaste dalam 1 bulan terakhir."}
-                {timeRange === "1y" && "Grafik akumulasi transaksi bulanan AgroWaste dalam 1 tahun terakhir."}
+                {timeRange === "7d" &&
+                  "Grafik jumlah transaksi harian AgroWaste dalam 7 hari terakhir."}
+                {timeRange === "1m" &&
+                  "Grafik jumlah transaksi mingguan AgroWaste dalam 1 bulan terakhir."}
+                {timeRange === "1y" &&
+                  "Grafik akumulasi transaksi bulanan AgroWaste dalam 1 tahun terakhir."}
               </p>
             </div>
-            
+
             {/* Custom Timeframe Selector Dropdown */}
-            <CustomTimeframeDropdown value={timeRange} onChange={setTimeRange} colorScheme="admin" />
+            <CustomTimeframeDropdown
+              value={timeRange}
+              onChange={setTimeRange}
+              colorScheme="admin"
+            />
           </div>
 
           {/* Full Height Chart Container */}
@@ -375,7 +568,10 @@ export default function AdminDashboard() {
                 {/* Vertical Bar Pillars */}
                 <div className="relative h-full flex items-end justify-between px-2 pb-6 pt-2 z-10">
                   {chartBars.map((bar, idx) => (
-                    <div key={idx} className="flex flex-col items-center w-[11%] h-full justify-end">
+                    <div
+                      key={idx}
+                      className="flex flex-col items-center w-[11%] h-full justify-end"
+                    >
                       {/* Bar Pillar with Hover Tooltip */}
                       <div
                         className="w-full max-w-[32px] bg-admin-primary rounded-t-lg transition-all duration-300 group/bar hover:bg-[#009A44] hover:shadow-md shadow-admin-primary/20 relative cursor-pointer"
@@ -406,28 +602,48 @@ export default function AdminDashboard() {
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 flex flex-col justify-between group transition-colors hover:border-admin-primary/20">
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-admin-textprimary">Aktivitas Terbaru</h3>
-              <Link href="/admin/listings" className="text-xs font-bold text-admin-primary hover:underline">Lihat Semua</Link>
+              <h3 className="text-lg font-bold text-admin-textprimary">
+                Aktivitas Terbaru
+              </h3>
+              <Link
+                href="/admin/listings"
+                className="text-xs font-bold text-admin-primary hover:underline"
+              >
+                Lihat Semua
+              </Link>
             </div>
 
             {/* activity feed (scrollable) */}
             <div className="space-y-4 max-h-[220px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-admin-hairline">
-              {stats?.recent_activities && stats.recent_activities.length > 0 ? (
+              {stats?.recent_activities &&
+              stats.recent_activities.length > 0 ? (
                 stats.recent_activities.map((act) => {
                   const date = new Date(act.created_at);
-                  const timeStr = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
-                  const dateStr = date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-                  const dotColor = act.type === "product"
-                    ? "bg-admin-semgreen shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                    : "bg-admin-semamber shadow-[0_0_8px_rgba(245,158,11,0.5)]";
+                  const timeStr =
+                    date.toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }) + " WIB";
+                  const dateStr = date.toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                  });
+                  const dotColor =
+                    act.type === "product"
+                      ? "bg-admin-semgreen shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                      : "bg-admin-semamber shadow-[0_0_8px_rgba(245,158,11,0.5)]";
                   return (
                     <div key={act.id} className="flex gap-4">
-                      <div className={`w-3 h-3 rounded-full mt-1 shrink-0 ${dotColor}`}></div>
+                      <div
+                        className={`w-3 h-3 rounded-full mt-1 shrink-0 ${dotColor}`}
+                      ></div>
                       <div className="space-y-1">
                         <p className="text-sm font-semibold text-admin-textprimary leading-snug">
                           {act.user}{" "}
                           <span className="font-normal text-admin-textsecondary">
-                            {act.type === "product" ? `mengunggah listing: ${act.title}` : act.description}
+                            {act.type === "product"
+                              ? `mengunggah listing: ${act.title}`
+                              : act.description}
                           </span>
                         </p>
                         <span className="text-xs text-admin-textsecondary font-tabular font-bold block">
@@ -438,17 +654,34 @@ export default function AdminDashboard() {
                   );
                 })
               ) : (
-                <div className="text-xs text-admin-textsecondary italic py-2">Belum ada aktivitas terbaru.</div>
+                <div className="text-xs text-admin-textsecondary italic py-2">
+                  Belum ada aktivitas terbaru.
+                </div>
               )}
             </div>
           </div>
 
           {/* Insight Box */}
           <div className="mt-8 p-5 bg-admin-primary-light border border-admin-primary/20 rounded-xl flex gap-3 items-start">
-            <svg className="w-5 h-5 text-admin-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg
+              className="w-5 h-5 text-admin-primary shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
             <div className="text-xs text-admin-textsecondary leading-relaxed">
-              <span className="font-bold text-admin-primary block mb-1">Wawasan Sistem</span>
-              &quot;Persetujuan listing 15% lebih lambat minggu ini. Disarankan menambah moderator pada antrean &apos;Peternak&apos;.&quot;
+              <span className="font-bold text-admin-primary block mb-1">
+                Wawasan Sistem
+              </span>
+              &quot;Persetujuan listing 15% lebih lambat minggu ini. Disarankan
+              menambah moderator pada antrean &apos;Peternak&apos;.&quot;
             </div>
           </div>
         </div>

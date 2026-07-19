@@ -8,7 +8,11 @@ interface ImageSliderProps {
   interval?: number;
 }
 
-export default function ImageSlider({ images, overlayClass = "", interval = 4500 }: ImageSliderProps) {
+export default function ImageSlider({
+  images,
+  overlayClass = "",
+  interval = 4500,
+}: ImageSliderProps) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -37,7 +41,9 @@ export default function ImageSlider({ images, overlayClass = "", interval = 4500
         </div>
       ))}
       {/* Earthy warm/ink overlay tint */}
-      <div className={`absolute inset-0 mix-blend-multiply z-20 pointer-events-none ${overlayClass}`} />
+      <div
+        className={`absolute inset-0 mix-blend-multiply z-20 pointer-events-none ${overlayClass}`}
+      />
     </div>
   );
 }

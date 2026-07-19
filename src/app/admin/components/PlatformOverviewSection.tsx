@@ -121,22 +121,15 @@ const activityItems: ActivityItem[] = [
     content: (
       <p className="relative w-fit mt-[-1.00px] font-normal text-[#1e1b19] text-base tracking-[0] leading-6">
         <span className="font-bold">Budi Santoso</span>
-        <span className="">
-          {" "}
-          added a
-        </span>
+        <span className=""> added a</span>
         <span className="font-bold">
           <br />
         </span>
-        <span className="">
-          new listing: 500kg
-        </span>
+        <span className="">new listing: 500kg</span>
         <span className="font-bold">
           <br />
         </span>
-        <span className="">
-          Corn Waste
-        </span>
+        <span className="">Corn Waste</span>
       </p>
     ),
   },
@@ -148,9 +141,7 @@ const activityItems: ActivityItem[] = [
     time: "1 hour ago",
     content: (
       <p className="relative w-fit mt-[-1.00px] font-normal text-[#1e1b19] text-base tracking-[0] leading-6">
-        <span className="">
-          Transaction completed for{" "}
-        </span>
+        <span className="">Transaction completed for </span>
         <span className="font-bold">Order #AW-8821</span>
       </p>
     ),
@@ -167,15 +158,11 @@ const activityItems: ActivityItem[] = [
           Logistik Express
           <br />
         </span>
-        <span className="">
-          assigned to pick up
-        </span>
+        <span className="">assigned to pick up</span>
         <span className="font-bold">
           <br />
         </span>
-        <span className="">
-          #AW-8825
-        </span>
+        <span className="">#AW-8825</span>
       </p>
     ),
   },
@@ -288,7 +275,10 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                 <img
                   className={card.iconClassName}
                   alt={card.iconAlt}
-                  src={(card.iconSrc as { src?: string })?.src ?? (card.iconSrc as string)}
+                  src={
+                    (card.iconSrc as { src?: string })?.src ??
+                    (card.iconSrc as string)
+                  }
                 />
               </div>
               <div
@@ -304,7 +294,10 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                   <img
                     className="relative w-2.5 h-1.5"
                     alt=""
-                    src={(card.trendIconSrc as { src?: string })?.src ?? (card.trendIconSrc as string)}
+                    src={
+                      (card.trendIconSrc as { src?: string })?.src ??
+                      (card.trendIconSrc as string)
+                    }
                     aria-hidden="true"
                   />
                 </div>
@@ -374,7 +367,13 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                 aria-hidden="true"
               >
                 <defs>
-                  <linearGradient id="purple-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <linearGradient
+                    id="purple-grad"
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#A855F7" />
                     <stop offset="100%" stopColor="#A855F7" stopOpacity="0" />
                   </linearGradient>
@@ -438,7 +437,10 @@ export const PlatformOverviewSection = (): React.ReactElement => {
                     <img
                       className={item.iconClassName}
                       alt={item.iconAlt}
-                      src={(item.iconSrc as { src?: string })?.src ?? (item.iconSrc as string)}
+                      src={
+                        (item.iconSrc as { src?: string })?.src ??
+                        (item.iconSrc as string)
+                      }
                     />
                   </div>
                 </div>

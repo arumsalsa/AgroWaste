@@ -51,7 +51,9 @@ export default function SettingsPage() {
 
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
-  const [markerInstance, setMarkerInstance] = useState<LeafletMarker | null>(null);
+  const [markerInstance, setMarkerInstance] = useState<LeafletMarker | null>(
+    null,
+  );
 
   useEffect(() => {
     apiFetch("/profile")
@@ -63,15 +65,25 @@ export default function SettingsPage() {
           setEmail(u.email || "");
           setPhone(u.phone || "");
           setAvatarUrl(u.avatar_url || "");
-          
+
           if (u.peternak_profile) {
             setFarmName(u.peternak_profile.nama_kandang || "");
             setDescription(u.peternak_profile.deskripsi || "");
             setProvinsi(u.peternak_profile.provinsi || "");
             setKabupaten(u.peternak_profile.kabupaten || "");
             setKecamatan(u.peternak_profile.kecamatan || "");
-            setLat(u.peternak_profile.lat !== null && u.peternak_profile.lat !== undefined ? u.peternak_profile.lat : "");
-            setLng(u.peternak_profile.lng !== null && u.peternak_profile.lng !== undefined ? u.peternak_profile.lng : "");
+            setLat(
+              u.peternak_profile.lat !== null &&
+                u.peternak_profile.lat !== undefined
+                ? u.peternak_profile.lat
+                : "",
+            );
+            setLng(
+              u.peternak_profile.lng !== null &&
+                u.peternak_profile.lng !== undefined
+                ? u.peternak_profile.lng
+                : "",
+            );
             setBankAccount(u.peternak_profile.bank_account || "");
           }
         } else {
@@ -160,7 +172,13 @@ export default function SettingsPage() {
   const handleLatChange = (val: string) => {
     setLat(val);
     const num = Number(val);
-    if (!isNaN(num) && num >= -90 && num <= 90 && mapInstance && markerInstance) {
+    if (
+      !isNaN(num) &&
+      num >= -90 &&
+      num <= 90 &&
+      mapInstance &&
+      markerInstance
+    ) {
       markerInstance.setLatLng([num, markerInstance.getLatLng().lng]);
       mapInstance.panTo([num, markerInstance.getLatLng().lng]);
     }
@@ -169,7 +187,13 @@ export default function SettingsPage() {
   const handleLngChange = (val: string) => {
     setLng(val);
     const num = Number(val);
-    if (!isNaN(num) && num >= -180 && num <= 180 && mapInstance && markerInstance) {
+    if (
+      !isNaN(num) &&
+      num >= -180 &&
+      num <= 180 &&
+      mapInstance &&
+      markerInstance
+    ) {
       markerInstance.setLatLng([markerInstance.getLatLng().lat, num]);
       mapInstance.panTo([markerInstance.getLatLng().lat, num]);
     }
@@ -244,14 +268,18 @@ export default function SettingsPage() {
   }
 
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    farmName || ownerName
+    farmName || ownerName,
   )}&background=3F4F44&color=fff&rounded=true`;
 
   return (
     <>
       <div className="space-y-6 animate-fade-in pb-10">
-        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">Pengaturan Akun Saya</h2>
-        <p className="text-seller-textsecondary mb-8">Perbarui informasi profil peternakan dan kontak Anda.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">
+          Pengaturan Akun Saya
+        </h2>
+        <p className="text-seller-textsecondary mb-8">
+          Perbarui informasi profil peternakan dan kontak Anda.
+        </p>
 
         {errorMsg && (
           <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl mb-6">
@@ -300,23 +328,32 @@ export default function SettingsPage() {
           </div>
 
           {/* Bagian Kanan: Form Konten */}
-          <form onSubmit={handleSave} className="flex-1 bg-seller-surfacewhite border border-seller-hairline rounded-2xl p-6 lg:p-8 relative">
-            
+          <form
+            onSubmit={handleSave}
+            className="flex-1 bg-seller-surfacewhite border border-seller-hairline rounded-2xl p-6 lg:p-8 relative"
+          >
             {activeTab === "profil" && (
               <div className="space-y-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">Informasi Dasar</h3>
-                
+                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">
+                  Informasi Dasar
+                </h3>
+
                 <div className="flex items-center gap-6 mb-6">
                   <div className="w-20 h-20 rounded-2xl bg-seller-warmbg border border-seller-hairline flex items-center justify-center overflow-hidden relative shrink-0">
-                    <img 
-                      src={avatarUrl || fallbackAvatar} 
-                      alt="Avatar" 
+                    <img
+                      src={avatarUrl || fallbackAvatar}
+                      alt="Avatar"
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar; }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          fallbackAvatar;
+                      }}
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">URL Avatar / Logo</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      URL Avatar / Logo
+                    </label>
                     <input
                       type="url"
                       value={avatarUrl}
@@ -324,13 +361,17 @@ export default function SettingsPage() {
                       placeholder="https://..."
                       className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
-                    <p className="text-[10px] text-seller-textsecondary mt-1">Masukkan URL gambar (opsional).</p>
+                    <p className="text-[10px] text-seller-textsecondary mt-1">
+                      Masukkan URL gambar (opsional).
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nama Pemilik *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Nama Pemilik *
+                    </label>
                     <input
                       type="text"
                       required
@@ -340,7 +381,9 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nama Peternakan *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Nama Peternakan *
+                    </label>
                     <input
                       type="text"
                       required
@@ -352,7 +395,9 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Deskripsi Singkat</label>
+                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                    Deskripsi Singkat
+                  </label>
                   <textarea
                     rows={4}
                     value={description}
@@ -363,7 +408,9 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nomor Rekening Penjual</label>
+                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                    Nomor Rekening Penjual
+                  </label>
                   <input
                     type="text"
                     value={bankAccount}
@@ -380,11 +427,15 @@ export default function SettingsPage() {
 
             {activeTab === "lokasi" && (
               <div className="space-y-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">Lokasi & Kontak</h3>
-                
+                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">
+                  Lokasi & Kontak
+                </h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Provinsi *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Provinsi *
+                    </label>
                     <input
                       type="text"
                       required
@@ -394,7 +445,9 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kabupaten/Kota *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Kabupaten/Kota *
+                    </label>
                     <input
                       type="text"
                       required
@@ -404,7 +457,9 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kecamatan *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Kecamatan *
+                    </label>
                     <input
                       type="text"
                       required
@@ -417,7 +472,9 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Email *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Email *
+                    </label>
                     <input
                       type="email"
                       required
@@ -427,7 +484,9 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">No. Handphone *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      No. Handphone *
+                    </label>
                     <input
                       type="text"
                       required
@@ -440,12 +499,20 @@ export default function SettingsPage() {
 
                 {/* Peta GIS */}
                 <div className="pt-6 border-t border-seller-hairline mt-6">
-                  <h4 className="text-sm font-bold text-seller-textprimary mb-1">Koordinat Titik Lokasi GIS Peternakan</h4>
-                  <p className="text-xs text-seller-textsecondary mb-4">Tentukan titik presisi lokasi peternakan Anda di peta bawah. Anda dapat menyeret (drag) pin pada peta atau mengeklik lokasi mana pun untuk mengubah koordinat secara instan.</p>
-                  
+                  <h4 className="text-sm font-bold text-seller-textprimary mb-1">
+                    Koordinat Titik Lokasi GIS Peternakan
+                  </h4>
+                  <p className="text-xs text-seller-textsecondary mb-4">
+                    Tentukan titik presisi lokasi peternakan Anda di peta bawah.
+                    Anda dapat menyeret (drag) pin pada peta atau mengeklik
+                    lokasi mana pun untuk mengubah koordinat secara instan.
+                  </p>
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                      <label className="block text-xs font-bold text-seller-textsecondary mb-1">Latitude (Lintang)</label>
+                      <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                        Latitude (Lintang)
+                      </label>
                       <input
                         type="text"
                         value={lat}
@@ -454,7 +521,9 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-seller-textsecondary mb-1">Longitude (Bujur)</label>
+                      <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                        Longitude (Bujur)
+                      </label>
                       <input
                         type="text"
                         value={lng}
@@ -474,7 +543,9 @@ export default function SettingsPage() {
                     )}
                   </div>
                   <p className="text-[9px] text-seller-textsecondary mt-2 text-right">
-                    * Koordinat ini akan dibaca secara real-time oleh mitra kurir untuk merencanakan rute pengiriman dan penjemputan limbah.
+                    * Koordinat ini akan dibaca secara real-time oleh mitra
+                    kurir untuk merencanakan rute pengiriman dan penjemputan
+                    limbah.
                   </p>
                 </div>
               </div>
@@ -482,25 +553,33 @@ export default function SettingsPage() {
 
             {activeTab === "keamanan" && (
               <div className="space-y-6 animate-fade-in">
-                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">Ubah Kata Sandi</h3>
-                
+                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">
+                  Ubah Kata Sandi
+                </h3>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kata Sandi Sekarang</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Kata Sandi Sekarang
+                    </label>
                     <input
                       type="password"
                       className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#5E9B71] text-seller-textprimary"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kata Sandi Baru</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Kata Sandi Baru
+                    </label>
                     <input
                       type="password"
                       className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#5E9B71] text-seller-textprimary"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Ulangi Sandi Baru</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">
+                      Ulangi Sandi Baru
+                    </label>
                     <input
                       type="password"
                       className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#5E9B71] text-seller-textprimary"
@@ -511,11 +590,16 @@ export default function SettingsPage() {
                 <div className="pt-6 border-t border-seller-hairline">
                   <h3 className="text-lg font-bold text-seller-textprimary mb-2 flex items-center justify-between">
                     <span>Autentikasi Dua Langkah (2FA)</span>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {is2FAEnabled ? 'AKTIF' : 'NONAKTIF'}
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                    >
+                      {is2FAEnabled ? "AKTIF" : "NONAKTIF"}
                     </span>
                   </h3>
-                  <p className="text-xs text-seller-textsecondary mb-4">Tambahkan tingkat keamanan tambahan untuk melindungi akun toko peternakan Anda saat masuk sistem.</p>
+                  <p className="text-xs text-seller-textsecondary mb-4">
+                    Tambahkan tingkat keamanan tambahan untuk melindungi akun
+                    toko peternakan Anda saat masuk sistem.
+                  </p>
                   <button
                     type="button"
                     onClick={() => {
@@ -527,7 +611,9 @@ export default function SettingsPage() {
                     }}
                     className="px-4 py-2 bg-seller-warmbg hover:bg-seller-hairline text-seller-textprimary font-bold text-xs rounded-xl transition-all border border-seller-hairline"
                   >
-                    {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA (Scan QR)'}
+                    {is2FAEnabled
+                      ? "Nonaktifkan 2FA"
+                      : "Aktifkan 2FA (Scan QR)"}
                   </button>
                 </div>
               </div>
@@ -551,9 +637,24 @@ export default function SettingsPage() {
                 className="px-6 py-2.5 bg-[#33463B] text-white rounded-xl text-sm font-bold hover:bg-[#25352c] transition-colors disabled:opacity-60 flex items-center gap-2"
               >
                 {submitting && (
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10" strokeWidth="3" strokeOpacity="0.25" />
-                    <path d="M12 2a10 10 0 0 1 10 10" strokeWidth="3" strokeLinecap="round" />
+                  <svg
+                    className="w-4 h-4 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      strokeWidth="3"
+                      strokeOpacity="0.25"
+                    />
+                    <path
+                      d="M12 2a10 10 0 0 1 10 10"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
                   </svg>
                 )}
                 {submitting ? "Menyimpan..." : "Simpan Perubahan"}
@@ -567,13 +668,28 @@ export default function SettingsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-seller-surfacewhite w-full max-w-sm rounded-3xl border border-seller-hairline overflow-hidden p-8 text-center space-y-4 animate-fade-in shadow-xl">
             <div className="w-16 h-16 bg-seller-primary-light text-seller-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-seller-textprimary">Berhasil Disimpan</h3>
-              <p className="text-sm text-seller-textsecondary mt-2">Perubahan profil peternakan Anda telah berhasil diperbarui di server dan lokal.</p>
+              <h3 className="text-xl font-bold text-seller-textprimary">
+                Berhasil Disimpan
+              </h3>
+              <p className="text-sm text-seller-textsecondary mt-2">
+                Perubahan profil peternakan Anda telah berhasil diperbarui di
+                server dan lokal.
+              </p>
             </div>
             <button
               onClick={() => setIsSuccessModalOpen(false)}

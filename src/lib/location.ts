@@ -1,41 +1,41 @@
 // Mapping koordinat pusat kabupaten/kota utama di Indonesia (terutama Jawa & sekitarnya)
 export const KOTA_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  "malang":           { lat: -7.9839, lng: 112.6214 },
+  malang: { lat: -7.9839, lng: 112.6214 },
   "kabupaten malang": { lat: -8.1331, lng: 112.5684 },
-  "kota malang":      { lat: -7.9839, lng: 112.6214 },
-  "batu":             { lat: -7.8711, lng: 112.5269 },
-  "pasuruan":         { lat: -7.6453, lng: 112.9075 },
-  "surabaya":         { lat: -7.2575, lng: 112.7521 },
-  "sidoarjo":         { lat: -7.4478, lng: 112.7183 },
-  "mojokerto":        { lat: -7.4726, lng: 112.4381 },
-  "probolinggo":      { lat: -7.7543, lng: 113.2159 },
-  "lumajang":         { lat: -8.1319, lng: 113.2246 },
-  "jember":           { lat: -8.1724, lng: 113.7003 },
-  "banyuwangi":       { lat: -8.2192, lng: 114.3692 },
-  "kediri":           { lat: -7.8480, lng: 112.0178 },
-  "blitar":           { lat: -8.0983, lng: 112.1681 },
-  "tulungagung":      { lat: -8.0664, lng: 111.9016 },
-  "trenggalek":       { lat: -8.0503, lng: 111.7083 },
-  "nganjuk":          { lat: -7.6042, lng: 111.9044 },
-  "madiun":           { lat: -7.6298, lng: 111.5239 },
-  "ponorogo":         { lat: -7.8687, lng: 111.4622 },
-  "magetan":          { lat: -7.6534, lng: 111.3283 },
-  "ngawi":            { lat: -7.4039, lng: 111.4447 },
-  "bojonegoro":       { lat: -7.1502, lng: 111.8818 },
-  "tuban":            { lat: -6.8976, lng: 112.0649 },
-  "lamongan":         { lat: -7.1186, lng: 112.4158 },
-  "gresik":           { lat: -7.1566, lng: 112.6555 },
-  "bangkalan":        { lat: -7.0454, lng: 112.7351 },
-  "sampang":          { lat: -7.1895, lng: 113.2394 },
-  "pamekasan":        { lat: -7.1613, lng: 113.4832 },
-  "sumenep":          { lat: -7.0167, lng: 113.8667 },
-  "semarang":         { lat: -6.9667, lng: 110.4167 },
-  "surakarta":        { lat: -7.5755, lng: 110.8243 },
-  "solo":             { lat: -7.5755, lng: 110.8243 },
-  "yogyakarta":       { lat: -7.7956, lng: 110.3695 },
-  "bandung":          { lat: -6.9175, lng: 107.6191 },
-  "jakarta":          { lat: -6.2088, lng: 106.8456 },
-  "bogor":            { lat: -6.5971, lng: 106.8060 },
+  "kota malang": { lat: -7.9839, lng: 112.6214 },
+  batu: { lat: -7.8711, lng: 112.5269 },
+  pasuruan: { lat: -7.6453, lng: 112.9075 },
+  surabaya: { lat: -7.2575, lng: 112.7521 },
+  sidoarjo: { lat: -7.4478, lng: 112.7183 },
+  mojokerto: { lat: -7.4726, lng: 112.4381 },
+  probolinggo: { lat: -7.7543, lng: 113.2159 },
+  lumajang: { lat: -8.1319, lng: 113.2246 },
+  jember: { lat: -8.1724, lng: 113.7003 },
+  banyuwangi: { lat: -8.2192, lng: 114.3692 },
+  kediri: { lat: -7.848, lng: 112.0178 },
+  blitar: { lat: -8.0983, lng: 112.1681 },
+  tulungagung: { lat: -8.0664, lng: 111.9016 },
+  trenggalek: { lat: -8.0503, lng: 111.7083 },
+  nganjuk: { lat: -7.6042, lng: 111.9044 },
+  madiun: { lat: -7.6298, lng: 111.5239 },
+  ponorogo: { lat: -7.8687, lng: 111.4622 },
+  magetan: { lat: -7.6534, lng: 111.3283 },
+  ngawi: { lat: -7.4039, lng: 111.4447 },
+  bojonegoro: { lat: -7.1502, lng: 111.8818 },
+  tuban: { lat: -6.8976, lng: 112.0649 },
+  lamongan: { lat: -7.1186, lng: 112.4158 },
+  gresik: { lat: -7.1566, lng: 112.6555 },
+  bangkalan: { lat: -7.0454, lng: 112.7351 },
+  sampang: { lat: -7.1895, lng: 113.2394 },
+  pamekasan: { lat: -7.1613, lng: 113.4832 },
+  sumenep: { lat: -7.0167, lng: 113.8667 },
+  semarang: { lat: -6.9667, lng: 110.4167 },
+  surakarta: { lat: -7.5755, lng: 110.8243 },
+  solo: { lat: -7.5755, lng: 110.8243 },
+  yogyakarta: { lat: -7.7956, lng: 110.3695 },
+  bandung: { lat: -6.9175, lng: 107.6191 },
+  jakarta: { lat: -6.2088, lng: 106.8456 },
+  bogor: { lat: -6.5971, lng: 106.806 },
 };
 
 /**
@@ -45,7 +45,7 @@ export function calculateDistanceKm(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Radius bumi dalam KM
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -73,7 +73,9 @@ export function formatDistance(km: number): string {
 /**
  * Mencari koordinat berdasarkan nama kabupaten/kota
  */
-export function getCoordinatesByLocationName(locationName?: string): { lat: number; lng: number } | null {
+export function getCoordinatesByLocationName(
+  locationName?: string,
+): { lat: number; lng: number } | null {
   if (!locationName) return null;
   const key = locationName.toLowerCase().trim();
 
@@ -113,7 +115,7 @@ export function requestUserLocation(): Promise<{ lat: number; lng: number }> {
       (error) => {
         reject(error);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   });
 }
@@ -132,7 +134,10 @@ export interface ShippingCostResult {
  * @param distanceKm Jarak dalam kilometer (km)
  * @param weightKg Berat total dalam kilogram (kg)
  */
-export function calculateDeliveryCost(distanceKm: number, weightKg: number): ShippingCostResult {
+export function calculateDeliveryCost(
+  distanceKm: number,
+  weightKg: number,
+): ShippingCostResult {
   const distance = Math.max(0, distanceKm);
   const weight = Math.max(0, weightKg);
 
@@ -158,14 +163,14 @@ export function calculateDeliveryCost(distanceKm: number, weightKg: number): Shi
   }
 
   // 2. Perhitungan Biaya Jarak
-  let distanceCost = (distance * ratePerKm) * vehicleCount;
+  let distanceCost = distance * ratePerKm * vehicleCount;
 
   // 3. Logika Batas Minimum (Motor) / Tambahan Tarif Dasar per Armada (Pick-up)
   if (vehicleType === "Motor" && distanceCost < baseTariff) {
     distanceCost = baseTariff;
   } else if (vehicleType === "Mobil Pick-up") {
     // Tarif dasar sewa otomatis dikalikan jumlah mobil yang berangkat
-    distanceCost = distanceCost + (baseTariff * vehicleCount);
+    distanceCost = distanceCost + baseTariff * vehicleCount;
   }
 
   // 4. Total Ongkos Kirim Akhir

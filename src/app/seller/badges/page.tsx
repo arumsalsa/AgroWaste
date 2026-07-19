@@ -30,7 +30,10 @@ export default function BadgesPage() {
   }, []);
 
   const carbonKg = totalSold * 0.98;
-  const carbonText = carbonKg >= 1000 ? `${(carbonKg / 1000).toFixed(1)} Ton` : `${carbonKg.toFixed(0)} kg`;
+  const carbonText =
+    carbonKg >= 1000
+      ? `${(carbonKg / 1000).toFixed(1)} Ton`
+      : `${carbonKg.toFixed(0)} kg`;
   // Konversi US EPA dari ImpactCalculator: Math.ceil(volume * 0.0108)
   const treesPlanted = Math.ceil(totalSold * 0.0108);
 
@@ -39,7 +42,8 @@ export default function BadgesPage() {
       id: "peternak_hijau",
       name: "Peternak Hijau",
       target: 100,
-      description: "Kelola 100 kg limbah organik untuk mendukung ekonomi sirkular.",
+      description:
+        "Kelola 100 kg limbah organik untuk mendukung ekonomi sirkular.",
       image: "/images/badges/petani_hijau.png",
       gradient: "from-emerald-400 to-emerald-600",
       tier: "Pioneer Hijau",
@@ -48,7 +52,8 @@ export default function BadgesPage() {
       id: "agen_iklim",
       name: "Agen Iklim",
       target: 500,
-      description: "Olah 500 kg limbah organik untuk meminimalkan dampak pemanasan global.",
+      description:
+        "Olah 500 kg limbah organik untuk meminimalkan dampak pemanasan global.",
       image: "/images/badges/agen_iklim.png",
       gradient: "from-blue-400 to-blue-600",
       tier: "Pembela Atmosfer",
@@ -57,7 +62,8 @@ export default function BadgesPage() {
       id: "pahlawan_bumi",
       name: "Pahlawan Bumi",
       target: 1000,
-      description: "Selamatkan 1.000 kg limbah untuk memulihkan kesuburan tanah daerah setempat.",
+      description:
+        "Selamatkan 1.000 kg limbah untuk memulihkan kesuburan tanah daerah setempat.",
       image: "/images/badges/pahlawan_bumi.png",
       gradient: "from-amber-400 to-amber-600",
       tier: "Pelindung Ekosistem",
@@ -66,7 +72,8 @@ export default function BadgesPage() {
       id: "alkemis_limbah",
       name: "Master Alkemis",
       target: 5000,
-      description: "Daur ulang 5.000 kg limbah organik menjadi berkah pertanian berkelanjutan.",
+      description:
+        "Daur ulang 5.000 kg limbah organik menjadi berkah pertanian berkelanjutan.",
       image: "/images/badges/alkemis_limbah.png",
       gradient: "from-amber-400 to-yellow-500",
       tier: "Dewa Sirkular",
@@ -76,8 +83,13 @@ export default function BadgesPage() {
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">Galeri Lencana Dampak</h2>
-        <p className="text-sm text-seller-textsecondary">Pantau kontribusimu untuk ekonomi sirkular. Dapatkan lencana dengan mengolah limbah, memperbaiki tanah, serta reduksi emisi metana (CO₂e).</p>
+        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">
+          Galeri Lencana Dampak
+        </h2>
+        <p className="text-sm text-seller-textsecondary">
+          Pantau kontribusimu untuk ekonomi sirkular. Dapatkan lencana dengan
+          mengolah limbah, memperbaiki tanah, serta reduksi emisi metana (CO₂e).
+        </p>
       </div>
 
       {/* Top Cards */}
@@ -86,9 +98,23 @@ export default function BadgesPage() {
           <div className="absolute right-0 top-0 w-24 h-24 bg-seller-primary/5 rounded-bl-full -mr-4 -mt-4"></div>
           <div>
             <div className="text-seller-primary mb-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
+              </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">TOTAL LIMBAH TERSELAMATKAN</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">
+              TOTAL LIMBAH TERSELAMATKAN
+            </span>
             <h3 className="text-2xl font-bold text-seller-textprimary font-tabular">
               {loading ? "..." : `${totalSold.toLocaleString("id-ID")} kg`}
             </h3>
@@ -99,11 +125,23 @@ export default function BadgesPage() {
           <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full -mr-4 -mt-4"></div>
           <div>
             <div className="text-[#009A44] mb-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
               </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">KESETARAAN POHON</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">
+              KESETARAAN POHON
+            </span>
             <h3 className="text-2xl font-bold text-seller-textprimary font-tabular">
               {loading ? "..." : `${treesPlanted} Pohon`}
             </h3>
@@ -114,9 +152,13 @@ export default function BadgesPage() {
           <div className="absolute right-0 top-0 w-24 h-24 bg-amber-500/5 rounded-bl-full -mr-4 -mt-4"></div>
           <div>
             <div className="text-amber-500 mb-3 font-bold text-xl flex items-baseline">
-              <span>CO</span><sub className="text-xs">2</sub><span className="text-base font-medium">e</span>
+              <span>CO</span>
+              <sub className="text-xs">2</sub>
+              <span className="text-base font-medium">e</span>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">PENGURANGAN KARBON</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">
+              PENGURANGAN KARBON
+            </span>
             <h3 className="text-2xl font-bold text-seller-textprimary font-tabular">
               {loading ? "..." : carbonText}
             </h3>
@@ -128,7 +170,10 @@ export default function BadgesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {badges.map((badge) => {
           const isUnlocked = totalSold >= badge.target;
-          const percentage = Math.min(100, Math.round((totalSold / badge.target) * 100));
+          const percentage = Math.min(
+            100,
+            Math.round((totalSold / badge.target) * 100),
+          );
           const remaining = Math.max(0, badge.target - totalSold);
 
           return (
@@ -152,16 +197,38 @@ export default function BadgesPage() {
                   ) : (
                     <div
                       className={`w-full h-full rounded-full bg-gradient-to-br ${
-                        isUnlocked ? badge.gradient : "from-[#EAE6E1] to-[#D5CFC6]"
+                        isUnlocked
+                          ? badge.gradient
+                          : "from-[#EAE6E1] to-[#D5CFC6]"
                       } flex items-center justify-center border-4 border-white shadow-lg relative`}
                     >
                       {isUnlocked ? (
-                        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-10 h-10 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       ) : (
-                        <svg className="w-10 h-10 text-seller-textsecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <svg
+                          className="w-10 h-10 text-seller-textsecondary"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                          />
                         </svg>
                       )}
                     </div>
@@ -170,22 +237,46 @@ export default function BadgesPage() {
                   {/* Status Indicator */}
                   <div
                     className={`absolute bottom-0 right-0 w-7 h-7 rounded-full ${
-                      isUnlocked ? "bg-seller-primary text-white" : "bg-[#B5ADA3] text-white"
+                      isUnlocked
+                        ? "bg-seller-primary text-white"
+                        : "bg-[#B5ADA3] text-white"
                     } flex items-center justify-center border-2 border-white shadow-md z-10`}
                   >
                     {isUnlocked ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     ) : (
-                      <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      <svg
+                        className="w-3.5 h-3.5 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
                       </svg>
                     )}
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-seller-textprimary">{badge.name}</h3>
+                <h3 className="text-xl font-bold text-seller-textprimary">
+                  {badge.name}
+                </h3>
                 <span className="text-xs text-seller-textsecondary block mt-1 mb-4">
                   {isUnlocked ? `Tingkat: ${badge.tier}` : "Belum Tercapai"}
                 </span>
@@ -198,9 +289,16 @@ export default function BadgesPage() {
               <div className="w-full text-left mt-auto">
                 <div className="flex justify-between text-[10px] font-bold text-seller-textprimary mb-1.5">
                   <span>
-                    {totalSold.toLocaleString("id-ID")} kg / {badge.target.toLocaleString("id-ID")} kg
+                    {totalSold.toLocaleString("id-ID")} kg /{" "}
+                    {badge.target.toLocaleString("id-ID")} kg
                   </span>
-                  <span className={isUnlocked ? "text-seller-primary" : "text-seller-textsecondary"}>
+                  <span
+                    className={
+                      isUnlocked
+                        ? "text-seller-primary"
+                        : "text-seller-textsecondary"
+                    }
+                  >
                     {percentage}%
                   </span>
                 </div>

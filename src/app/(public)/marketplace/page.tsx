@@ -7,7 +7,9 @@ export const metadata = {
 
 export default function MarketplacePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-land-bg animate-pulse" />}>
+    <Suspense
+      fallback={<div className="min-h-screen bg-land-bg animate-pulse" />}
+    >
       <MarketplaceContent />
     </Suspense>
   );

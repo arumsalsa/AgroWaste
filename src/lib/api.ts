@@ -1,12 +1,13 @@
 import { getToken } from "./auth";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
 export async function apiFetch(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
-  const token      = getToken();
+  const token = getToken();
   const isFormData = options.body instanceof FormData;
 
   const headers: Record<string, string> = {
@@ -25,7 +26,8 @@ export async function apiFetch(
 
 export function getProductImageUrl(url: string | null | undefined): string {
   if (!url) return "";
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1";
+  const base =
+    process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1";
   try {
     const origin = new URL(base).origin;
     if (url.startsWith("http://localhost/storage")) {
@@ -34,9 +36,9 @@ export function getProductImageUrl(url: string | null | undefined): string {
     if (url.startsWith("/storage")) {
       return `${origin}${url}`;
     }
-    
+
     // Default fallback for relative storage paths like payment_proofs/... or media/...
-    return `${origin}/storage/${url.startsWith('/') ? url.slice(1) : url}`;
+    return `${origin}/storage/${url.startsWith("/") ? url.slice(1) : url}`;
   } catch (e) {
     // ignore
   }

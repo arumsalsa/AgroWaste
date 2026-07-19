@@ -3,17 +3,17 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { 
-  Leaf, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  ShieldCheck, 
-  Sprout, 
+import {
+  Leaf,
+  MapPin,
+  Phone,
+  Mail,
+  ShieldCheck,
+  Sprout,
   ChevronLeft,
   Calendar,
   Layers,
-  Award
+  Award,
 } from "lucide-react";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import EarthyCard from "@/components/public/EarthyCard";
@@ -122,7 +122,10 @@ export default function SellerProfilePage() {
           </div>
           <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white border border-land-cream rounded-2xl p-4 h-80 animate-pulse" />
+              <div
+                key={i}
+                className="bg-white border border-land-cream rounded-2xl p-4 h-80 animate-pulse"
+              />
             ))}
           </div>
         </div>
@@ -137,7 +140,10 @@ export default function SellerProfilePage() {
           <p className="text-lg font-bold text-land-ink mb-2">
             {fetchError ?? "Profil penjual tidak ditemukan."}
           </p>
-          <Link href="/" className="text-land-accent font-bold text-sm hover:underline">
+          <Link
+            href="/"
+            className="text-land-accent font-bold text-sm hover:underline"
+          >
             ← Kembali ke Beranda
           </Link>
         </div>
@@ -146,7 +152,9 @@ export default function SellerProfilePage() {
   }
 
   const { user, profile, products } = data;
-  const initial = (profile.nama_peternakan || user.name || "P").charAt(0).toUpperCase();
+  const initial = (profile.nama_peternakan || user.name || "P")
+    .charAt(0)
+    .toUpperCase();
 
   // Parsing animal types
   let animalTypes: string[] = [];
@@ -167,18 +175,23 @@ export default function SellerProfilePage() {
     }
   }
 
-  const badgeText = profile.badge ? profile.badge.toUpperCase() : "MITRA TERVERIFIKASI";
+  const badgeText = profile.badge
+    ? profile.badge.toUpperCase()
+    : "MITRA TERVERIFIKASI";
 
   return (
     <div className="flex-1 bg-land-bg min-h-screen pb-20 animate-fade-in">
       {/* Banner / Header */}
       <section className="bg-land-ink text-white py-12 md:py-16 px-6 relative overflow-hidden">
         {/* Decorative SVG background leaf */}
-        <Leaf className="absolute -bottom-8 -right-8 w-48 h-48 text-white/5 pointer-events-none" strokeWidth={1} />
-        
+        <Leaf
+          className="absolute -bottom-8 -right-8 w-48 h-48 text-white/5 pointer-events-none"
+          strokeWidth={1}
+        />
+
         <div className="max-w-7xl mx-auto relative z-10">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="inline-flex items-center gap-1.5 text-white/60 hover:text-white text-xs font-bold uppercase tracking-wider mb-8 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -204,7 +217,8 @@ export default function SellerProfilePage() {
               </div>
 
               <p className="text-white/70 text-sm leading-relaxed max-w-2xl">
-                {profile.deskripsi ?? "Peternakan lokal mitra terpercaya AgroWaste yang berkomitmen menyalurkan limbah ternak sirkular berkualitas tinggi untuk keberlanjutan bumi."}
+                {profile.deskripsi ??
+                  "Peternakan lokal mitra terpercaya AgroWaste yang berkomitmen menyalurkan limbah ternak sirkular berkualitas tinggi untuk keberlanjutan bumi."}
               </p>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 text-xs text-white/60 font-medium">
@@ -214,7 +228,11 @@ export default function SellerProfilePage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4 text-land-clay" />
-                  Bergabung {new Date(profile.created_at || user.id).toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
+                  Bergabung{" "}
+                  {new Date(profile.created_at || user.id).toLocaleDateString(
+                    "id-ID",
+                    { month: "long", year: "numeric" },
+                  )}
                 </span>
               </div>
             </div>
@@ -224,7 +242,6 @@ export default function SellerProfilePage() {
 
       {/* Main Grid */}
       <main className="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-        
         {/* Sidebar Info */}
         <aside className="md:col-span-1 space-y-6">
           <div className="bg-white border border-land-cream rounded-[24px] p-6 shadow-clay">
@@ -234,17 +251,21 @@ export default function SellerProfilePage() {
 
             <div className="space-y-4 text-sm">
               <div>
-                <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-1">Pemilik</span>
+                <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-1">
+                  Pemilik
+                </span>
                 <span className="font-semibold text-land-ink">{user.name}</span>
               </div>
 
               {animalTypes.length > 0 && (
                 <div>
-                  <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-1">Jenis Hewan Ternak</span>
+                  <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-1">
+                    Jenis Hewan Ternak
+                  </span>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {animalTypes.map((type) => (
-                      <span 
-                        key={type} 
+                      <span
+                        key={type}
                         className="px-2 py-0.5 rounded-md bg-land-warm text-land-ink text-xs font-semibold uppercase tracking-wider"
                       >
                         {type}
@@ -256,13 +277,20 @@ export default function SellerProfilePage() {
 
               {profile.kapasitas_ternak && (
                 <div>
-                  <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-1">Kapasitas Peternakan</span>
-                  <span className="font-semibold text-land-ink">{Number(profile.kapasitas_ternak).toLocaleString("id-ID")} Ekor</span>
+                  <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-1">
+                    Kapasitas Peternakan
+                  </span>
+                  <span className="font-semibold text-land-ink">
+                    {Number(profile.kapasitas_ternak).toLocaleString("id-ID")}{" "}
+                    Ekor
+                  </span>
                 </div>
               )}
 
               <div className="pt-2 border-t border-land-cream">
-                <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-2">Kontak Hubung</span>
+                <span className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-2">
+                  Kontak Hubung
+                </span>
                 <div className="space-y-2">
                   {user.phone && (
                     <div className="flex items-center gap-2 text-xs text-land-ink">
@@ -308,7 +336,11 @@ export default function SellerProfilePage() {
                   title={product.name}
                   locationText={`${product.kabupaten}`}
                   rating={product.rating_avg}
-                  imageUrl={product.image_url ? getProductImageUrl(product.image_url) : null}
+                  imageUrl={
+                    product.image_url
+                      ? getProductImageUrl(product.image_url)
+                      : null
+                  }
                   imageFallbackIcon={Leaf}
                   price={formatRupiah(product.price)}
                   unit={`per ${product.unit}`}

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { generateBase32Secret, buildOtpAuthUri, getQrCodeImageUrl } from "@/lib/totp";
+import {
+  generateBase32Secret,
+  buildOtpAuthUri,
+  getQrCodeImageUrl,
+} from "@/lib/totp";
 
 export async function POST(req: Request) {
   try {
@@ -21,7 +25,7 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json(
       { success: false, message: "Gagal memproses setup 2FA" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

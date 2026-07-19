@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import { getToken, getUser } from "@/lib/auth";
 
-export default function CourierGuard({ children }: { children: React.ReactNode }) {
+export default function CourierGuard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const token = getToken();
-    const user  = getUser();
+    const user = getUser();
 
     if (!token) {
       window.location.replace("/login?callbackUrl=/courier");

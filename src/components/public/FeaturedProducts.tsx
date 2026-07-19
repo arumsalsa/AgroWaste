@@ -25,7 +25,9 @@ interface Product {
 
 function formatRupiah(n: string | number) {
   return new Intl.NumberFormat("id-ID", {
-    style: "currency", currency: "IDR", minimumFractionDigits: 0,
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
   }).format(Number(n));
 }
 
@@ -38,15 +40,15 @@ export default function FeaturedProducts() {
   const router = useRouter();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading,  setLoading]  = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const [addingId, setAddingId] = useState<string | null>(null);
-  const [addedId,  setAddedId]  = useState<string | null>(null);
-  const [errorId,  setErrorId]  = useState<string | null>(null);
+  const [addedId, setAddedId] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?sort=terbaru`)
-      .then((r) => r.ok ? r.json() : { data: { data: [] } })
+      .then((r) => (r.ok ? r.json() : { data: { data: [] } }))
       .then((json) => {
         const list: Product[] = json.data?.data ?? [];
         setProducts(list.slice(0, 4));
@@ -68,10 +70,10 @@ export default function FeaturedProducts() {
     setErrorId(null);
 
     try {
-      const res  = await apiFetch("/cart-items", {
+      const res = await apiFetch("/cart-items", {
         method: "POST",
         body: JSON.stringify({
-          product_id:  product.id,
+          product_id: product.id,
           quantity_kg: Math.max(1, parseFloat(product.min_order_kg || "1")),
         }),
       });
@@ -100,14 +102,21 @@ export default function FeaturedProducts() {
           <ShoppingCart className="w-4 h-4 text-land-accent" />
           Bursa Organik
         </div>
-        <h2 className="font-land-heading font-bold text-land-ink text-3xl lg:text-4xl leading-tight mb-4" style={{ textWrap: "balance" }}>
+        <h2
+          className="font-land-heading font-bold text-land-ink text-3xl lg:text-4xl leading-tight mb-4"
+          style={{ textWrap: "balance" }}
+        >
           Pupuk pilihan langsung dari sumbernya.
         </h2>
         <p className="text-land-muted text-base md:text-lg leading-relaxed">
-          Jelajahi produk organik berkualitas tinggi yang telah diverifikasi. Membantu menyuburkan tanaman Anda sekaligus menjaga keseimbangan alam.
+          Jelajahi produk organik berkualitas tinggi yang telah diverifikasi.
+          Membantu menyuburkan tanaman Anda sekaligus menjaga keseimbangan alam.
         </p>
       </div>
-      <Link href="/marketplace" className="inline-flex items-center gap-2 text-land-accent font-bold hover:gap-3 transition-all shrink-0">
+      <Link
+        href="/marketplace"
+        className="inline-flex items-center gap-2 text-land-accent font-bold hover:gap-3 transition-all shrink-0"
+      >
         Lihat Semua Koleksi
         <ArrowRight className="w-5 h-5" />
       </Link>
@@ -153,13 +162,23 @@ export default function FeaturedProducts() {
             key={product.id}
             href={`/marketplace/${product.id}`}
             title={product.name}
-            description={product.description ?? product.peternak_profile?.nama_peternakan ?? "Produk organik berkualitas terverifikasi."}
-            imageUrl={product.image_url ? getProductImageUrl(product.image_url) : null}
+            description={
+              product.description ??
+              product.peternak_profile?.nama_peternakan ??
+              "Produk organik berkualitas terverifikasi."
+            }
+            imageUrl={
+              product.image_url ? getProductImageUrl(product.image_url) : null
+            }
             imageFallbackIcon={Leaf}
             badgeText={formatCategoryBadge(product.category?.name || "Organik")}
             badgeDotColorClass="bg-land-accent"
             locationText={product.kabupaten || undefined}
-            rating={Number(product.rating_avg) > 0 ? Number(product.rating_avg) : undefined}
+            rating={
+              Number(product.rating_avg) > 0
+                ? Number(product.rating_avg)
+                : undefined
+            }
             price={formatRupiah(product.price)}
             unit={`/ ${product.unit}`}
             ctaText="Lihat Detail"
@@ -178,7 +197,10 @@ export default function FeaturedProducts() {
 
       {/* Button link only visible on mobile at the bottom */}
       <div className="mt-8 flex justify-center md:hidden px-4">
-        <Link href="/marketplace" className="w-full text-center py-3.5 border border-land-accent text-land-accent font-bold rounded-full text-sm">
+        <Link
+          href="/marketplace"
+          className="w-full text-center py-3.5 border border-land-accent text-land-accent font-bold rounded-full text-sm"
+        >
           Lihat Semua Koleksi →
         </Link>
       </div>
