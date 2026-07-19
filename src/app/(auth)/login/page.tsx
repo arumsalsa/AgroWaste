@@ -354,25 +354,6 @@ function LoginPageContent() {
               — AgroWaste Vision 2030
             </p>
           </div>
-
-          <div className="grid grid-cols-2 gap-8 border-t border-white/15 pt-8">
-            <div>
-              <div className="text-3xl font-bold text-land-clay font-land-heading tracking-tight mb-1">
-                500+
-              </div>
-              <div className="text-xs text-land-bg/70 uppercase tracking-widest font-semibold">
-                Mitra Peternak Terpercaya
-              </div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-land-clay font-land-heading tracking-tight mb-1">
-                12.000 Ton
-              </div>
-              <div className="text-xs text-land-bg/70 uppercase tracking-widest font-semibold">
-                Limbah Organik Terolah
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
