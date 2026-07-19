@@ -10,8 +10,8 @@ Platform cerdas pengelolaan & marketplace sirkular limbah peternakan berbasis Ne
 
 | Service | URL | Status |
 |---|---|---|
-| Frontend / Web App | [agrowaste.vercel.app](http://localhost:3000) | ![Live](https://img.shields.io/badge/status-live-brightgreen) |
-| Laravel REST API | [127.0.0.1:8000/api/v1](http://127.0.0.1:8000/api/v1) | ![Live](https://img.shields.io/badge/status-live-brightgreen) |
+| Frontend / Web App | [agrowaste.ubcloud.id](https://agrowaste.ubcloud.id) | ![Live](https://img.shields.io/badge/status-live-brightgreen) |
+| Laravel REST API | [agrowaste.ubcloud.id/api/v1](https://agrowaste.ubcloud.id/api/v1) | ![Live](https://img.shields.io/badge/status-live-brightgreen) |
 
 ---
 
@@ -174,6 +174,6 @@ Dibangun untuk **OLIVIA XI UNESA 2026 — Web Technology**.
 
 <div align="center">
   <strong>AgroWaste — Circular Economy for Sustainable Farming</strong><br/>
-  <a href="http://localhost:3000">Live Demo</a> •
-  <a href="http://localhost:3000/impact">Laporan Dampak</a>
+  <a href="https://agrowaste.ubcloud.id">Live Demo Server UB Cloud</a> •
+  <a href="https://agrowaste.ubcloud.id/impact">Laporan Dampak</a>
 </div>
