@@ -97,9 +97,9 @@ export default function EarthyCard({
         )}
 
         {locationText && (
-          <div className="absolute bottom-2 left-2 bg-land-bg/95 backdrop-blur-sm px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1 z-20">
-            <MapPin className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-land-accent" />
-            <span className="truncate max-w-[50px] sm:max-w-none">{locationText}</span>
+          <div className="absolute bottom-2 left-2 max-w-[calc(100%-16px)] bg-land-bg/95 backdrop-blur-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[8.5px] sm:text-[10px] font-bold text-land-ink border border-land-cream/30 shadow-sm flex items-center gap-1 z-20">
+            <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-land-accent shrink-0" />
+            <span className="truncate">{locationText}</span>
           </div>
         )}
       </div>

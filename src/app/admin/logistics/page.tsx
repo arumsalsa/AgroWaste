@@ -152,7 +152,8 @@ export default function AdminLogistics() {
   const tabs = ["Semua", "Sedang Kirim", "Terkirim", "Masalah"];
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
+    <>
+      <div className="space-y-8 animate-fade-in pb-10">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
@@ -372,6 +373,7 @@ export default function AdminLogistics() {
           )}
         </div>
       </div>
+      </div>
 
       {/* Assign Courier Modal */}
       {isAssignModalOpen && selectedOrder && (
@@ -441,6 +443,6 @@ export default function AdminLogistics() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

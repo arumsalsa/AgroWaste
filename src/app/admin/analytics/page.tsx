@@ -1,8 +1,89 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/admin/Toast";
+
+function CustomTimeframeDropdown({
+  value,
+  onChange,
+  colorScheme = "admin",
+}: {
+  value: "7d" | "1m" | "1y";
+  onChange: (val: "7d" | "1m" | "1y") => void;
+  colorScheme?: "admin" | "seller";
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const options = [
+    { key: "7d", label: "7 Hari Terakhir" },
+    { key: "1m", label: "1 Bulan Terakhir" },
+    { key: "1y", label: "1 Tahun Terakhir" },
+  ];
+
+  const currentLabel = options.find((o) => o.key === value)?.label || "7 Hari Terakhir";
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const isSeller = colorScheme === "seller";
+  const primaryColor = isSeller ? "text-seller-primary" : "text-admin-primary";
+  const activeBg = isSeller ? "bg-seller-primary-light text-seller-primary" : "bg-admin-primary-light text-admin-primary";
+
+  return (
+    <div className="relative shrink-0 self-start sm:self-auto" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-white hover:bg-[#F4F1EA] border border-black/10 text-gray-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-2 transition-all duration-200 active:scale-95"
+      >
+        <svg className={`w-3.5 h-3.5 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span>{currentLabel}</span>
+        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-black/10 rounded-xl shadow-xl z-30 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+          {options.map((opt) => {
+            const isSelected = value === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  onChange(opt.key as "7d" | "1m" | "1y");
+                  setIsOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-xs font-bold rounded-lg flex items-center justify-between transition-colors ${
+                  isSelected ? activeBg : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && (
+                  <svg className={`w-4 h-4 ${primaryColor}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface CategoryDist {
   category_name: string;
@@ -26,6 +107,7 @@ export default function AdminAnalytics() {
   const { showToast } = useToast();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<"7d" | "1m" | "1y">("7d");
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -109,14 +191,14 @@ export default function AdminAnalytics() {
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 bg-admin-primary-light text-admin-primary rounded-xl flex items-center justify-center font-bold text-xs tracking-tighter">
-              CO₂
+              CO₂e
             </div>
           </div>
-          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">MITIGASI SETARA CO₂</span>
+          <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider uppercase block mb-1">REDUKSI EMISI METANA (CO₂e)</span>
           <div className="text-2xl font-bold font-tabular text-admin-textprimary tracking-tight mb-1">
             {loading ? "..." : totalCo2.toLocaleString("id-ID", { maximumFractionDigits: 1 })} <span className="text-lg font-medium">kgCO₂e</span>
           </div>
-          <p className="text-xs text-admin-textsecondary">Pencegahan Emisi Gas Rumah Kaca</p>
+          <p className="text-xs text-admin-textsecondary">Reduksi Emisi Metana & Gas Rumah Kaca</p>
         </div>
 
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
@@ -137,40 +219,81 @@ export default function AdminAnalytics() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Category Bar Chart */}
         <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6 lg:w-3/5 flex flex-col justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-admin-textprimary">Distribusi Limbah berdasarkan Kategori</h3>
-            <p className="text-xs text-admin-textsecondary mt-1">Perbandingan volume total limbah tani yang terkelola berdasarkan kategorinya.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-admin-textprimary">Distribusi Limbah berdasarkan Kategori</h3>
+              <p className="text-xs text-admin-textsecondary mt-0.5">Perbandingan volume total limbah tani yang terkelola berdasarkan kategorinya.</p>
+            </div>
+            <CustomTimeframeDropdown value={timeRange} onChange={setTimeRange} colorScheme="admin" />
           </div>
 
-          <div className="mt-8 flex items-end justify-around border-l border-b border-admin-hairline pt-4 pb-0 px-2 min-h-[200px]">
-            {loading ? (
-              <div className="text-xs text-admin-textsecondary italic py-10">Memuat grafik...</div>
-            ) : !data || data.category_distribution.length === 0 ? (
-              <div className="text-xs text-admin-textsecondary italic py-10">Belum ada transaksi limbah selesai.</div>
-            ) : (
-              data.category_distribution.map((cat) => {
-                const totalCatVal = Number(cat.total);
-                const maxVal = Math.max(...data.category_distribution.map((c) => Number(c.total)), 1);
-                const heightPercent = Math.max((totalCatVal / maxVal) * 100, 10);
-                
-                const color = cat.category_name === "limbah_cair" ? "bg-blue-400" : "bg-admin-primary";
+          {/* Full Height Chart Container */}
+          <div className="flex-1 flex flex-col justify-between mt-2 relative h-[240px]">
+            {/* Grid & Chart Overlay Area */}
+            <div className="relative flex-1 w-full flex h-[200px]">
+              {/* Dedicated Left Y-Axis Labels */}
+              <div className="w-10 flex flex-col justify-between text-[10px] font-bold text-admin-textsecondary font-tabular pb-6 select-none border-r border-admin-hairline/40 pr-2">
+                <span>100%</span>
+                <span>75%</span>
+                <span>50%</span>
+                <span>25%</span>
+                <span>0%</span>
+              </div>
 
-                return (
-                  <div key={cat.category_name} className="flex flex-col items-center w-[20%] group relative">
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full mb-2 bg-admin-textprimary text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold">
-                      {totalCatVal.toLocaleString("id-ID")} kg
-                    </div>
-                    <div
-                      className={`${color} rounded-t transition-all duration-500 w-12 hover:opacity-85`}
-                      style={{ height: `${heightPercent}px` }}
-                    />
-                    <span className="text-[10px] font-bold text-admin-textsecondary tracking-wider text-center mt-2 truncate w-full">
-                      {getCategoryLabel(cat.category_name).toUpperCase()}
-                    </span>
-                  </div>
-                );
-              })
+              {/* Grid Lines + Bar Chart Canvas */}
+              <div className="relative flex-1 h-full pl-3 pr-2">
+                {/* Horizontal Dashed Grid Lines */}
+                <div className="absolute inset-x-0 inset-y-0 flex flex-col justify-between pointer-events-none pb-6">
+                  <div className="border-b border-dashed border-admin-hairline/60 w-full" />
+                  <div className="border-b border-dashed border-admin-hairline/60 w-full" />
+                  <div className="border-b border-dashed border-admin-hairline/60 w-full" />
+                  <div className="border-b border-dashed border-admin-hairline/60 w-full" />
+                  <div className="border-b border-admin-hairline/80 w-full" />
+                </div>
+
+                {/* Vertical Bar Pillars */}
+                <div className="relative h-full flex items-end justify-around pb-6 pt-2 z-10">
+                  {loading ? (
+                    <div className="text-xs text-admin-textsecondary italic py-10">Memuat grafik...</div>
+                  ) : !data || data.category_distribution.length === 0 ? (
+                    <div className="text-xs text-admin-textsecondary italic py-10">Belum ada transaksi limbah selesai.</div>
+                  ) : (
+                    data.category_distribution.map((cat) => {
+                      const totalCatVal = Number(cat.total);
+                      const maxVal = Math.max(...data.category_distribution.map((c) => Number(c.total)), 1);
+                      const heightPercent = Math.max((totalCatVal / maxVal) * 100, 10);
+                      const color = cat.category_name === "limbah_cair" ? "bg-blue-500 hover:bg-blue-600" : "bg-admin-primary hover:bg-[#009A44]";
+
+                      return (
+                        <div key={cat.category_name} className="flex flex-col items-center w-[20%] h-full justify-end">
+                          {/* Bar Pillar with Hover Tooltip */}
+                          <div
+                            className={`w-full max-w-[36px] ${color} rounded-t-lg transition-all duration-300 shadow-md group/bar relative cursor-pointer`}
+                            style={{ height: `${heightPercent}%` }}
+                          >
+                            {/* Hover Tooltip Badge */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#1E293B] text-white text-[10px] px-2.5 py-1 rounded-lg opacity-0 pointer-events-none group-hover/bar:opacity-100 group-hover/bar:-translate-y-1 transition-all duration-200 whitespace-nowrap font-bold shadow-xl z-30">
+                              {totalCatVal.toLocaleString("id-ID")} kg
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1E293B]" />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* X-Axis Category Labels */}
+            {data && data.category_distribution.length > 0 && (
+              <div className="pl-12 flex justify-around text-[10px] font-bold text-admin-textsecondary pt-2 uppercase tracking-wider border-t border-admin-hairline">
+                {data.category_distribution.map((cat) => (
+                  <span key={cat.category_name} className="truncate text-center w-[20%]">
+                    {getCategoryLabel(cat.category_name)}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 
@@ -228,86 +351,7 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* SDG Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* SDG 12 */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
-          <div className="flex gap-3 items-start mb-6">
-            <div className="w-10 h-10 rounded-xl bg-admin-semamber text-white flex items-center justify-center font-bold text-lg shrink-0">
-              12
-            </div>
-            <div>
-              <div className="text-xs font-bold text-admin-textsecondary mb-0.5">SDG Target 12.5</div>
-              <div className="text-sm font-semibold text-admin-textprimary leading-snug">Mengurangi timbulan limbah secara substansial</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="relative w-24 h-24 shrink-0">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#FEF3C7" strokeWidth="12" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F59E0B" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset={sdg12DashOffset} strokeLinecap="round" />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-admin-textprimary font-tabular">
-                {loading ? "..." : `${sdg12Pct}%`}
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider mb-0.5">TINGKAT DAUR ULANG</div>
-                <div className="text-xl font-bold font-tabular text-admin-semamber">
-                  {loading ? "..." : totalWasteTons.toLocaleString("id-ID", { maximumFractionDigits: 1 })} <span className="text-sm font-medium">Ton</span>
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider mb-0.5">TARGET TAHUNAN</div>
-                <div className="text-lg font-bold font-tabular text-admin-textprimary">
-                  {sdg12Target.toLocaleString("id-ID")} <span className="text-sm font-medium">Ton</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SDG 13 */}
-        <div className="bg-admin-surfacewhite border border-admin-hairline rounded-2xl p-6">
-          <div className="flex gap-3 items-start mb-6">
-            <div className="w-10 h-10 rounded-xl bg-admin-textprimary text-white flex items-center justify-center font-bold text-lg shrink-0">
-              13
-            </div>
-            <div>
-              <div className="text-xs font-bold text-admin-textsecondary mb-0.5">SDG Target 13.1</div>
-              <div className="text-sm font-semibold text-admin-textprimary leading-snug">Memperkuat ketahanan terhadap dampak iklim</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="relative w-24 h-24 shrink-0">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#D1FAE5" strokeWidth="12" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10B981" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset={sdg13DashOffset} strokeLinecap="round" />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-admin-textprimary font-tabular">
-                {loading ? "..." : `${sdg13Pct}%`}
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider mb-0.5">PENGURANGAN EMISI METANA</div>
-                <div className="text-xl font-bold font-tabular text-admin-semgreen">
-                  {loading ? "..." : methaneReduced.toLocaleString("id-ID")} <span className="text-sm font-medium">m³</span>
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-admin-textsecondary uppercase tracking-wider mb-0.5">TARGET TAHUNAN</div>
-                <div className="text-lg font-bold font-tabular text-admin-textprimary">
-                  {sdg13Target.toLocaleString("id-ID")} <span className="text-sm font-medium">m³</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="text-center text-[10px] font-bold text-admin-textsecondary tracking-wider">
+      <div className="text-center text-[10px] font-bold text-admin-textsecondary tracking-wider pt-4">
         AgroWaste Impact Analytics Engine v4.2.0 — Diperbarui secara dinamis dari basis data
       </div>
     </div>

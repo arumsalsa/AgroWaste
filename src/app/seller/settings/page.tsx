@@ -14,13 +14,14 @@ interface ProfileResponse {
     avatar_url: string | null;
     role: string;
     peternak_profile?: {
-      nama_peternakan: string;
+      nama_kandang: string;
       deskripsi: string | null;
       provinsi: string;
       kabupaten: string;
       kecamatan: string;
       lat: string | number | null;
       lng: string | number | null;
+      bank_account: string | null;
     };
   };
 }
@@ -30,6 +31,8 @@ export default function SettingsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("profil");
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   const [ownerName, setOwnerName] = useState("");
   const [farmName, setFarmName] = useState("");
@@ -42,6 +45,7 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [lat, setLat] = useState<number | string>("");
   const [lng, setLng] = useState<number | string>("");
+  const [bankAccount, setBankAccount] = useState("");
 
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
@@ -59,13 +63,14 @@ export default function SettingsPage() {
           setAvatarUrl(u.avatar_url || "");
           
           if (u.peternak_profile) {
-            setFarmName(u.peternak_profile.nama_peternakan || "");
+            setFarmName(u.peternak_profile.nama_kandang || "");
             setDescription(u.peternak_profile.deskripsi || "");
             setProvinsi(u.peternak_profile.provinsi || "");
             setKabupaten(u.peternak_profile.kabupaten || "");
             setKecamatan(u.peternak_profile.kecamatan || "");
             setLat(u.peternak_profile.lat !== null && u.peternak_profile.lat !== undefined ? u.peternak_profile.lat : "");
             setLng(u.peternak_profile.lng !== null && u.peternak_profile.lng !== undefined ? u.peternak_profile.lng : "");
+            setBankAccount(u.peternak_profile.bank_account || "");
           }
         } else {
           setErrorMsg("Gagal memuat profil.");
@@ -104,7 +109,10 @@ export default function SettingsPage() {
 
   // init map once Leaflet is ready
   useEffect(() => {
-    if (!leafletLoaded || loading) return;
+    if (!leafletLoaded || loading || activeTab !== "lokasi") return;
+    const mapElement = document.getElementById("seller-gis-map");
+    if (!mapElement) return;
+
     const L = window.L;
     if (!L) return;
 
@@ -145,7 +153,7 @@ export default function SettingsPage() {
     return () => {
       map.remove();
     };
-  }, [leafletLoaded, loading]);
+  }, [leafletLoaded, loading, activeTab]);
 
   const handleLatChange = (val: string) => {
     setLat(val);
@@ -176,13 +184,14 @@ export default function SettingsPage() {
         email: email,
         phone: phone,
         avatar_url: avatarUrl || null,
-        nama_peternakan: farmName,
+        nama_kandang: farmName,
         deskripsi: description || null,
         provinsi: provinsi,
         kabupaten: kabupaten,
         kecamatan: kecamatan,
         lat: lat !== "" ? Number(lat) : null,
         lng: lng !== "" ? Number(lng) : null,
+        bank_account: bankAccount || null,
       };
 
       const res = await apiFetch("/profile", {
@@ -237,63 +246,87 @@ export default function SettingsPage() {
   )}&background=3F4F44&color=fff&rounded=true`;
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">Pengaturan Akun Saya</h2>
-        <p className="text-sm text-seller-textsecondary">Perbarui informasi profil peternakan dan kontak Anda.</p>
-      </div>
+    <>
+      <div className="space-y-6 animate-fade-in pb-10">
+        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">Pengaturan Akun Saya</h2>
+        <p className="text-seller-textsecondary mb-8">Perbarui informasi profil peternakan dan kontak Anda.</p>
 
-      {errorMsg && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 font-semibold">
-          {errorMsg}
-        </div>
-      )}
+        {errorMsg && (
+          <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl mb-6">
+            {errorMsg}
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar Settings Menu */}
-        <div className="lg:col-span-1 space-y-2">
-          <button className="w-full text-left px-4 py-3 bg-seller-primary text-white rounded-xl text-sm font-bold shadow-md shadow-seller-primary/20 transition-colors">
-            Profil Peternakan
-          </button>
-          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors opacity-60 cursor-not-allowed">
-            Notifikasi (Segera Hadir)
-          </button>
-          <button className="w-full text-left px-4 py-3 text-seller-textsecondary hover:bg-seller-warmbg hover:text-seller-textprimary rounded-xl text-sm font-semibold transition-colors opacity-60 cursor-not-allowed">
-            Keamanan (Segera Hadir)
-          </button>
-        </div>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Bagian Kiri: Tab Navigasi */}
+          <div className="w-full lg:w-64 shrink-0">
+            <div className="bg-seller-surfacewhite border border-seller-hairline rounded-2xl overflow-hidden sticky top-8">
+              <button
+                type="button"
+                className={`w-full text-left px-5 py-4 font-bold text-sm transition-colors ${
+                  activeTab === "profil"
+                    ? "bg-[#33463B] text-white border-l-4 border-[#5E9B71]"
+                    : "text-seller-textsecondary hover:bg-seller-warmbg"
+                }`}
+                onClick={() => setActiveTab("profil")}
+              >
+                Profil Peternakan
+              </button>
+              <button
+                type="button"
+                className={`w-full text-left px-5 py-4 font-bold text-sm transition-colors ${
+                  activeTab === "lokasi"
+                    ? "bg-[#33463B] text-white border-l-4 border-[#5E9B71]"
+                    : "text-seller-textsecondary hover:bg-seller-warmbg"
+                }`}
+                onClick={() => setActiveTab("lokasi")}
+              >
+                Lokasi & Kontak
+              </button>
+              <button
+                type="button"
+                className={`w-full text-left px-5 py-4 font-bold text-sm transition-colors ${
+                  activeTab === "keamanan"
+                    ? "bg-[#33463B] text-white border-l-4 border-[#5E9B71]"
+                    : "text-seller-textsecondary hover:bg-seller-warmbg"
+                }`}
+                onClick={() => setActiveTab("keamanan")}
+              >
+                Keamanan & 2FA
+              </button>
+            </div>
+          </div>
 
-        {/* Main Content Area */}
-        <div className="lg:col-span-3 space-y-6">
-          <form onSubmit={handleSave} className="space-y-6">
+          {/* Bagian Kanan: Form Konten */}
+          <form onSubmit={handleSave} className="flex-1 bg-seller-surfacewhite border border-seller-hairline rounded-2xl p-6 lg:p-8 relative">
             
-            {/* Informasi Dasar */}
-            <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
-              <h3 className="text-lg font-bold text-seller-textprimary mb-6">Informasi Dasar</h3>
-              
-              <div className="flex items-center gap-6 mb-8">
-                <div className="relative">
-                  <img
-                    src={avatarUrl || fallbackAvatar}
-                    alt="Logo"
-                    className="w-20 h-20 rounded-full object-cover shadow-sm border border-seller-hairline"
-                  />
+            {activeTab === "profil" && (
+              <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">Informasi Dasar</h3>
+                
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="w-20 h-20 rounded-2xl bg-seller-warmbg border border-seller-hairline flex items-center justify-center overflow-hidden relative shrink-0">
+                    <img 
+                      src={avatarUrl || fallbackAvatar} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar; }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">URL Avatar / Logo</label>
+                    <input
+                      type="url"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                    />
+                    <p className="text-[10px] text-seller-textsecondary mt-1">Masukkan URL gambar (opsional).</p>
+                  </div>
                 </div>
-                <div className="flex-1 max-w-sm">
-                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">URL Avatar / Logo</label>
-                  <input
-                    type="text"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://example.com/logo.png"
-                    className="w-full px-3 py-1.5 bg-seller-warmbg border border-seller-hairline rounded-lg text-xs font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
-                  />
-                  <p className="text-[9px] text-seller-textsecondary mt-1">Masukkan URL gambar logo atau biarkan kosong untuk inisial default.</p>
-                </div>
-              </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nama Pemilik *</label>
                     <input
@@ -301,7 +334,7 @@ export default function SettingsPage() {
                       required
                       value={ownerName}
                       onChange={(e) => setOwnerName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
                   <div>
@@ -311,30 +344,43 @@ export default function SettingsPage() {
                       required
                       value={farmName}
                       onChange={(e) => setFarmName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm font-semibold text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Deskripsi Peternakan</label>
+                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Deskripsi Singkat</label>
                   <textarea
                     rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Jelaskan jenis ternak dan komitmen pengolahan limbah organik peternakan Anda..."
+                    placeholder="Ceritakan tentang peternakan Anda..."
                     className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary resize-none"
-                  ></textarea>
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-seller-textsecondary mb-1">Nomor Rekening Penjual</label>
+                  <input
+                    type="text"
+                    value={bankAccount}
+                    onChange={(e) => setBankAccount(e.target.value)}
+                    placeholder="Contoh: BCA 1234567890 a.n. Budi"
+                    className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                  />
+                  <p className="text-[10px] text-seller-textsecondary mt-1">
+                    Digunakan untuk menerima pembayaran manual dari pembeli.
+                  </p>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Lokasi & Kontak */}
-            <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl">
-              <h3 className="text-lg font-bold text-seller-textprimary mb-6">Lokasi & Kontak</h3>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {activeTab === "lokasi" && (
+              <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">Lokasi & Kontak</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-seller-textsecondary mb-1">Provinsi *</label>
                     <input
@@ -342,7 +388,7 @@ export default function SettingsPage() {
                       required
                       value={provinsi}
                       onChange={(e) => setProvinsi(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                      className="w-full px-4 py-2 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
                   <div>
@@ -352,7 +398,7 @@ export default function SettingsPage() {
                       required
                       value={kabupaten}
                       onChange={(e) => setKabupaten(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                      className="w-full px-4 py-2 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
                   <div>
@@ -362,20 +408,20 @@ export default function SettingsPage() {
                       required
                       value={kecamatan}
                       onChange={(e) => setKecamatan(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                      className="w-full px-4 py-2 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Email Kontak *</label>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Email *</label>
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary"
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary font-tabular focus:outline-none focus:ring-1 focus:ring-seller-primary"
                     />
                   </div>
                   <div>
@@ -393,51 +439,104 @@ export default function SettingsPage() {
                 {/* Peta GIS */}
                 <div className="pt-6 border-t border-seller-hairline mt-6">
                   <h4 className="text-sm font-bold text-seller-textprimary mb-1">Koordinat Titik Lokasi GIS Peternakan</h4>
-                  <p className="text-xs text-seller-textsecondary mb-4">
-                    Tentukan titik presisi lokasi peternakan Anda di peta bawah. Anda dapat menyeret (drag) pin pada peta atau mengeklik lokasi mana pun untuk mengubah koordinat secara instan.
-                  </p>
+                  <p className="text-xs text-seller-textsecondary mb-4">Tentukan titik presisi lokasi peternakan Anda di peta bawah. Anda dapat menyeret (drag) pin pada peta atau mengeklik lokasi mana pun untuk mengubah koordinat secara instan.</p>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-xs font-bold text-seller-textsecondary mb-1">Latitude (Lintang)</label>
                       <input
                         type="text"
-                        placeholder="Contoh: -7.892400"
                         value={lat}
-                        onChange={(e) => handleLatChange(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary font-mono"
+                        readOnly
+                        className="w-full px-4 py-2 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary font-tabular focus:outline-none"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-seller-textsecondary mb-1">Longitude (Bujur)</label>
                       <input
                         type="text"
-                        placeholder="Contoh: 112.656300"
                         value={lng}
-                        onChange={(e) => handleLngChange(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary focus:outline-none focus:ring-1 focus:ring-seller-primary font-mono"
+                        readOnly
+                        className="w-full px-4 py-2 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm text-seller-textprimary font-tabular focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  <div 
-                    id="seller-gis-map" 
-                    className="w-full h-80 rounded-2xl border border-seller-hairline overflow-hidden relative z-10"
-                    style={{ minHeight: "320px" }}
-                  />
-                  <p className="text-[10px] text-seller-textsecondary mt-2">
+                  <div className="w-full h-[300px] rounded-xl overflow-hidden border-2 border-seller-hairline relative">
+                    {leafletLoaded ? (
+                      <div id="seller-gis-map" className="w-full h-full z-0" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-seller-warmbg text-seller-textsecondary text-xs animate-pulse">
+                        Memuat Peta...
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[9px] text-seller-textsecondary mt-2 text-right">
                     * Koordinat ini akan dibaca secara real-time oleh mitra kurir untuk merencanakan rute pengiriman dan penjemputan limbah.
                   </p>
                 </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex justify-end">
+            {activeTab === "keamanan" && (
+              <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-bold text-seller-textprimary border-b border-seller-hairline pb-4 mb-6">Ubah Kata Sandi</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kata Sandi Sekarang</label>
+                    <input
+                      type="password"
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#5E9B71] text-seller-textprimary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Kata Sandi Baru</label>
+                    <input
+                      type="password"
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#5E9B71] text-seller-textprimary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-seller-textsecondary mb-1">Ulangi Sandi Baru</label>
+                    <input
+                      type="password"
+                      className="w-full px-4 py-2.5 bg-seller-warmbg border border-seller-hairline rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#5E9B71] text-seller-textprimary"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-seller-hairline">
+                  <h3 className="text-lg font-bold text-seller-textprimary mb-2 flex items-center justify-between">
+                    <span>Autentikasi Dua Langkah (2FA)</span>
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {is2FAEnabled ? 'AKTIF' : 'NONAKTIF'}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-seller-textsecondary mb-4">Tambahkan tingkat keamanan tambahan untuk melindungi akun toko peternakan Anda saat masuk sistem.</p>
+                  <button
+                    type="button"
+                    onClick={() => setIs2FAEnabled(!is2FAEnabled)}
+                    className="px-4 py-2 bg-seller-warmbg hover:bg-seller-hairline text-seller-textprimary font-bold text-xs rounded-xl transition-all border border-seller-hairline"
+                  >
+                    {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-8 pt-6 border-t border-seller-hairline flex justify-end">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-3 bg-seller-primary hover:bg-seller-primary-hover text-white text-sm font-bold rounded-xl shadow-md shadow-seller-primary/20 transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 bg-[#33463B] text-white rounded-xl text-sm font-bold hover:bg-[#25352c] transition-colors disabled:opacity-60 flex items-center gap-2"
               >
+                {submitting && (
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" strokeWidth="3" strokeOpacity="0.25" />
+                    <path d="M12 2a10 10 0 0 1 10 10" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                )}
                 {submitting ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
@@ -445,7 +544,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Modal Sukses Simpan */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-seller-surfacewhite w-full max-w-sm rounded-3xl border border-seller-hairline overflow-hidden p-8 text-center space-y-4 animate-fade-in shadow-xl">
@@ -467,6 +565,6 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

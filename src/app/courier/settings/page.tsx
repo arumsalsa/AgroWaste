@@ -1,8 +1,165 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { apiFetch } from "@/lib/api";
 import { saveAuth, getToken } from "@/lib/auth";
+import { calculateDeliveryCost } from "@/lib/location";
+
+const MotorIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="5.5" cy="17.5" r="2.5" />
+    <circle cx="18.5" cy="17.5" r="2.5" />
+    <path d="M15 6h4l2 5v6.5h-2.5" />
+    <path d="M8 17.5h8" />
+    <path d="M12 6h-4l-3.5 6.5v5" />
+    <path d="M12 6v5.5h3.5" />
+  </svg>
+);
+
+const TruckIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1" y="3" width="15" height="13" rx="2" />
+    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="18.5" r="2.5" />
+  </svg>
+);
+
+function CustomVehicleDropdown({
+  value,
+  onChange,
+}: {
+  value: "Motor" | "Mobil Pick-up";
+  onChange: (val: "Motor" | "Mobil Pick-up") => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const options: Array<{
+    id: "Motor" | "Mobil Pick-up";
+    label: string;
+    sublabel: string;
+    IconComponent: React.ComponentType<{ className?: string }>;
+  }> = [
+    {
+      id: "Motor",
+      label: "Motor (Kurir Instan)",
+      sublabel: "Maks 25 kg • Rp 7k + Rp 2k/km",
+      IconComponent: MotorIcon,
+    },
+    {
+      id: "Mobil Pick-up",
+      label: "Mobil Pick-up (Armada Kargo)",
+      sublabel: "Maks 700 kg/mobil • Rp 25k + Rp 3.5k/km",
+      IconComponent: TruckIcon,
+    },
+  ];
+
+  const selected = options.find((o) => o.id === value) || options[1];
+  const SelectedIcon = selected.IconComponent;
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full px-4 py-2 bg-white border border-courier-hairline hover:border-courier-primary/40 rounded-xl flex items-center justify-between shadow-sm hover:shadow transition-all group cursor-pointer"
+      >
+        <div className="flex items-center gap-3 text-left truncate">
+          <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center justify-center shrink-0">
+            <SelectedIcon className="w-4 h-4" />
+          </div>
+          <div className="truncate">
+            <span className="text-xs font-bold text-courier-textprimary block leading-tight">
+              {selected.label}
+            </span>
+            <span className="text-[10px] text-courier-textsecondary font-medium block">
+              {selected.sublabel}
+            </span>
+          </div>
+        </div>
+        <svg
+          className={`w-4 h-4 text-courier-textsecondary transition-transform duration-200 shrink-0 ml-2 ${
+            open ? "rotate-180 text-courier-primary" : ""
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-courier-hairline rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1.5 space-y-1">
+          {options.map((opt) => {
+            const isSelected = opt.id === value;
+            const ItemIcon = opt.IconComponent;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  onChange(opt.id);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-left transition-colors cursor-pointer ${
+                  isSelected
+                    ? "bg-emerald-50/70 border border-emerald-200/60"
+                    : "hover:bg-gray-50 border border-transparent"
+                }`}
+              >
+                <div className="flex items-center gap-3 truncate">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                      isSelected
+                        ? "bg-emerald-600 text-white"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    <ItemIcon className="w-4 h-4" />
+                  </div>
+                  <div className="truncate">
+                    <span
+                      className={`text-xs font-bold block ${
+                        isSelected ? "text-emerald-900" : "text-courier-textprimary"
+                      }`}
+                    >
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] text-courier-textsecondary font-medium block">
+                      {opt.sublabel}
+                    </span>
+                  </div>
+                </div>
+                {isSelected && (
+                  <svg
+                    className="w-4 h-4 text-emerald-600 shrink-0 ml-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface ProfileResponse {
   success: boolean;
@@ -16,6 +173,7 @@ interface ProfileResponse {
     logistik_profile?: {
       company_name: string | null;
       vehicle_plate: string | null;
+      vehicle_type?: string | null;
     };
   };
 }
@@ -25,15 +183,26 @@ export default function CourierSettings() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("profil");
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [vehiclePlate, setVehiclePlate] = useState("");
+  const [vehicleType, setVehicleType] = useState<"Motor" | "Mobil Pick-up">("Mobil Pick-up");
   const [avatarUrl, setAvatarUrl] = useState("");
 
   const fetchProfile = () => {
+    // Load local stored vehicle preference if available
+    if (typeof window !== "undefined") {
+      const savedVehicle = localStorage.getItem("agrowaste_courier_vehicle_type");
+      if (savedVehicle === "Motor" || savedVehicle === "Mobil Pick-up") {
+        setVehicleType(savedVehicle);
+      }
+    }
+
     apiFetch("/profile")
       .then((r) => (r.ok ? r.json() : null))
       .then((json: ProfileResponse | null) => {
@@ -46,6 +215,9 @@ export default function CourierSettings() {
           if (u.logistik_profile) {
             setCompanyName(u.logistik_profile.company_name || "");
             setVehiclePlate(u.logistik_profile.vehicle_plate || "");
+            if (u.logistik_profile.vehicle_type === "Motor" || u.logistik_profile.vehicle_type === "Mobil Pick-up") {
+              setVehicleType(u.logistik_profile.vehicle_type);
+            }
           }
         } else {
           setErrorMsg("Gagal memuat profil kurir.");
@@ -61,10 +233,24 @@ export default function CourierSettings() {
     fetchProfile();
   }, []);
 
+  const liveShippingSample = useMemo(() => {
+    const sampleWeight = vehicleType === "Motor" ? 20 : 150;
+    return calculateDeliveryCost(15, sampleWeight);
+  }, [vehicleType]);
+
+  function formatRupiah(n: number) {
+    return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setErrorMsg(null);
+
+    // Save vehicle preference locally
+    if (typeof window !== "undefined") {
+      localStorage.setItem("agrowaste_courier_vehicle_type", vehicleType);
+    }
 
     try {
       const body = {
@@ -74,6 +260,7 @@ export default function CourierSettings() {
         avatar_url: avatarUrl || null,
         company_name: companyName,
         vehicle_plate: vehiclePlate,
+        vehicle_type: vehicleType,
       };
 
       const res = await apiFetch("/profile", {
@@ -99,7 +286,7 @@ export default function CourierSettings() {
         setErrorMsg(json.message || "Gagal memperbarui profil.");
       }
     } catch {
-      setErrorMsg("Terjadi kesalahan koneksi server.");
+      setErrorMsg("Terjadi kesalahan koneksi.");
     } finally {
       setSubmitting(false);
     }
@@ -118,8 +305,8 @@ export default function CourierSettings() {
   )}&background=2F5A28&color=fff&rounded=true`;
 
   return (
-    <div className="space-y-8 animate-fade-in pb-20">
-      
+    <>
+      <div className="space-y-8 animate-fade-in pb-20">
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold tracking-tight text-courier-primary mb-2">Pengaturan Profil</h2>
@@ -162,98 +349,254 @@ export default function CourierSettings() {
           </div>
         </div>
 
-        {/* Right Column: Settings Forms */}
+        {/* Right Column: Settings Forms & Security */}
         <div className="lg:col-span-8 space-y-6">
-          <form onSubmit={handleSave} className="space-y-6">
-            
-            {/* Personal Information */}
-            <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm">
-              <div className="bg-courier-warmbg/50 px-6 py-4 border-b border-courier-hairline">
-                <h3 className="font-bold text-courier-primary text-sm">Informasi Pribadi</h3>
-              </div>
-              <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nama Lengkap *</label>
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
-                    />
+          {/* Tab Selection */}
+          <div className="flex gap-3 border-b border-courier-hairline pb-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab("profil")}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "profil"
+                  ? "bg-courier-primary text-white shadow-md shadow-courier-primary/20"
+                  : "bg-courier-warmbg text-courier-textsecondary hover:text-courier-textprimary"
+              }`}
+            >
+              Profil & Kendaraan
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("keamanan")}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "keamanan"
+                  ? "bg-courier-primary text-white shadow-md shadow-courier-primary/20"
+                  : "bg-courier-warmbg text-courier-textsecondary hover:text-courier-textprimary"
+              }`}
+            >
+              Keamanan & 2FA
+            </button>
+          </div>
+
+          {activeTab === "profil" && (
+            <form onSubmit={handleSave} className="space-y-6">
+              
+              {/* Personal Information */}
+              <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-courier-warmbg/50 px-6 py-4 border-b border-courier-hairline">
+                  <h3 className="font-bold text-courier-primary text-sm">Informasi Pribadi</h3>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nama Lengkap *</label>
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nomor Telepon *</label>
+                      <input
+                        type="text"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nomor Telepon *</label>
+                    <label className="block text-xs font-bold text-courier-textsecondary mb-2">Alamat Email *</label>
                     <input
-                      type="text"
+                      type="email"
                       required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Vehicle Details & Ongkir Integration */}
+              <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-courier-warmbg/50 px-6 py-4 border-b border-courier-hairline flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <h3 className="font-bold text-courier-primary text-sm">Detail Kendaraan Armada & Skema Tarif Ongkir</h3>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-fit">
+                    Terhubung dengan Kalkulator Ongkir
+                  </span>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-2">Jenis Kendaraan Armada *</label>
+                      <CustomVehicleDropdown value={vehicleType} onChange={setVehicleType} />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nama Perusahaan / Layanan *</label>
+                      <input
+                        type="text"
+                        required
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="Mis: Mandiri Trans, Kargo Hijau"
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-2">Plat Nomor Kendaraan *</label>
+                      <input
+                        type="text"
+                        required
+                        value={vehiclePlate}
+                        onChange={(e) => setVehiclePlate(e.target.value)}
+                        placeholder="B 1234 CD"
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary font-tabular uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Live Ongkir Rate Breakdown Box */}
+                  <div className="bg-[#F9F8F6] border border-courier-hairline p-5 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                          {vehicleType === "Motor" ? <MotorIcon className="w-3.5 h-3.5" /> : <TruckIcon className="w-3.5 h-3.5" />}
+                        </div>
+                        <span className="text-sm font-bold text-courier-primary">
+                          {vehicleType === "Motor" ? "Skema Tarif Ongkir Motor" : "Skema Tarif Ongkir Mobil Pick-up"}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-medium text-courier-textsecondary">Kalkulator Otomatis Sistem</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
+                      <div className="bg-white p-3 rounded-lg border border-courier-hairline">
+                        <span className="text-[10px] text-courier-textsecondary font-bold block uppercase mb-0.5">Tarif Dasar</span>
+                        <span className="font-extrabold text-courier-textprimary text-xs sm:text-sm">
+                          {vehicleType === "Motor" ? "Rp 7.000" : "Rp 25.000 / armada"}
+                        </span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-lg border border-courier-hairline">
+                        <span className="text-[10px] text-courier-textsecondary font-bold block uppercase mb-0.5">Tarif per KM</span>
+                        <span className="font-extrabold text-courier-textprimary text-xs sm:text-sm">
+                          {vehicleType === "Motor" ? "Rp 2.000 / km" : "Rp 3.500 / km"}
+                        </span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-lg border border-courier-hairline">
+                        <span className="text-[10px] text-courier-textsecondary font-bold block uppercase mb-0.5">Kapasitas Maksimal</span>
+                        <span className="font-extrabold text-courier-textprimary text-xs sm:text-sm">
+                          {vehicleType === "Motor" ? "25 kg" : "700 kg / armada"}
+                        </span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-lg border border-emerald-200 bg-emerald-50/40">
+                        <span className="text-[10px] text-emerald-800 font-bold block uppercase mb-0.5">Simulasi 15 KM</span>
+                        <span className="font-extrabold text-emerald-700 text-xs sm:text-sm">
+                          {liveShippingSample.deliveryCostDisplay} ({formatRupiah(liveShippingSample.deliveryCostRaw)})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex justify-end items-center gap-6 pt-4">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-3 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
+                >
+                  {submitting ? "Menyimpan..." : "Simpan Perubahan Profil"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {activeTab === "keamanan" && (
+            <div className="space-y-6 animate-fade-in">
+              {/* Ubah Kata Sandi */}
+              <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-courier-warmbg/50 px-6 py-4 border-b border-courier-hairline">
+                  <h3 className="font-bold text-courier-primary text-sm">Ubah Kata Sandi</h3>
+                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setIsSuccessModalOpen(true);
+                    (e.target as HTMLFormElement).reset();
+                  }}
+                  className="p-6 space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-1">Kata Sandi Sekarang</label>
+                      <input
+                        type="password"
+                        required
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-1">Kata Sandi Baru</label>
+                      <input
+                        type="password"
+                        required
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-courier-textsecondary mb-1">Ulangi Sandi Baru</label>
+                      <input
+                        type="password"
+                        required
+                        className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 bg-courier-primary hover:bg-green-800 text-white font-bold text-xs rounded-xl shadow-md shadow-courier-primary/20 transition-all"
+                    >
+                      Perbarui Sandi
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* 2FA Section */}
+              <div className="bg-courier-surfacewhite border border-courier-hairline p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
                 <div>
-                  <label className="block text-xs font-bold text-courier-textsecondary mb-2">Alamat Email *</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
-                  />
+                  <h3 className="text-sm font-bold text-courier-textprimary flex items-center gap-2 mb-1">
+                    Autentikasi Dua Langkah (2FA)
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {is2FAEnabled ? 'AKTIF' : 'NONAKTIF'}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-courier-textsecondary">Tambahkan perlindungan ekstra dengan meminta verifikasi kode OTP saat Anda masuk ke akun kurir.</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIs2FAEnabled(!is2FAEnabled)}
+                  className="px-4 py-2 bg-courier-warmbg hover:bg-courier-hairline text-courier-textprimary font-bold text-xs rounded-xl transition-all shrink-0 border border-courier-hairline"
+                >
+                  {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA'}
+                </button>
               </div>
             </div>
-
-            {/* Vehicle Details */}
-            <div className="bg-courier-surfacewhite border border-courier-hairline rounded-2xl overflow-hidden shadow-sm">
-              <div className="bg-courier-warmbg/50 px-6 py-4 border-b border-courier-hairline">
-                <h3 className="font-bold text-courier-primary text-sm">Detail Kendaraan & Layanan</h3>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-courier-textsecondary mb-2">Nama Perusahaan / Layanan *</label>
-                    <input
-                      type="text"
-                      required
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Mis: Mandiri Trans, Kargo Hijau"
-                      className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-courier-textsecondary mb-2">Plat Nomor Kendaraan *</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehiclePlate}
-                      onChange={(e) => setVehiclePlate(e.target.value)}
-                      placeholder="B 1234 CD"
-                      className="w-full px-4 py-2.5 bg-courier-surfacewhite border border-courier-hairline rounded-xl text-sm focus:outline-none focus:border-courier-primary focus:ring-1 focus:ring-courier-primary text-courier-textprimary font-tabular uppercase"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Form Actions */}
-            <div className="flex justify-end items-center gap-6 pt-4">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-6 py-3 bg-courier-primary hover:bg-green-800 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-courier-primary/20"
-              >
-                {submitting ? "Menyimpan..." : "Simpan Perubahan Profil"}
-              </button>
-            </div>
-          </form>
+          )}
         </div>
-
       </div>
+    </div>
 
       {/* Modal Sukses Simpan */}
       {isSuccessModalOpen && (
@@ -277,6 +620,6 @@ export default function CourierSettings() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

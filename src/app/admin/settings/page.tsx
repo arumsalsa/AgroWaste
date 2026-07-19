@@ -83,7 +83,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
+    <>
+      <div className="space-y-8 animate-fade-in pb-10">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-admin-textprimary mb-1">Pengaturan Admin</h2>
         <p className="text-sm text-admin-textsecondary">Kelola profil administrator Anda, konfigurasi keamanan, dan pantau hak akses.</p>
@@ -233,36 +234,6 @@ export default function SettingsPage() {
                   {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA'}
                 </button>
               </div>
-
-              {/* Active Sessions List */}
-              <div className="bg-admin-surfacewhite border border-admin-hairline p-6 rounded-2xl">
-                <h3 className="text-lg font-bold text-admin-textprimary mb-4">Sesi Log Masuk Aktif</h3>
-                <div className="space-y-3">
-                  <div className="p-4 border border-admin-hairline rounded-xl flex items-center justify-between text-sm bg-admin-warmbg/50">
-                    <div className="flex gap-4 items-center">
-                      <span className="text-2xl">💻</span>
-                      <div>
-                        <div className="font-bold text-admin-textprimary">Chrome on macOS Sequoia <span className="font-normal text-admin-textsecondary">(Sesi Ini)</span></div>
-                        <span className="text-xs text-admin-textsecondary font-tabular block mt-0.5">IP: 182.253.33.104 • Malang, Indonesia</span>
-                      </div>
-                    </div>
-                    <span className="font-bold text-admin-semgreen uppercase tracking-wider text-[10px] bg-green-50 border border-green-200 px-2.5 py-1 rounded-lg">Aktif</span>
-                  </div>
-
-                  {showMobileSession && (
-                    <div className="p-4 border border-admin-hairline rounded-xl flex items-center justify-between text-sm bg-admin-surfacewhite">
-                      <div className="flex gap-4 items-center">
-                        <span className="text-2xl">📱</span>
-                        <div>
-                          <div className="font-bold text-admin-textprimary">AgroWaste Admin App on iPhone 15 Pro</div>
-                          <span className="text-xs text-admin-textsecondary font-tabular block mt-0.5">IP: 103.111.14.22 • Jakarta, Indonesia</span>
-                        </div>
-                      </div>
-                      <button onClick={revokeMobileSession} className="px-3 py-1.5 text-admin-semred bg-red-50 hover:bg-red-100 rounded-lg font-bold text-xs transition-all">Hapus Sesi</button>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           )}
 
@@ -323,6 +294,7 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+      </div>
 
       {/* Modal Sukses Simpan */}
       {isSuccessModalOpen && (
@@ -341,6 +313,6 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

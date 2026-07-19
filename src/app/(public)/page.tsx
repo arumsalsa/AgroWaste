@@ -264,13 +264,14 @@ export default function LandingPage() {
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10 mt-4 lg:items-center">
             
             {/* Card 1 */}
-            <div className="w-full h-[200px] md:h-[280px] rounded-[32px] bg-[#DCD7C9] bg-gradient-to-tr from-[#D5CFC0] to-[#E3DEC3] flex items-center justify-center p-6 relative overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
-              <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
-                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path d="M0,50 Q25,70 50,50 T100,50 L100,100 L0,100 Z" fill="currentColor" className="text-land-ink" />
-                </svg>
-              </div>
-              <div className="w-16 h-16 rounded-[20px] bg-white shadow-md flex items-center justify-center z-10 transition-transform duration-300 hover:scale-105">
+            <div className="w-full h-[200px] md:h-[280px] rounded-[32px] overflow-hidden relative shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center justify-center">
+              <img
+                src="/farm-card.jpeg"
+                alt="Lahan Pertanian Organik"
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="w-16 h-16 rounded-[20px] bg-white/95 backdrop-blur-md shadow-lg flex items-center justify-center z-10 transition-transform duration-300 hover:scale-110">
                 <Leaf className="w-8 h-8 text-[#2E8A4E]" />
               </div>
             </div>
@@ -345,17 +346,17 @@ export default function LandingPage() {
             </div>
 
             {/* Card 5 */}
-            <div className="w-full h-[200px] md:h-[280px] rounded-[32px] bg-gradient-to-br from-[#DCE6E1] to-[#CAD7D2] relative overflow-hidden flex flex-col justify-center items-center p-6 text-center group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.12]">
-                <div className="w-20 h-20 rounded-full border-2 border-land-ink absolute"></div>
-                <div className="w-36 h-36 rounded-full border-2 border-land-ink absolute"></div>
-                <div className="w-52 h-52 rounded-full border-2 border-land-ink absolute"></div>
-                <div className="w-68 h-68 rounded-full border-2 border-land-ink absolute"></div>
-              </div>
-              <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center z-10 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+            <div className="w-full h-[200px] md:h-[280px] rounded-[32px] overflow-hidden relative group shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-center items-center p-6 text-center">
+              <img
+                src="/petani-semprot.jpg"
+                alt="Pertanian Sirkular Berkelanjutan"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/20" />
+              <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow-sm flex items-center justify-center z-10 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
                 <ArrowUpRight className="w-4 h-4 text-[#2E8A4E]" />
               </div>
-              <div className="font-land-heading font-bold text-base text-land-ink max-w-[140px] leading-snug relative z-10">
+              <div className="font-land-heading font-bold text-base text-white max-w-[150px] leading-snug relative z-10 drop-shadow-md">
                 Pertanian Sirkular Berkelanjutan
               </div>
             </div>

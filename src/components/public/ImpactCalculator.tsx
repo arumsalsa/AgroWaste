@@ -6,10 +6,13 @@ import { Leaf, Recycle, Star } from "lucide-react";
 export default function ImpactCalculator() {
   const [volume, setVolume] = useState(100);
 
-  const co2Reduced = (volume * 0.375).toFixed(1);
-  const treesPlanted = (volume * 0.015).toFixed(1);
-  const valueMin = Math.floor(volume * 1500 / 1000); // in k
-  const valueMax = Math.floor(volume * 2500 / 1000); // in k
+  // Khusus Transaksi Jual Beli Pupuk Organik Ternak
+  const co2Reduced = (volume * 0.65).toFixed(1);      // Jurnal IPCC: Reduksi 0.65 kg CO2 per kg pupuk
+  const treesPlanted = Math.ceil (volume * 0.0108);   // Konversi US EPA: Serapan 0.060 MT (60 kg) CO2 per pohon per tahun
+
+  // Nilai Ekonomi Riil Pupuk Organik Matang di Indonesia (Rp 1.500 - Rp 3.000 / kg)
+  const valueMin = Math.floor((volume * 1500) / 1000); // Batas bawah dalam ribu (k)
+  const valueMax = Math.floor((volume * 3000) / 1000); // Batas atas dalam ribu (k)
 
   return (
     <section className="py-16 md:py-24 px-6 max-w-7xl mx-auto w-full">
@@ -61,7 +64,7 @@ export default function ImpactCalculator() {
             
             <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_24px_rgba(44,57,48,0.03)] border border-land-cream/30 flex items-center justify-between group hover:-translate-y-1 transition-transform">
               <div>
-                <div className="text-[11px] font-bold text-land-muted uppercase tracking-widest mb-1">CO2 Berkurang</div>
+                <div className="text-[11px] font-bold text-land-muted uppercase tracking-widest mb-1">CO₂e Berkurang (Reduksi Emisi Metana)</div>
                 <div className="text-3xl font-land-heading font-bold text-land-ink">{co2Reduced} <span className="text-lg text-land-muted font-normal">kg</span></div>
               </div>
               <div className="w-14 h-14 rounded-full bg-[#E6F5EC] flex items-center justify-center shrink-0">

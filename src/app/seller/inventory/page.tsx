@@ -30,6 +30,7 @@ interface Product {
   image_urls?: string[];
   media?: ProductMedia[];
   category?: { id: string; name: string };
+  nutrisi?: [string, string][] | null;
   peternak_profile?: { user_id: string; nama_peternakan: string };
 }
 
@@ -47,12 +48,17 @@ interface ProductForm {
   provinsi: string;
   kabupaten: string;
   kecamatan: string;
+  nutrisi_n: string;
+  nutrisi_p: string;
+  nutrisi_k: string;
+  nutrisi_c: string;
 }
 
 const EMPTY_FORM: ProductForm = {
   name: "", category_id: "", jenis_ternak: "sapi",
   kondisi: "", price: "", stock_kg: "", min_order_kg: "1",
   description: "", provinsi: "", kabupaten: "", kecamatan: "",
+  nutrisi_n: "", nutrisi_p: "", nutrisi_k: "", nutrisi_c: "",
 };
 
 const JENIS_OPTIONS = ["sapi", "kambing", "ayam"];
@@ -73,9 +79,24 @@ function statusInfo(s: string) {
   }
 }
 
+interface SellerOrder {
+  id: string;
+  status: string;
+  product_id?: string;
+  product?: { id: string; name: string };
+  quantity_kg?: string | number;
+  berat_kg?: string | number;
+  items?: Array<{
+    product_id?: string;
+    quantity_kg?: string | number;
+    product?: { id: string; name: string };
+  }>;
+}
+
 export default function InventoryPage() {
   const [products,      setProducts]      = useState<Product[]>([]);
   const [categories,    setCategories]    = useState<Category[]>([]);
+  const [orders,        setOrders]        = useState<SellerOrder[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState("");
   const [modalOpen,     setModalOpen]     = useState(false);
@@ -92,8 +113,54 @@ export default function InventoryPage() {
   const [fileError,     setFileError]     = useState<string | null>(null);
   const [editProductMedia, setEditProductMedia] = useState<ProductMedia[]>([]);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [restockProduct, setRestockProduct] = useState<Product | null>(null);
+  const [addQty,          setAddQty]          = useState<string>("50");
+  const [restocking,      setRestocking]      = useState(false);
+  const [restockError,   setRestockError]   = useState<string | null>(null);
 
   const myId = getUser()?.id;
+
+  const handleOpenRestock = (product: Product) => {
+    setRestockProduct(product);
+    setAddQty("50");
+    setRestockError(null);
+  };
+
+  const handleSaveRestock = async () => {
+    if (!restockProduct) return;
+    const added = Number(addQty);
+    if (isNaN(added) || added <= 0) {
+      setRestockError("Masukkan jumlah stok yang valid (lebih dari 0).");
+      return;
+    }
+
+    setRestocking(true);
+    setRestockError(null);
+
+    try {
+      const currentStock = Number(restockProduct.stock_kg || 0);
+      const newStock = currentStock + added;
+
+      const res = await apiFetch(`/products/${restockProduct.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ stock_kg: String(newStock) }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === restockProduct.id ? { ...p, stock_kg: String(newStock) } : p))
+        );
+        setRestockProduct(null);
+      } else {
+        setRestockError(json.message ?? "Gagal menambah stok.");
+      }
+    } catch {
+      setRestockError("Terjadi kesalahan jaringan.");
+    } finally {
+      setRestocking(false);
+    }
+  };
 
   const fetchProducts = () => {
     apiFetch("/seller/products")
@@ -107,15 +174,40 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
-    // fetch categories and products in parallel
+    // fetch categories, products, and orders in parallel
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`).then((r) => r.json()).catch(() => ({ data: [] })),
-      fetchProducts(),
-    ]).then(([catRes]) => {
+      apiFetch("/seller/products").then((r) => (r.ok ? r.json() : { data: [] })).catch(() => ({ data: [] })),
+      apiFetch("/orders").then((r) => (r.ok ? r.json() : { data: [] })).catch(() => ({ data: [] })),
+    ]).then(([catRes, prodRes, ordRes]) => {
       setCategories(catRes.data ?? []);
+      setProducts(prodRes.data ?? []);
+      setOrders(ordRes.data ?? []);
+      setLoading(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getEffectiveStock = (p: Product) => {
+    const baseStock = Number(p.stock_kg || 0);
+    // Deduct quantity of confirmed, shipped, or completed orders
+    const confirmedOrders = orders.filter((o) => ["dikonfirmasi", "dikirim", "selesai"].includes(o.status));
+    let orderedQty = 0;
+
+    confirmedOrders.forEach((o) => {
+      if (o.items && Array.isArray(o.items)) {
+        o.items.forEach((item) => {
+          if (item.product?.id === p.id || item.product_id === p.id) {
+            orderedQty += Number(item.quantity_kg || 0);
+          }
+        });
+      } else if (o.product?.id === p.id || o.product_id === p.id) {
+        orderedQty += Number(o.quantity_kg || o.berat_kg || 0);
+      }
+    });
+
+    return Math.max(0, baseStock - orderedQty);
+  };
 
   const visible = useMemo(
     () => products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())),
@@ -123,13 +215,13 @@ export default function InventoryPage() {
   );
 
   const totalStock = useMemo(
-    () => products.reduce((a, p) => a + Number(p.stock_kg), 0),
-    [products],
+    () => products.reduce((a, p) => a + getEffectiveStock(p), 0),
+    [products, orders],
   );
 
   const totalValue = useMemo(
-    () => products.reduce((a, p) => a + Number(p.price) * Number(p.stock_kg), 0),
-    [products],
+    () => products.reduce((a, p) => a + Number(p.price) * getEffectiveStock(p), 0),
+    [products, orders],
   );
 
   const clearImages = () => {
@@ -186,6 +278,15 @@ export default function InventoryPage() {
 
   const openEdit = (p: Product) => {
     setFormMode("edit");
+    const nutrisiMap: Record<string, string> = {};
+    if (p.nutrisi && Array.isArray(p.nutrisi)) {
+      p.nutrisi.forEach(([val, label]) => {
+        if (label.includes("Nitrogen")) nutrisiMap.n = val;
+        if (label.includes("Fosfor")) nutrisiMap.p = val;
+        if (label.includes("Kalium")) nutrisiMap.k = val;
+        if (label.includes("C-Organik")) nutrisiMap.c = val;
+      });
+    }
     setForm({
       name:         p.name,
       category_id:  p.category?.id ?? "",
@@ -198,6 +299,10 @@ export default function InventoryPage() {
       provinsi:     p.provinsi,
       kabupaten:    p.kabupaten,
       kecamatan:    p.kecamatan,
+      nutrisi_n:    nutrisiMap.n ?? "",
+      nutrisi_p:    nutrisiMap.p ?? "",
+      nutrisi_k:    nutrisiMap.k ?? "",
+      nutrisi_c:    nutrisiMap.c ?? "",
     });
     setEditId(p.id);
     setEditProductMedia(p.media ?? []);
@@ -249,7 +354,13 @@ export default function InventoryPage() {
     setSubmitting(true);
     setSubmitLabel(formMode === "add" ? "Membuat produk..." : "Menyimpan...");
     try {
-      const body = {
+      const nutrisiArr: [string, string][] = [];
+      if (form.nutrisi_n) nutrisiArr.push([form.nutrisi_n, "Nitrogen (N)"]);
+      if (form.nutrisi_p) nutrisiArr.push([form.nutrisi_p, "Fosfor (P)"]);
+      if (form.nutrisi_k) nutrisiArr.push([form.nutrisi_k, "Kalium (K)"]);
+      if (form.nutrisi_c) nutrisiArr.push([form.nutrisi_c, "C-Organik"]);
+
+      const body: Record<string, unknown> = {
         name:         form.name,
         category_id:  form.category_id,
         jenis_ternak: form.jenis_ternak,
@@ -262,6 +373,10 @@ export default function InventoryPage() {
         kabupaten:    form.kabupaten || null,
         kecamatan:    form.kecamatan || null,
       };
+
+      if (nutrisiArr.length > 0) {
+        body.nutrisi = nutrisiArr;
+      }
       const res  = formMode === "add"
         ? await apiFetch("/products",            { method: "POST", body: JSON.stringify(body) })
         : await apiFetch(`/products/${editId}`,  { method: "PUT",  body: JSON.stringify(body) });
@@ -378,7 +493,8 @@ export default function InventoryPage() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
+    <>
+      <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">Manajemen Inventaris</h2>
@@ -498,7 +614,7 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-3 py-1 rounded-full bg-[#EAE6E1] text-seller-textsecondary text-[10px] font-bold tracking-wider">
-                        {p.category?.name ?? "—"}
+                        {(p.category?.name ?? "—").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -508,21 +624,30 @@ export default function InventoryPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 font-bold text-seller-textprimary">
-                      {Number(p.stock_kg).toLocaleString("id-ID")} <span className="text-[10px] text-seller-textsecondary font-normal">kg</span>
+                      {getEffectiveStock(p).toLocaleString("id-ID")} <span className="text-[10px] text-seller-textsecondary font-normal">kg</span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-bold text-seller-semgreen">{formatRupiah(p.price)}</div>
                       <div className="text-[10px] text-seller-textsecondary">/ {p.unit}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-3">
-                        <button onClick={() => openEdit(p)} className="text-seller-textsecondary hover:text-seller-primary transition-colors">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleOpenRestock(p)}
+                          className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-seller-semgreen border border-emerald-200/80 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95"
+                          title="Tambah Stok Produk Ini"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                          <span>Stok</span>
+                        </button>
+                        <button onClick={() => openEdit(p)} className="p-1.5 text-seller-textsecondary hover:text-seller-primary hover:bg-gray-100 rounded-lg transition-colors" title="Edit Produk">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </button>
                         <button
                           onClick={() => handleDelete(p.id)}
                           disabled={deleting === p.id}
-                          className="text-seller-textsecondary hover:text-seller-semred transition-colors disabled:opacity-50"
+                          className="p-1.5 text-seller-textsecondary hover:text-seller-semred hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                          title="Hapus Produk"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
@@ -538,6 +663,8 @@ export default function InventoryPage() {
         <div className="p-4 border-t border-seller-hairline flex items-center justify-between text-xs text-seller-textsecondary">
           <span>Menampilkan {visible.length} dari {products.length} produk</span>
         </div>
+      </div>
+
       </div>
 
       {/* Modal Tambah / Edit Produk */}
@@ -605,6 +732,55 @@ export default function InventoryPage() {
               </div>
 
               {field("kondisi", "Kondisi (opsional)", "text", "Mis: Kering, Fermentasi 30 hari")}
+
+              {/* Kandungan Nutrisi (Opsional Uji Lab) */}
+              <div className="pt-2 border-t border-seller-hairline">
+                <p className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider mb-2">
+                  Kandungan Nutrisi / Uji Lab <span className="font-normal normal-case text-seller-textsecondary/80">(opsional)</span>
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-seller-textsecondary mb-1">Nitrogen (N)</label>
+                    <input
+                      type="text"
+                      placeholder="Mis: 1.5%"
+                      value={form.nutrisi_n}
+                      onChange={(e) => setForm((f) => ({ ...f, nutrisi_n: e.target.value }))}
+                      className="w-full px-3 py-1.5 bg-seller-warmbg border border-seller-hairline rounded-lg text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-seller-textsecondary mb-1">Fosfor (P)</label>
+                    <input
+                      type="text"
+                      placeholder="Mis: 0.8%"
+                      value={form.nutrisi_p}
+                      onChange={(e) => setForm((f) => ({ ...f, nutrisi_p: e.target.value }))}
+                      className="w-full px-3 py-1.5 bg-seller-warmbg border border-seller-hairline rounded-lg text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-seller-textsecondary mb-1">Kalium (K)</label>
+                    <input
+                      type="text"
+                      placeholder="Mis: 1.2%"
+                      value={form.nutrisi_k}
+                      onChange={(e) => setForm((f) => ({ ...f, nutrisi_k: e.target.value }))}
+                      className="w-full px-3 py-1.5 bg-seller-warmbg border border-seller-hairline rounded-lg text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-seller-textsecondary mb-1">C-Organik</label>
+                    <input
+                      type="text"
+                      placeholder="Mis: 25%"
+                      value={form.nutrisi_c}
+                      onChange={(e) => setForm((f) => ({ ...f, nutrisi_c: e.target.value }))}
+                      className="w-full px-3 py-1.5 bg-seller-warmbg border border-seller-hairline rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-seller-textsecondary mb-1">Deskripsi (opsional)</label>
@@ -734,6 +910,108 @@ export default function InventoryPage() {
           </div>
         </div>
       )}
-    </div>
+
+      {/* Modal Quick Restock (Tambah Stok) */}
+      {restockProduct && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-seller-surfacewhite w-full max-w-md rounded-2xl border border-seller-hairline overflow-hidden animate-fade-in shadow-2xl">
+            <div className="p-5 border-b border-seller-hairline flex justify-between items-center bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-seller-semgreen flex items-center justify-center font-bold">
+                  +
+                </div>
+                <div>
+                  <h3 className="font-bold text-seller-textprimary text-base">Tambah Stok Produk</h3>
+                  <p className="text-xs text-seller-textsecondary">{restockProduct.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setRestockProduct(null)}
+                className="text-seller-textsecondary hover:text-seller-textprimary p-1"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {restockError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                  {restockError}
+                </div>
+              )}
+
+              <div className="bg-seller-warmbg p-4 rounded-xl border border-seller-hairline flex justify-between items-center">
+                <span className="text-xs font-bold text-seller-textsecondary">Stok Tersedia Saat Ini</span>
+                <span className="text-base font-extrabold text-seller-textprimary font-tabular">
+                  {getEffectiveStock(restockProduct).toLocaleString("id-ID")} kg
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-seller-textprimary mb-2">
+                  Jumlah Tambahan Stok (kg)
+                </label>
+                <input
+                  type="number"
+                  value={addQty}
+                  onChange={(e) => setAddQty(e.target.value)}
+                  placeholder="Misal: 50"
+                  className="w-full px-4 py-2.5 bg-white border border-seller-hairline rounded-xl text-sm font-bold text-seller-textprimary focus:outline-none focus:ring-2 focus:ring-seller-primary"
+                />
+              </div>
+
+              {/* Quick Presets */}
+              <div>
+                <span className="block text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider mb-2">
+                  Pilihan Cepat
+                </span>
+                <div className="grid grid-cols-4 gap-2">
+                  {[25, 50, 100, 250].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setAddQty(String(preset))}
+                      className={`py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                        addQty === String(preset)
+                          ? "bg-seller-primary text-white border-seller-primary shadow-sm"
+                          : "bg-white text-seller-textsecondary border-seller-hairline hover:bg-gray-50"
+                      }`}
+                    >
+                      +{preset} kg
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-emerald-50/60 p-3 rounded-xl border border-emerald-100 flex items-center justify-between text-xs font-bold text-seller-semgreen">
+                <span>Stok Baru Setelah Ditambah:</span>
+                <span className="text-sm font-extrabold">
+                  {(getEffectiveStock(restockProduct) + (Number(addQty) || 0)).toLocaleString("id-ID")} kg
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-seller-hairline bg-gray-50/50 flex justify-end gap-3">
+              <button
+                onClick={() => setRestockProduct(null)}
+                disabled={restocking}
+                className="px-4 py-2 text-xs font-bold text-seller-textsecondary hover:text-seller-textprimary"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSaveRestock}
+                disabled={restocking}
+                className="px-5 py-2.5 bg-seller-primary hover:bg-seller-primary-hover text-white rounded-xl text-xs font-bold shadow-md shadow-seller-primary/20 transition-all flex items-center gap-2"
+              >
+                {restocking ? "Menyimpan..." : "Tambah Stok Sekarang"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

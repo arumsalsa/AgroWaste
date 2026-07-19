@@ -23,6 +23,7 @@ interface Order {
   created_at: string;
   items?: OrderItem[];
   product?: { id: string; name: string; image_url?: string | null };
+  payment?: { status: string; proof?: { image_path: string } };
 }
 
 const TAB_MAP: Record<string, string> = {
@@ -44,7 +45,8 @@ function formatDate(d: string) {
 
 function statusBadge(status: string) {
   switch (status) {
-    case "menunggu_pembayaran": return { label: "Menunggu Konfirmasi", cls: "bg-amber-100 text-amber-700" };
+    case "menunggu_pembayaran": return { label: "Menunggu Pembayaran",  cls: "bg-amber-100 text-amber-700" };
+    case "menunggu_konfirmasi": return { label: "Menunggu Konfirmasi", cls: "bg-amber-100 text-amber-700" };
     case "dikonfirmasi":        return { label: "Dikonfirmasi",         cls: "bg-blue-100 text-blue-700" };
     case "dikirim":             return { label: "Dikirim",              cls: "bg-orange-100 text-orange-700" };
     case "selesai":             return { label: "Selesai",              cls: "bg-seller-primary-light text-seller-semgreen" };
@@ -155,7 +157,7 @@ function OrdersContent() {
             <>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary">Detail Pesanan</h2>
-                {order.status === "menunggu_pembayaran" && (
+                {(order.status === "menunggu_pembayaran" || order.status === "menunggu_konfirmasi") && (
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleProcess(order, "dikonfirmasi")}
@@ -286,6 +288,73 @@ function OrdersContent() {
                       <span className="text-xl font-bold text-seller-textprimary font-tabular">{formatRupiah(order.total_price)}</span>
                     </div>
                   </div>
+
+                  {/* Laporan Logistik & Bukti Foto Kurir */}
+                  {(() => {
+                    const getProofData = (id: string) => {
+                      try {
+                        const saved = localStorage.getItem("agrowaste_shipment_proofs");
+                        if (saved) {
+                          const parsed = JSON.parse(saved);
+                          return parsed[id] || null;
+                        }
+                      } catch {
+                        return null;
+                      }
+                      return null;
+                    };
+
+                    const proof = getProofData(order.id);
+                    const isOngkirPaid = proof?.isOngkirPaid ?? false;
+                    const fotoPickup = proof?.fotoPickup;
+                    const fotoDelivery = proof?.fotoDelivery;
+
+                    return (
+                      <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-seller-hairline pb-4 gap-2">
+                          <div>
+                            <h3 className="text-lg font-bold text-seller-textprimary">Laporan Logistik & Bukti Foto Kurir</h3>
+                            <p className="text-xs text-seller-textsecondary">Bukti serah terima barang dan status pembayaran ongkir dari mitra kurir.</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                            isOngkirPaid ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
+                          }`}>
+                            Ongkir: {isOngkirPaid ? 'LUNAS (DITERIMA KURIR)' : 'BELUM DIBAYAR'}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                          {/* Foto Pickup */}
+                          <div className="p-4 bg-seller-warmbg/50 border border-seller-hairline rounded-xl space-y-2">
+                            <span className="text-xs font-bold text-seller-textprimary block">Foto Bukti Pengambilan (Peternak)</span>
+                            {fotoPickup ? (
+                              <a href={fotoPickup} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden h-40 border border-seller-hairline hover:opacity-90 transition-opacity">
+                                <img src={fotoPickup} alt="Foto Pengambilan" className="w-full h-full object-cover" />
+                              </a>
+                            ) : (
+                              <div className="h-40 border border-dashed border-seller-hairline rounded-xl flex items-center justify-center text-xs text-seller-textsecondary bg-white">
+                                Belum ada bukti foto pengambilan
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Foto Delivery */}
+                          <div className="p-4 bg-seller-warmbg/50 border border-seller-hairline rounded-xl space-y-2">
+                            <span className="text-xs font-bold text-seller-textprimary block">Foto Bukti Penyerahan (Diterima Pembeli)</span>
+                            {fotoDelivery ? (
+                              <a href={fotoDelivery} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden h-40 border border-seller-hairline hover:opacity-90 transition-opacity">
+                                <img src={fotoDelivery} alt="Foto Penyerahan" className="w-full h-full object-cover" />
+                              </a>
+                            ) : (
+                              <div className="h-40 border border-dashed border-seller-hairline rounded-xl flex items-center justify-center text-xs text-seller-textsecondary bg-white">
+                                Belum ada bukti foto penyerahan
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Sidebar detail */}
@@ -305,8 +374,30 @@ function OrdersContent() {
                       )}
                       <div>
                         <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-1">METODE PEMBAYARAN</span>
-                        <p className="font-bold text-seller-textprimary capitalize">{order.metode_pembayaran ?? "—"}</p>
+                        <p className="font-bold text-seller-textprimary capitalize">
+                          {order.metode_pembayaran === "cod" ? "COD (Bayar di Tempat)" : (order.metode_pembayaran ?? "—")}
+                        </p>
                       </div>
+                      
+                      {order.metode_pembayaran === "manual" && order.payment?.proof && (
+                        <div className="pt-4 border-t border-seller-hairline">
+                          <span className="text-[10px] font-bold text-seller-textsecondary tracking-wider block mb-2">BUKTI PEMBAYARAN</span>
+                          <a 
+                            href={getProductImageUrl(order.payment.proof.image_path)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="block rounded-xl overflow-hidden border border-seller-hairline hover:opacity-90 transition-opacity"
+                          >
+                            <img 
+                              src={getProductImageUrl(order.payment.proof.image_path)} 
+                              alt="Bukti Pembayaran" 
+                              className="w-full h-32 object-cover"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </a>
+                          <p className="text-[10px] text-seller-textsecondary mt-1 text-center">Klik gambar untuk memperbesar</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -320,125 +411,127 @@ function OrdersContent() {
 
   // list view
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
-      <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">Daftar Pesanan</h2>
+    <>
+      <div className="space-y-6 animate-fade-in pb-10">
+        <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-6">Daftar Pesanan</h2>
 
-      {actionError && (
-        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold">
-          {actionError}
-          <button onClick={() => setActionError(null)} className="ml-2 underline">Tutup</button>
-        </div>
-      )}
-
-      <div className="bg-seller-surfacewhite border border-seller-hairline rounded-2xl overflow-hidden">
-        {/* Tab Bar */}
-        <div className="p-6 border-b border-seller-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap bg-seller-warmbg p-1.5 rounded-xl gap-1 max-w-max">
-            {Object.keys(TAB_MAP).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 font-bold rounded-lg text-xs transition-all ${
-                  activeTab === tab
-                    ? "bg-seller-surfacewhite text-seller-primary shadow-sm"
-                    : "text-seller-textsecondary hover:text-seller-textprimary"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+        {actionError && (
+          <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-semibold">
+            {actionError}
+            <button onClick={() => setActionError(null)} className="ml-2 underline">Tutup</button>
           </div>
-        </div>
+        )}
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#F9F8F6] text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider border-b border-seller-hairline">
-              <tr>
-                <th className="px-6 py-4">Detail Pesanan</th>
-                <th className="px-6 py-4">Total</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-seller-hairline bg-white">
-              {loading && (
-                <tr><td colSpan={4} className="px-6 py-8 text-center text-seller-textsecondary text-xs animate-pulse">Memuat pesanan...</td></tr>
-              )}
-              {!loading && visible.length === 0 && (
-                <tr><td colSpan={4} className="px-6 py-8 text-center text-seller-textsecondary text-xs">Tidak ada pesanan.</td></tr>
-              )}
-              {!loading && visible.map((order) => {
-                const { label, cls } = statusBadge(order.status);
-                const orderId      = order.order_number ?? order.id.slice(0, 8).toUpperCase();
-                const productName  = order.items?.[0]?.product?.name ?? order.product?.name ?? "Pesanan AgroWaste";
-                const isPending    = order.status === "menunggu_pembayaran";
-                return (
-                  <tr key={order.id} className="hover:bg-seller-warmbg/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-seller-semgreen text-xs mb-1">#{orderId}</div>
-                      <div className="text-[10px] text-seller-textsecondary mb-1">{formatDate(order.created_at)}</div>
-                      <div className="font-semibold text-seller-textprimary text-sm">{productName}</div>
-                    </td>
-                    <td className="px-6 py-4 font-bold text-seller-textprimary font-tabular">
-                      {formatRupiah(order.total_price)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${cls}`}>{label}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/seller/orders?id=${order.id}`}
-                          className="inline-block px-3 py-1.5 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors"
-                        >
-                          Detail
-                        </Link>
-                        {isPending && (
-                          <>
+        <div className="bg-seller-surfacewhite border border-seller-hairline rounded-2xl overflow-hidden">
+          {/* Tab Bar */}
+          <div className="p-6 border-b border-seller-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap bg-seller-warmbg p-1.5 rounded-xl gap-1 max-w-max">
+              {Object.keys(TAB_MAP).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 font-bold rounded-lg text-xs transition-all ${
+                    activeTab === tab
+                      ? "bg-seller-surfacewhite text-seller-primary shadow-sm"
+                      : "text-seller-textsecondary hover:text-seller-textprimary"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#F9F8F6] text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider border-b border-seller-hairline">
+                <tr>
+                  <th className="px-6 py-4">Detail Pesanan</th>
+                  <th className="px-6 py-4">Total</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-seller-hairline bg-white">
+                {loading && (
+                  <tr><td colSpan={4} className="px-6 py-8 text-center text-seller-textsecondary text-xs animate-pulse">Memuat pesanan...</td></tr>
+                )}
+                {!loading && visible.length === 0 && (
+                  <tr><td colSpan={4} className="px-6 py-8 text-center text-seller-textsecondary text-xs">Tidak ada pesanan.</td></tr>
+                )}
+                {!loading && visible.map((order) => {
+                  const { label, cls } = statusBadge(order.status);
+                  const orderId      = order.order_number ?? order.id.slice(0, 8).toUpperCase();
+                  const productName  = order.items?.[0]?.product?.name ?? order.product?.name ?? "Pesanan AgroWaste";
+                  const isPending    = order.status === "menunggu_pembayaran" || order.status === "menunggu_konfirmasi";
+                  return (
+                    <tr key={order.id} className="hover:bg-seller-warmbg/30 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-seller-semgreen text-xs mb-1">#{orderId}</div>
+                        <div className="text-[10px] text-seller-textsecondary mb-1">{formatDate(order.created_at)}</div>
+                        <div className="font-semibold text-seller-textprimary text-sm">{productName}</div>
+                      </td>
+                      <td className="px-6 py-4 font-bold text-seller-textprimary font-tabular">
+                        {formatRupiah(order.total_price)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${cls}`}>{label}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/seller/orders?id=${order.id}`}
+                            className="inline-block px-3 py-1.5 border border-seller-primary text-seller-primary rounded-lg text-xs font-bold hover:bg-seller-primary hover:text-white transition-colors"
+                          >
+                            Detail
+                          </Link>
+                          {isPending && (
+                            <>
+                              <button
+                                onClick={() => handleProcess(order, "dikonfirmasi")}
+                                disabled={processingId === order.id}
+                                className="px-3 py-1.5 bg-seller-primary text-white rounded-lg text-xs font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
+                              >
+                                Terima
+                              </button>
+                              <button
+                                onClick={() => { setRejectingOrder(order); setRejectionReason(""); setActionError(null); }}
+                                disabled={processingId === order.id}
+                                className="px-3 py-1.5 border border-red-400 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors disabled:opacity-60"
+                              >
+                                Tolak
+                              </button>
+                            </>
+                          )}
+                          {order.status === "dikonfirmasi" && (
                             <button
-                              onClick={() => handleProcess(order, "dikonfirmasi")}
+                              onClick={() => handleUpdateStatus(order, "dikirim")}
                               disabled={processingId === order.id}
                               className="px-3 py-1.5 bg-seller-primary text-white rounded-lg text-xs font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
                             >
-                              Terima
+                              Kirim
                             </button>
-                            <button
-                              onClick={() => { setRejectingOrder(order); setRejectionReason(""); setActionError(null); }}
-                              disabled={processingId === order.id}
-                              className="px-3 py-1.5 border border-red-400 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors disabled:opacity-60"
-                            >
-                              Tolak
-                            </button>
-                          </>
-                        )}
-                        {order.status === "dikonfirmasi" && (
-                          <button
-                            onClick={() => handleUpdateStatus(order, "dikirim")}
-                            disabled={processingId === order.id}
-                            className="px-3 py-1.5 bg-seller-primary text-white rounded-lg text-xs font-bold hover:bg-seller-primary-hover transition-colors disabled:opacity-60"
-                          >
-                            Kirim
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-        <div className="p-4 border-t border-seller-hairline flex items-center justify-between text-xs text-seller-textsecondary bg-[#F9F8F6]">
-          <span>Menampilkan {visible.length} dari {orders.length} pesanan</span>
+          <div className="p-4 border-t border-seller-hairline flex items-center justify-between text-xs text-seller-textsecondary bg-[#F9F8F6]">
+            <span>Menampilkan {visible.length} dari {orders.length} pesanan</span>
+          </div>
         </div>
       </div>
 
       {/* Modal Tolak Pesanan */}
       {rejectingOrder && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-seller-surfacewhite w-full max-w-sm rounded-2xl border border-seller-hairline overflow-hidden animate-fade-in">
+          <div className="bg-seller-surfacewhite w-full max-w-sm rounded-2xl border border-seller-hairline overflow-hidden animate-fade-in shadow-xl">
             <div className="p-4 border-b border-seller-hairline flex justify-between items-center">
               <h3 className="font-bold text-seller-textprimary">Tolak Pesanan</h3>
               <button onClick={() => setRejectingOrder(null)} className="text-seller-textsecondary hover:text-seller-textprimary">
@@ -474,7 +567,7 @@ function OrdersContent() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

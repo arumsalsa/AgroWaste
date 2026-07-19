@@ -140,17 +140,19 @@ export const AdminListing = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
-      <ListingApprovalHeaderSection
-        pendingCount={listings.length}
-        approvedToday={approvedToday}
-        rejectedWeekly={rejectedWeekly}
-      />
-      <ListingApprovalDashboardSection
-        listings={listings}
-        onApprove={(listing) => setPendingAction({ type: "approve", listing })}
-        onReject={(listing) => setPendingAction({ type: "reject", listing })}
-      />
+    <>
+      <div className="space-y-6 animate-fade-in pb-10">
+        <ListingApprovalHeaderSection
+          pendingCount={listings.length}
+          approvedToday={approvedToday}
+          rejectedWeekly={rejectedWeekly}
+        />
+        <ListingApprovalDashboardSection
+          listings={listings}
+          onApprove={(listing) => setPendingAction({ type: "approve", listing })}
+          onReject={(listing) => setPendingAction({ type: "reject", listing })}
+        />
+      </div>
 
       {/* Confirmation modal */}
       {pendingAction && (
@@ -163,50 +165,27 @@ export const AdminListing = () => {
           <div className="bg-admin-surfacewhite w-full max-w-sm rounded-2xl border border-admin-hairline overflow-hidden shadow-xl animate-fade-in">
             {pendingAction.type === "approve" ? (
               <div className="p-6 space-y-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-admin-semgreen/10 text-admin-semgreen flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 id="modal-title" className="font-bold text-admin-textprimary">Setujui Listing ini?</h3>
-                    <p className="text-sm text-admin-textsecondary mt-1">
-                      <span className="font-semibold text-admin-textprimary">{pendingAction.listing.title}</span> akan dipublikasikan ke pasar dan tersedia untuk pembeli.
-                    </p>
-                  </div>
+                <div className="w-12 h-12 bg-admin-primary/10 text-admin-primary rounded-full flex items-center justify-center mx-auto mb-2">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                 </div>
-                <div className="flex gap-3 justify-end pt-2">
-                  <button
-                    type="button"
-                    onClick={cancelAction}
-                    className="px-4 py-2 text-sm font-bold text-admin-textsecondary bg-admin-surfacewhite border border-admin-hairline rounded-xl hover:bg-admin-warmbg transition-colors"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={confirmApprove}
-                    className="px-4 py-2 text-sm font-bold text-white bg-admin-semgreen hover:bg-green-600 rounded-xl transition-colors shadow-sm"
-                  >
-                    Ya, Setujui
-                  </button>
+                <div className="text-center space-y-2">
+                  <h3 id="modal-title" className="text-lg font-bold text-admin-textprimary">Setujui Listing</h3>
+                  <p className="text-sm text-admin-textsecondary">
+                    Listing <span className="font-bold text-admin-textprimary">&quot;{pendingAction.listing.title}&quot;</span> akan disetujui dan langsung tampil untuk pembeli. Lanjutkan?
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-4">
+                  <button onClick={cancelAction} className="px-4 py-2.5 bg-admin-warmbg text-admin-textsecondary rounded-xl text-sm font-bold hover:bg-admin-hairline transition-colors">Batal</button>
+                  <button onClick={confirmApprove} className="px-4 py-2.5 bg-admin-primary text-white rounded-xl text-sm font-bold shadow-md shadow-admin-primary/20 hover:bg-admin-primary-hover transition-colors">Setujui Sekarang</button>
                 </div>
               </div>
             ) : (
               <div className="p-6 space-y-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-admin-semred/10 text-admin-semred flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 id="modal-title" className="font-bold text-admin-textprimary">Tolak Listing ini?</h3>
-                    <p className="text-sm text-admin-textsecondary mt-1">
-                      <span className="font-semibold text-admin-textprimary">{pendingAction.listing.title}</span> akan dikembalikan ke draf seller beserta alasan penolakan.
-                    </p>
-                  </div>
+                <div className="text-center space-y-2 mb-2">
+                  <h3 id="modal-title" className="text-lg font-bold text-admin-textprimary">Tolak Listing</h3>
+                  <p className="text-sm text-admin-textsecondary">
+                    Pilih alasan penolakan untuk <span className="font-bold text-admin-textprimary">&quot;{pendingAction.listing.title}&quot;</span>. Peternak akan menerima notifikasi ini.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-admin-textsecondary mb-1.5">Alasan Penolakan</label>
@@ -220,28 +199,18 @@ export const AdminListing = () => {
                     ))}
                   </select>
                 </div>
-                <div className="flex gap-3 justify-end pt-2">
-                  <button
-                    type="button"
-                    onClick={cancelAction}
-                    className="px-4 py-2 text-sm font-bold text-admin-textsecondary bg-admin-surfacewhite border border-admin-hairline rounded-xl hover:bg-admin-warmbg transition-colors"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={confirmReject}
-                    className="px-4 py-2 text-sm font-bold text-white bg-admin-semred hover:bg-red-600 rounded-xl transition-colors shadow-sm"
-                  >
-                    Konfirmasi Tolak
-                  </button>
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-admin-hairline mt-2">
+                  <button onClick={cancelAction} className="px-4 py-2.5 bg-admin-warmbg text-admin-textsecondary rounded-xl text-sm font-bold hover:bg-admin-hairline transition-colors">Batal</button>
+                  <button onClick={confirmReject} className="px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold shadow-md shadow-red-600/20 hover:bg-red-700 transition-colors">Konfirmasi Tolak</button>
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+
+
+    </>
   );
 };
 

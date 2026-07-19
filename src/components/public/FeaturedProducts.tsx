@@ -29,6 +29,11 @@ function formatRupiah(n: string | number) {
   }).format(Number(n));
 }
 
+function formatCategoryBadge(text: string | undefined | null): string {
+  if (!text) return "Organik";
+  return text.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function FeaturedProducts() {
   const router = useRouter();
 
@@ -151,7 +156,7 @@ export default function FeaturedProducts() {
             description={product.description ?? product.peternak_profile?.nama_peternakan ?? "Produk organik berkualitas terverifikasi."}
             imageUrl={product.image_url ? getProductImageUrl(product.image_url) : null}
             imageFallbackIcon={Leaf}
-            badgeText={product.category?.name || "Organik"}
+            badgeText={formatCategoryBadge(product.category?.name || "Organik")}
             badgeDotColorClass="bg-land-accent"
             locationText={product.kabupaten || undefined}
             rating={Number(product.rating_avg) > 0 ? Number(product.rating_avg) : undefined}

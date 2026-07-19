@@ -306,11 +306,11 @@ export default function CartContent() {
                 </div>
                 <div className="flex items-baseline gap-1.5 mb-3">
                   <span className="text-5xl font-bold font-land-heading tracking-tight">{co2}</span>
-                  <span className="text-base font-bold opacity-90">kg CO2 Berkurang</span>
+                  <span className="text-base font-bold opacity-90">kg CO₂e Berkurang</span>
                 </div>
               </div>
               <p className="text-xs leading-relaxed text-[#FBFAF7]/80 relative z-10 pt-4 border-t border-white/10">
-                Membeli produk ini membantu mencegah emisi gas rumah kaca berbahaya dari pembuangan terbuka limbah kotoran ternak.
+                Membeli produk ini berkontribusi pada reduksi emisi metana (dalam satuan CO₂e) dan mencegah emisi gas rumah kaca berbahaya.
               </p>
             </div>
 

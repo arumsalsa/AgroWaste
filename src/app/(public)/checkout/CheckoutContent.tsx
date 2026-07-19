@@ -5,7 +5,7 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Check, MapPin, Truck, CreditCard, ArrowRight, ShieldCheck, Package, Leaf,
+  Check, MapPin, Truck, CreditCard, ArrowRight, ShieldCheck, Package, Leaf, Navigation, Locate,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -22,7 +22,9 @@ interface CartItem {
   id: string;
   product_id: string;
   quantity_kg: string;
-  product: CartProduct;
+  product: CartProduct & {
+    peternak_profile?: { bank_account?: string | null };
+  };
 }
 
 interface CheckoutOrder {
@@ -48,10 +50,103 @@ export default function CheckoutContent() {
   const [cartLoading, setCartLoading]       = useState(true);
   const [cartError, setCartError]           = useState<string | null>(null);
   const [metodePengiriman, setMetodePengiriman] = useState<"pickup" | "logistik">("pickup");
+  const [metodePembayaran, setMetodePembayaran] = useState<"manual" | "cod">("manual");
   const [alamatPengiriman, setAlamatPengiriman] = useState("");
+  const [gisLat, setGisLat]                 = useState<string | number>("-7.892400");
+  const [gisLng, setGisLng]                 = useState<string | number>("112.656300");
+  const [leafletLoaded, setLeafletLoaded]   = useState(false);
+  const [mapInstance, setMapInstance]       = useState<any>(null);
+  const [markerInstance, setMarkerInstance] = useState<any>(null);
+  const [proofImage, setProofImage]         = useState<File | null>(null);
   const [submitting, setSubmitting]         = useState(false);
   const [submitError, setSubmitError]       = useState<string | null>(null);
   const [successOrder, setSuccessOrder]     = useState<CheckoutOrder | null>(null);
+
+  // lazy-load Leaflet CDN for Checkout GIS Map
+  useEffect(() => {
+    const cssId = "leaflet-css";
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement("link");
+      link.id = cssId;
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+
+    const jsId = "leaflet-js";
+    if (!document.getElementById(jsId)) {
+      const script = document.createElement("script");
+      script.id = jsId;
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload = () => setLeafletLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      if ((window as any).L) {
+        setLeafletLoaded(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!leafletLoaded || cartLoading || metodePengiriman !== "logistik") return;
+    const mapElement = document.getElementById("checkout-gis-map");
+    if (!mapElement) return;
+
+    const L = (window as any).L;
+    if (!L) return;
+
+    const initLat = Number(gisLat) || -7.8924;
+    const initLng = Number(gisLng) || 112.6563;
+
+    const map = L.map("checkout-gis-map").setView([initLat, initLng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
+
+    const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
+
+    marker.on("dragend", () => {
+      const pos = marker.getLatLng();
+      setGisLat(pos.lat.toFixed(6));
+      setGisLng(pos.lng.toFixed(6));
+    });
+
+    map.on("click", (e: any) => {
+      const coords = e.latlng;
+      marker.setLatLng(coords);
+      setGisLat(coords.lat.toFixed(6));
+      setGisLng(coords.lng.toFixed(6));
+    });
+
+    setMapInstance(map);
+    setMarkerInstance(marker);
+  }, [leafletLoaded, cartLoading, metodePengiriman]);
+
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const latStr = pos.coords.latitude.toFixed(6);
+          const lngStr = pos.coords.longitude.toFixed(6);
+          setGisLat(latStr);
+          setGisLng(lngStr);
+
+          if (mapInstance && markerInstance) {
+            const newLat = Number(latStr);
+            const newLng = Number(lngStr);
+            markerInstance.setLatLng([newLat, newLng]);
+            mapInstance.setView([newLat, newLng], 15);
+          }
+        },
+        () => {
+          alert("Gagal mengakses lokasi GPS. Pastikan izin lokasi diaktifkan pada peramban Anda.");
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      alert("Fitur GPS lokasi tidak didukung pada peramban Anda.");
+    }
+  };
 
   useEffect(() => {
     if (!getToken()) {
@@ -93,14 +188,23 @@ export default function CheckoutContent() {
       return;
     }
 
+    if (metodePembayaran === "manual" && !proofImage) {
+      setSubmitError("Harap unggah bukti pembayaran untuk metode Transfer Manual.");
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const finalAlamat = metodePengiriman === "logistik"
+        ? (gisLat && gisLng ? `${alamatPengiriman.trim()} [Titik GIS: ${gisLat}, ${gisLng}]` : alamatPengiriman.trim())
+        : null;
+
       const res = await apiFetch("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
           metode_pengiriman: metodePengiriman,
-          metode_pembayaran: "manual",
-          alamat_pengiriman: metodePengiriman === "logistik" ? alamatPengiriman : null,
+          metode_pembayaran: metodePembayaran,
+          alamat_pengiriman: finalAlamat,
         }),
       });
       const json = await res.json();
@@ -108,6 +212,32 @@ export default function CheckoutContent() {
       if (!res.ok || !json.success) {
         setSubmitError(json.message ?? "Checkout gagal. Coba lagi.");
         return;
+      }
+
+      // If manual payment, upload proof
+      if (metodePembayaran === "manual" && proofImage) {
+        const orderData = json.data as { id: string };
+        const orderId = orderData.id;
+        
+        const formData = new FormData();
+        formData.append("order_id", orderId);
+        formData.append("proof_image", proofImage);
+
+        const token = getToken();
+        const proofRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1"}/payments/manual`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            // Don't set Content-Type for FormData, browser sets it with boundary
+          },
+          body: formData,
+        });
+
+        const proofJson = await proofRes.json();
+        if (!proofRes.ok || !proofJson.success) {
+          setSubmitError(proofJson.message ?? "Pesanan dibuat, tetapi gagal mengunggah bukti pembayaran.");
+          // We could return here, but order is already created. For MVP, just show error or proceed anyway.
+        }
       }
 
       setSuccessOrder(json.data as CheckoutOrder);
@@ -148,7 +278,9 @@ export default function CheckoutContent() {
             </div>
             <div className="flex justify-between">
               <span className="text-land-muted">Metode Pembayaran</span>
-              <span className="font-bold text-land-ink">Transfer Manual</span>
+              <span className="font-bold text-land-ink">
+                {successOrder.metode_pembayaran === "cod" ? "COD (Bayar di Tempat)" : "Transfer Manual"}
+              </span>
             </div>
           </div>
 
@@ -311,21 +443,57 @@ export default function CheckoutContent() {
               </div>
             </div>
 
-            {/* Shipping Address — logistik only */}
+            {/* Shipping Address & GIS Map — logistik only */}
             {metodePengiriman === "logistik" && (
-              <div className="bg-white border border-[#E8E0D5]/60 rounded-[32px] p-6 md:p-8 shadow-sm">
-                <div className="flex items-center gap-2.5 mb-6">
-                  <MapPin className="w-5 h-5 text-[#009A44]" />
-                  <h2 className="text-xl font-bold text-land-ink font-land-heading">Alamat Pengiriman</h2>
+              <div className="bg-white border border-[#E8E0D5]/60 rounded-[32px] p-6 md:p-8 shadow-sm space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <MapPin className="w-5 h-5 text-[#009A44]" />
+                    <h2 className="text-xl font-bold text-land-ink font-land-heading">Alamat Pengiriman & Titik GIS</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGetCurrentLocation}
+                    className="text-xs font-bold text-[#009A44] hover:underline flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E6F5EC] border border-[#009A44]/20 transition-all hover:bg-[#009A44] hover:text-white group"
+                  >
+                    <Navigation className="w-3.5 h-3.5 text-[#009A44] group-hover:text-white transition-colors" />
+                    <span>Gunakan Lokasi Saya</span>
+                  </button>
                 </div>
-                <textarea
-                  required
-                  value={alamatPengiriman}
-                  onChange={(e) => setAlamatPengiriman(e.target.value)}
-                  rows={4}
-                  placeholder="Contoh: Jl. Merdeka No. 123, Kel. Babakan, Kec. Bogor Tengah, Kota Bogor, Jawa Barat 16121"
-                  className="block w-full rounded-2xl border border-[#E8E0D5] py-3.5 px-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-[#F0EDE6]/20 shadow-sm transition-colors resize-none"
-                />
+
+                <div>
+                  <label className="block text-xs font-bold text-land-muted uppercase tracking-wider mb-2">Alamat Lengkap *</label>
+                  <textarea
+                    required
+                    value={alamatPengiriman}
+                    onChange={(e) => setAlamatPengiriman(e.target.value)}
+                    rows={3}
+                    placeholder="Contoh: Jl. Merdeka No. 123, Kel. Babakan, Kec. Bogor Tengah, Kota Bogor, Jawa Barat 16121"
+                    className="block w-full rounded-2xl border border-[#E8E0D5] py-3.5 px-4 text-[#111111] placeholder:text-gray-400 focus:ring-2 focus:ring-[#009A44] focus:border-[#009A44] text-sm bg-[#F0EDE6]/20 shadow-sm transition-colors resize-none"
+                  />
+                </div>
+
+                {/* Interactive GIS Map Picker */}
+                <div className="space-y-3 pt-2 border-t border-dashed border-[#E8E0D5]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-land-ink">Tentukan Pin Titik Lokasi Presisi (Peta GIS)</span>
+                    <span className="text-[11px] font-mono text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
+                      {gisLat}, {gisLng}
+                    </span>
+                  </div>
+                  <p className="text-xs text-land-muted">
+                    Klik pada peta atau geser marker ke lokasi tujuan. Koordinat GIS presisi ini akan otomatis dikirimkan langsung ke peta navigasi mitra kurir.
+                  </p>
+                  <div className="w-full h-[260px] rounded-2xl overflow-hidden border border-[#E8E0D5] relative shadow-inner bg-[#F0EDE6]">
+                    {leafletLoaded ? (
+                      <div id="checkout-gis-map" className="w-full h-full z-0" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs text-land-muted animate-pulse">
+                        Memuat Peta GIS...
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -336,17 +504,84 @@ export default function CheckoutContent() {
                 <h2 className="text-xl font-bold text-land-ink font-land-heading">Metode Pembayaran</h2>
               </div>
 
-              <div className="relative bg-[#E6F5EC]/50 border-2 border-[#009A44] rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                <div className="w-5 h-5 rounded-full border-4 border-[#009A44] flex-shrink-0 bg-white"></div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-land-ink text-sm">Transfer Manual</h3>
-                  <p className="text-[10px] text-land-muted leading-tight mt-0.5">
-                    Konfirmasi pembayaran via WhatsApp setelah transfer ke rekening peternak
-                  </p>
-                </div>
-                <span className="px-2.5 py-0.5 bg-[#009A44]/10 text-[#009A44] text-[8px] font-bold tracking-widest uppercase rounded-full border border-[#009A44]/20 shrink-0">
-                  Aktif
-                </span>
+              <div className="space-y-4">
+                {/* Transfer Manual */}
+                <button
+                  type="button"
+                  onClick={() => setMetodePembayaran("manual")}
+                  className={`w-full relative rounded-2xl p-5 cursor-pointer text-left transition-all duration-200 shadow-sm border-2 ${
+                    metodePembayaran === "manual"
+                      ? "bg-[#E6F5EC]/50 border-[#009A44]"
+                      : "bg-white border-[#E8E0D5]/60 hover:border-land-clay"
+                  }`}
+                >
+                  {metodePembayaran === "manual" && (
+                    <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-[#009A44] rounded-full text-white flex items-center justify-center shadow-sm">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <div className="flex gap-4">
+                    <div className="w-5 h-5 rounded-full border-4 border-[#009A44] flex-shrink-0 bg-white mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className={`font-bold text-sm ${metodePembayaran === "manual" ? "text-land-ink" : "text-land-ink"}`}>Transfer Manual</h3>
+                      <p className="text-xs text-land-muted mt-1">
+                        Transfer via Bank. Wajib mengunggah bukti pembayaran.
+                      </p>
+
+                      {metodePembayaran === "manual" && (
+                        <div className="mt-4 p-4 bg-white rounded-xl border border-[#009A44]/20" onClick={(e) => e.stopPropagation()}>
+                          <div className="mb-3">
+                            <span className="block text-[10px] text-land-muted font-bold uppercase tracking-wider mb-1">Rekening Tujuan</span>
+                            <div className="font-bold text-sm text-land-ink">
+                              {cartItems[0]?.product.peternak_profile?.bank_account || "Menunggu informasi rekening dari penjual"}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-[10px] text-land-muted font-bold uppercase tracking-wider mb-1">Upload Bukti Pembayaran *</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files.length > 0) {
+                                  setProofImage(e.target.files[0]);
+                                }
+                              }}
+                              className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#009A44]/10 file:text-[#009A44] hover:file:bg-[#009A44]/20"
+                            />
+                            {proofImage && <p className="text-xs text-[#009A44] mt-2 font-semibold">File dipilih: {proofImage.name}</p>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+
+                {/* COD */}
+                <button
+                  type="button"
+                  onClick={() => setMetodePembayaran("cod")}
+                  className={`w-full relative rounded-2xl p-5 cursor-pointer text-left transition-all duration-200 shadow-sm border-2 ${
+                    metodePembayaran === "cod"
+                      ? "bg-[#E6F5EC]/50 border-[#009A44]"
+                      : "bg-white border-[#E8E0D5]/60 hover:border-land-clay"
+                  }`}
+                >
+                  {metodePembayaran === "cod" && (
+                    <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-[#009A44] rounded-full text-white flex items-center justify-center shadow-sm">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <div className="flex gap-4">
+                    <div className={`w-5 h-5 rounded-full border-4 flex-shrink-0 mt-0.5 ${metodePembayaran === "cod" ? "border-[#009A44] bg-white" : "border-[#E8E0D5] bg-transparent"}`} />
+                    <div className="flex-1">
+                      <h3 className={`font-bold text-sm ${metodePembayaran === "cod" ? "text-land-ink" : "text-land-ink"}`}>COD (Bayar di Tempat)</h3>
+                      <p className="text-xs text-land-muted mt-1">
+                        Bayar langsung ke kurir atau peternak saat pesanan tiba.
+                      </p>
+                    </div>
+                  </div>
+                </button>
               </div>
               <p className="text-[10px] text-land-muted mt-3">Metode pembayaran lain (QRIS, VA) segera hadir.</p>
             </div>
@@ -405,9 +640,28 @@ export default function CheckoutContent() {
                 <span className="text-2xl font-bold text-[#009A44] font-tabular">{formatRupiah(subtotal)}</span>
               </div>
               {metodePengiriman === "logistik" ? (
-                <p className="text-[10px] text-land-muted mb-6">
-                  + estimasi ongkir {formatRupiah(EST_SHIPPING)} dihitung terpisah oleh mitra logistik
-                </p>
+                <div className="bg-red-50/80 border border-red-200 rounded-2xl p-4 my-4 shadow-sm space-y-2.5">
+                  <div className="flex items-center justify-between border-b border-red-200/60 pb-2">
+                    <div className="flex items-center gap-2 text-red-700">
+                      <Truck className="w-4 h-4 text-red-600 shrink-0" />
+                      <span className="text-xs font-bold uppercase tracking-wider">Catatan Ongkos Kirim</span>
+                    </div>
+                    <span className="px-2.5 py-0.5 bg-red-100 border border-red-200 text-red-700 font-bold text-xs rounded-lg font-tabular">
+                      +{formatRupiah(EST_SHIPPING)}
+                    </span>
+                  </div>
+                  
+                  <div className="text-xs text-red-800 space-y-1.5 pt-0.5">
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-red-500 font-bold">•</span>
+                      <span>Dihitung terpisah oleh mitra logistik</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-red-500 font-bold">•</span>
+                      <span className="font-bold text-red-700">Dibayarkan langsung saat barang diterima di tempat</span>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="mb-6" />
               )}

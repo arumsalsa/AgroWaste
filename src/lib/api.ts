@@ -1,6 +1,6 @@
 import { getToken } from "./auth";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
 export async function apiFetch(
   path: string,
@@ -34,6 +34,9 @@ export function getProductImageUrl(url: string | null | undefined): string {
     if (url.startsWith("/storage")) {
       return `${origin}${url}`;
     }
+    
+    // Default fallback for relative storage paths like payment_proofs/... or media/...
+    return `${origin}/storage/${url.startsWith('/') ? url.slice(1) : url}`;
   } catch (e) {
     // ignore
   }

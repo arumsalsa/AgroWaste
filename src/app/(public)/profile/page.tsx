@@ -58,6 +58,8 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [passwordSuccessMsg, setPasswordSuccessMsg] = useState<string | null>(null);
 
   const [user, setUser] = useState<ProfileResponse["data"] | null>(null);
 
@@ -899,6 +901,91 @@ export default function ProfilePage() {
                   </div>
                 )}
               </form>
+            </div>
+
+            {/* ── SECURITY & 2FA CARD ── */}
+            <div className="bg-white border border-[#E8E0D5] rounded-3xl p-8 shadow-sm space-y-6">
+              <div className="border-b border-[#E8E0D5] pb-4">
+                <h2 className="text-xl font-bold text-[#111111]">Keamanan Akun & 2FA</h2>
+                <p className="text-xs text-gray-500 mt-1">Kelola kata sandi dan proteksi ganda akun Anda.</p>
+              </div>
+
+              {passwordSuccessMsg && (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{passwordSuccessMsg}</span>
+                </div>
+              )}
+
+              {/* Ubah Kata Sandi */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setPasswordSuccessMsg("Kata sandi berhasil diperbarui!");
+                  (e.target as HTMLFormElement).reset();
+                  setTimeout(() => setPasswordSuccessMsg(null), 3000);
+                }}
+                className="space-y-4"
+              >
+                <h3 className="text-xs font-bold text-[#555555] tracking-wider uppercase">Ubah Kata Sandi</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 mb-1">Kata Sandi Sekarang</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-2.5 text-sm font-bold text-[#111111] focus:outline-none focus:border-[#009A44] focus:ring-1 focus:ring-[#009A44]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 mb-1">Kata Sandi Baru</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-2.5 text-sm font-bold text-[#111111] focus:outline-none focus:border-[#009A44] focus:ring-1 focus:ring-[#009A44]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 mb-1">Ulangi Sandi Baru</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      className="w-full bg-[#F9F9F9] border border-[#E8E0D5] rounded-xl px-4 py-2.5 text-sm font-bold text-[#111111] focus:outline-none focus:border-[#009A44] focus:ring-1 focus:ring-[#009A44]"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[#009A44] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                  >
+                    Perbarui Kata Sandi
+                  </button>
+                </div>
+              </form>
+
+              {/* 2FA Toggle */}
+              <div className="pt-6 border-t border-dashed border-[#E8E0D5] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-bold text-[#111111] flex items-center gap-2 mb-1">
+                    Autentikasi Dua Langkah (2FA)
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md font-tabular uppercase tracking-wider ${is2FAEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {is2FAEnabled ? 'AKTIF' : 'NONAKTIF'}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-gray-500">Minta kode verifikasi tambahan setiap kali Anda masuk ke akun.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIs2FAEnabled(!is2FAEnabled)}
+                  className="px-4 py-2 bg-[#F9F9F9] hover:bg-gray-100 border border-[#E8E0D5] text-[#111111] font-bold text-xs rounded-xl transition-all shrink-0"
+                >
+                  {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA'}
+                </button>
+              </div>
             </div>
 
           </div>

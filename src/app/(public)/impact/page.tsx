@@ -68,7 +68,10 @@ export default function ImpactPage() {
   } : {
     value: data.total_waste_managed_kg.toLocaleString("id-ID"),
     unit: "kg"
-  }) : { value: "12.4", unit: "Ton" };
+  }) : { value: "0", unit: "kg" };
+
+  const totalCo2Kg = data ? Number(data.total_co2eq_reduced_kg || 0) : 0;
+  const carCount = Math.max(0, Math.round(totalCo2Kg / 10.4));
 
   const co2Metric = data ? (data.total_co2eq_reduced_kg >= 1000 ? {
     value: (data.total_co2eq_reduced_kg / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 }),
@@ -76,10 +79,10 @@ export default function ImpactPage() {
   } : {
     value: data.total_co2eq_reduced_kg.toLocaleString("id-ID"),
     unit: "kg CO₂e"
-  }) : { value: "375", unit: "Ton CO₂e" };
+  }) : { value: "0", unit: "kg CO₂e" };
 
-  const treesCount = data ? data.equivalent_trees.toLocaleString("id-ID") : "15.000";
-  const activeSellers = data ? data.active_sellers_count.toLocaleString("id-ID") : "2.4k";
+  const treesCount = data ? data.equivalent_trees.toLocaleString("id-ID") : "0";
+  const activeSellers = data ? data.active_sellers_count.toLocaleString("id-ID") : "0";
 
   if (loading) {
     return (
@@ -148,7 +151,7 @@ export default function ImpactPage() {
                 <span className="font-bold text-land-accent/70 text-xl ml-1">{co2Metric.unit}</span>
               </div>
               <p className="text-sm text-land-muted leading-relaxed font-medium">
-                Setara dengan meniadakan emisi gas buang dari 80 mobil berbahan bakar fosil selama setahun penuh.
+                Berkontribusi langsung dalam menekan laju pemanasan global melalui pengalihan limbah organik menjadi tindakan nyata aksi iklim.
               </p>
             </div>
           </div>
@@ -163,8 +166,8 @@ export default function ImpactPage() {
             <div>
               <div className="text-[10px] font-bold text-land-accent uppercase tracking-widest mb-2">Dampak Ekologis</div>
               <h3 className="font-land-heading text-3xl md:text-4xl font-bold text-land-ink mb-4">Setara {treesCount}+ Pohon Tumbuh</h3>
-              <p className="text-land-muted md:text-lg max-w-2xl leading-relaxed font-medium">
-                Kontribusi seluruh anggota platform dalam mengembalikan karbon ke dalam tanah secara sirkular menghasilkan dampak penyerapan karbon yang luar biasa.
+              <p className="text-sm text-land-muted leading-relaxed max-w-xl font-medium">
+                Kontribusi seluruh anggota platform dalam mengembalikan nutrisi ke tanah secara sirkular menghasilkan dampak reduksi emisi metana (CO₂e) yang luar biasa.
               </p>
             </div>
           </div>

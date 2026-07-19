@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Search, MapPin, CheckCircle2, SlidersHorizontal, Leaf, Receipt,
-  Truck, Clock, XCircle,
+  Truck, Clock, XCircle, Star,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getToken, logout } from "@/lib/auth";
 
 interface OrderProduct {
   id: string;
@@ -18,6 +18,7 @@ interface OrderProduct {
 }
 
 interface OrderItem {
+  product_id?: string;
   quantity_kg: string | number;
   price_per_kg: string | number;
   product: OrderProduct;
@@ -33,6 +34,7 @@ interface Order {
   created_at: string;
   product?: OrderProduct;
   items?: OrderItem[];
+  reviews?: any[];
 }
 
 // Sidebar status filter options
@@ -125,11 +127,17 @@ export default function PesananContent() {
     }
     apiFetch("/orders")
       .then((res) => {
+        if (res.status === 401) {
+          logout();
+          router.push("/login?callbackUrl=/pesanan");
+          return null;
+        }
         if (!res.ok) throw new Error("Gagal memuat riwayat pesanan.");
         return res.json();
       })
       .then((json) => {
-        setOrders(json.data as Order[]);
+        if (!json) return;
+        setOrders(Array.isArray(json.data) ? json.data : []);
         setLoading(false);
       })
       .catch((err: Error) => {
@@ -443,6 +451,16 @@ export default function PesananContent() {
                         </Link>
                       ) : (
                         <>
+                          {(order.status === "selesai" || order.status === "diterima" || order.status === "pesanan_diterima") &&
+                           (!order.reviews || order.reviews.length === 0) &&
+                           (order.product?.id || order.items?.[0]?.product_id) && (
+                            <Link
+                              href={`/marketplace/${order.product?.id || order.items?.[0]?.product_id}`}
+                              className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-full text-sm flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                            >
+                              <Star className="w-4 h-4 fill-white text-white" /> Beri Ulasan
+                            </Link>
+                          )}
                           <Link
                             href={`/pesanan/${order.id}`}
                             className="btn-clay-secondary px-6 py-3 text-sm flex-1 sm:flex-none flex justify-center items-center"

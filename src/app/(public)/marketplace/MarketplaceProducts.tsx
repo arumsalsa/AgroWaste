@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf, Sprout } from "lucide-react";
+import { Star, MapPin, ShieldCheck, Plus, Check, X, ChevronDown, Leaf, Sprout, Navigation } from "lucide-react";
 import { apiFetch, getProductImageUrl } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import EarthyCard from "@/components/public/EarthyCard";
+import { calculateDistanceKm, formatDistance, getCoordinatesByLocationName } from "@/lib/location";
 
 interface Product {
   id: string;
@@ -17,10 +18,13 @@ interface Product {
   kabupaten: string;
   rating_avg: string | number;
   review_count: number;
+  description?: string | null;
   image_url?: string | null;
   peternak_profile?: {
     nama_peternakan: string;
     badge: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
   };
   category?: {
     name: string;
@@ -42,16 +46,26 @@ function formatRupiah(price: string | number): string {
   }).format(Number(price));
 }
 
+function formatCategoryBadge(text: string | undefined | null): string {
+  if (!text) return "Organik";
+  return text.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 const SORT_OPTIONS = [
   { value: "terbaru",         label: "Terbaru" },
+  { value: "terdekat",        label: "Lokasi Terdekat" },
   { value: "harga_terendah",  label: "Harga Terendah" },
   { value: "harga_tertinggi", label: "Harga Tertinggi" },
 ];
 
 export default function MarketplaceProducts({
   filterParams = "",
+  userCoords = null,
+  onRequestLocation,
 }: {
   filterParams?: string;
+  userCoords?: { lat: number; lng: number } | null;
+  onRequestLocation?: () => void;
 }) {
   const router = useRouter();
 
@@ -119,7 +133,7 @@ export default function MarketplaceProducts({
     ].filter(Boolean);
     const qs = parts.join("&");
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products${qs ? `?${qs}` : ""}`)
+    apiFetch(`/products${qs ? `?${qs}` : ""}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Gagal memuat produk (${res.status})`);
         return res.json();
@@ -141,21 +155,72 @@ export default function MarketplaceProducts({
     setSort(SORT_OPTIONS[(idx + 1) % SORT_OPTIONS.length].value);
   };
 
+  const processedProducts = useMemo(() => {
+    const rawList = paginated?.data ?? [];
+    
+    const mapped = rawList.map((p) => {
+      let distanceKm: number | null = null;
+
+      const pLat = Number(p.peternak_profile?.latitude);
+      const pLng = Number(p.peternak_profile?.longitude);
+
+      if (!isNaN(pLat) && !isNaN(pLng) && pLat !== 0 && pLng !== 0 && userCoords) {
+        distanceKm = calculateDistanceKm(userCoords.lat, userCoords.lng, pLat, pLng);
+      } else if (userCoords) {
+        const coords = getCoordinatesByLocationName(p.kabupaten);
+        if (coords) {
+          distanceKm = calculateDistanceKm(userCoords.lat, userCoords.lng, coords.lat, coords.lng);
+        }
+      }
+
+      return {
+        ...p,
+        distanceKm,
+        distanceText: distanceKm !== null ? formatDistance(distanceKm) : null,
+      };
+    });
+
+    if (sort === "terdekat") {
+      return [...mapped].sort((a, b) => {
+        if (a.distanceKm === null && b.distanceKm === null) return 0;
+        if (a.distanceKm === null) return 1;
+        if (b.distanceKm === null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+    }
+
+    return mapped;
+  }, [paginated?.data, userCoords, sort]);
+
   /* count bar */
   const countBar = (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-      <span className="text-land-muted font-bold text-base">
-        <span className="text-land-accent text-lg">
-          {loading ? "—" : (paginated?.total ?? 0)}
-        </span>{" "}
-        Produk ditemukan
-      </span>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-land-muted font-bold text-base">
+          <span className="text-land-accent text-lg">
+            {loading ? "—" : (paginated?.total ?? 0)}
+          </span>{" "}
+          Produk ditemukan
+        </span>
+        {!userCoords && onRequestLocation && (
+          <button
+            type="button"
+            onClick={onRequestLocation}
+            className="flex items-center gap-1.5 px-3 py-1 bg-land-accent/10 border border-land-accent/30 text-land-accent hover:bg-land-accent hover:text-white transition-colors rounded-full text-xs font-bold cursor-pointer"
+          >
+            <Navigation className="w-3.5 h-3.5" />
+            Gunakan Lokasi Saya
+          </button>
+        )}
+      </div>
       <button
         type="button"
         onClick={handleSortCycle}
         className="flex items-center gap-2 px-5 py-3 bg-white border border-[#E8E0D5] rounded-full text-sm font-bold text-land-ink hover:border-land-accent transition-colors shadow-sm cursor-pointer"
       >
-        Urutkan: {sortLabel} <ChevronDown className="w-4 h-4" />
+        {sort === "terdekat" && <MapPin className="w-4 h-4 text-land-accent shrink-0" />}
+        <span>Urutkan: {sortLabel}</span>
+        <ChevronDown className="w-4 h-4" />
       </button>
     </div>
   );
@@ -165,11 +230,11 @@ export default function MarketplaceProducts({
     return (
       <>
         {countBar}
-        <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6 mb-16">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-16">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border border-[#E8E0D5] rounded-2xl p-2.5 sm:p-3 shadow-[0_8px_24px_rgba(44,57,48,0.04)] animate-pulse"
+              className="bg-[#FFFFFF] border border-[#E8E0D5] rounded-2xl p-2.5 sm:p-3 shadow-[0_8px_24px_rgba(44,57,48,0.04)] animate-pulse"
             >
               <div className="w-full h-28 sm:h-44 rounded-xl bg-[#E8E0D5] mb-3 sm:mb-5" />
               <div className="px-2 pb-2 flex flex-col gap-3">
@@ -198,10 +263,8 @@ export default function MarketplaceProducts({
     );
   }
 
-  const products = paginated?.data ?? [];
-
   /* empty */
-  if (products.length === 0) {
+  if (processedProducts.length === 0) {
     return (
       <>
         {countBar}
@@ -221,24 +284,29 @@ export default function MarketplaceProducts({
     <>
       {countBar}
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6 mb-16">
-        {products.map((product) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-16">
+        {processedProducts.map((product) => {
           const badge      = product.peternak_profile?.badge;
           const showBadge  = badge && badge !== "none";
           const isVerified = badge === "verified" || badge === "terverifikasi";
           const badgeLabel = isVerified ? "TERVERIFIKASI" : badge?.toUpperCase();
+
+          const formattedKab = product.kabupaten ? product.kabupaten.replace(/^Kabupaten\s+/i, "Kab. ") : "";
+          const locationLabel = product.distanceText
+            ? `${formattedKab ? `${formattedKab} • ` : ""}${product.distanceText}`
+            : (formattedKab || undefined);
 
           return (
             <EarthyCard
               key={product.id}
               href={`/marketplace/${product.id}`}
               title={product.name}
-              description={product.peternak_profile?.nama_peternakan ?? "—"}
+              description={product.description ?? product.peternak_profile?.nama_peternakan ?? "Produk organik berkualitas terverifikasi."}
               imageUrl={product.image_url ? getProductImageUrl(product.image_url) : null}
               imageFallbackIcon={Leaf}
-              badgeText={showBadge ? badgeLabel : undefined}
+              badgeText={formatCategoryBadge(product.category?.name || (showBadge ? badgeLabel : "Organik"))}
               badgeDotColorClass={isVerified ? "bg-land-accent" : "bg-land-clay"}
-              locationText={product.kabupaten || undefined}
+              locationText={locationLabel}
               rating={Number(product.rating_avg) > 0 ? Number(product.rating_avg) : undefined}
               price={formatRupiah(product.price)}
               unit={`/ ${product.unit}`}
@@ -251,7 +319,7 @@ export default function MarketplaceProducts({
               ctaSuccessIcon={Check}
               ctaErrorIcon={X}
               decorativeIcon={Sprout}
-              className="w-full shrink-0"
+              className="w-full"
             />
           );
         })}

@@ -100,13 +100,26 @@ export default function AboutPage() {
             </div>
 
             {/* SDG 12 Card */}
-            <div className="md:col-span-4 bg-[#F59E0B] rounded-[40px] p-10 shadow-lg text-white flex flex-col relative overflow-hidden group hover:-translate-y-2 transition-transform duration-500">
+            <div className="md:col-span-4 bg-[#BF8B2E] rounded-[40px] p-8 md:p-10 shadow-lg text-white flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 transition-transform duration-500">
               <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-              <Recycle className="w-12 h-12 text-white/90 mb-auto" />
-              <div className="mt-16">
-                <div className="text-[10px] font-bold tracking-widest uppercase text-white/80 mb-3 border border-white/30 rounded-full px-3 py-1 w-fit">SDG Goal 12</div>
-                <h3 className="text-2xl md:text-3xl font-land-heading font-bold leading-tight mb-4">Produksi & Konsumsi Bertanggung Jawab</h3>
-                <p className="text-white/80 text-sm leading-relaxed">
+              
+              <div className="flex items-center justify-between z-10 mb-2">
+                <Recycle className="w-12 h-12 text-white/90" />
+                <div className="text-[10px] font-bold tracking-widest uppercase text-white/90 border border-white/40 rounded-full px-3 py-1 bg-white/10 backdrop-blur-sm">SDG Goal 12</div>
+              </div>
+
+              {/* Area Gambar SDG 12 (Utuh & Pas Tanpa Kepotong) */}
+              <div className="my-2 relative w-full h-52 flex items-center justify-center bg-[#BF8B2E]">
+                <img
+                  src="/sdg12.png"
+                  alt="SDG Goal 12 - Responsible Consumption and Production"
+                  className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+
+              <div className="z-10">
+                <h3 className="text-2xl md:text-3xl font-land-heading font-bold leading-tight mb-3">Produksi & Konsumsi Bertanggung Jawab</h3>
+                <p className="text-white/90 text-sm leading-relaxed">
                   Menerapkan sistem manajemen limbah terintegrasi yang mencegah pencemaran air dan tanah di sekitar area peternakan.
                 </p>
               </div>

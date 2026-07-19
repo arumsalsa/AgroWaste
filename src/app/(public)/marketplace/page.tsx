@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import MarketplaceContent from "./MarketplaceContent";
 
 export const metadata = {
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function MarketplacePage() {
-  return <MarketplaceContent />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-land-bg animate-pulse" />}>
+      <MarketplaceContent />
+    </Suspense>
+  );
 }

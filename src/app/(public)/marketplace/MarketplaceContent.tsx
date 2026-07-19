@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin, Navigation, CheckCircle2 } from "lucide-react";
 import MarketplaceProducts from "./MarketplaceProducts";
+import { requestUserLocation } from "@/lib/location";
 
 const KATEGORI_OPTIONS = [
   { value: "kotoran_padat", label: "Kotoran Padat" },
@@ -38,10 +39,28 @@ export default function MarketplaceContent() {
   const [provinsi,    setProvinsi]    = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
+  // State Lokasi Pengguna
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locLoading, setLocLoading] = useState(false);
+  const [locError,   setLocError]   = useState<string | null>(null);
+
+  const handleRequestLocation = async () => {
+    setLocLoading(true);
+    setLocError(null);
+    try {
+      const coords = await requestUserLocation();
+      setUserCoords(coords);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Gagal memperoleh izin lokasi.";
+      setLocError(message);
+    } finally {
+      setLocLoading(false);
+    }
+  };
+
   // filterParams dikirim ke MarketplaceProducts; berubah → langsung re-fetch
   const filterParams = useMemo(() => {
     const parts: string[] = [];
-    // search harus urutan pertama agar mudah dibaca di Network tab
     if (debouncedSearch) parts.push(`search=${encodeURIComponent(debouncedSearch)}`);
     if (jenisTernak)     parts.push(`jenis_ternak=${encodeURIComponent(jenisTernak)}`);
     if (kategori)        parts.push(`kategori=${encodeURIComponent(kategori)}`);
@@ -61,7 +80,7 @@ export default function MarketplaceContent() {
 
   return (
     <div className="flex-1 animate-fade-in pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
 
         {/* ── Hero Section & Searchbar ── */}
         <section className="bg-land-ink rounded-[32px] px-6 py-10 md:py-12 mt-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-md">
@@ -81,7 +100,7 @@ export default function MarketplaceContent() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && setDebouncedSearch(searchInput.trim())}
-              placeholder="Cari kompos, pupuk kandang, atau alat pertanian..."
+              placeholder="Cari kompos atau pupuk kandang..."
               className="w-full h-16 md:h-20 pl-11 sm:pl-14 md:pl-16 pr-24 sm:pr-32 md:pr-40 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/60 text-sm sm:text-base md:text-xl focus:outline-none focus:bg-white/20 focus:border-land-accent transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15)]"
             />
             <Search className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white/60 absolute left-4 sm:left-5 md:left-6 top-1/2 -translate-y-1/2 group-focus-within:text-land-accent transition-colors pointer-events-none" />
@@ -95,6 +114,41 @@ export default function MarketplaceContent() {
             </button>
           </div>
         </section>
+
+        {/* ── Location Widget Bar ── */}
+        <div className="mt-6 bg-white border border-[#E8E0D5] rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-land-accent/10 text-land-accent flex items-center justify-center shrink-0">
+              <MapPin className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-land-muted">Lokasi Pembeli</span>
+                {userCoords && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 className="w-3 h-3" /> GPS Terhubung
+                  </span>
+                )}
+              </div>
+              <p className="text-sm font-bold text-land-ink mt-0.5">
+                {userCoords
+                  ? `Koordinat: ${userCoords.lat.toFixed(4)}, ${userCoords.lng.toFixed(4)}`
+                  : "Aktifkan lokasi untuk rekomendasi pupuk terdekat"}
+              </p>
+              {locError && <p className="text-xs text-red-500 font-semibold mt-1">{locError}</p>}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleRequestLocation}
+            disabled={locLoading}
+            className="w-full sm:w-auto px-5 py-2.5 bg-land-accent hover:bg-land-accent-hover text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          >
+            <Navigation className={`w-3.5 h-3.5 ${locLoading ? "animate-spin" : ""}`} />
+            {locLoading ? "Mendeteksi..." : userCoords ? "Perbarui Lokasi" : "Gunakan Lokasi Saya"}
+          </button>
+        </div>
 
         {/* ── Sidebar + Grid ── */}
         <div className="lg:hidden mt-6 flex justify-between items-center gap-4">
@@ -242,7 +296,11 @@ export default function MarketplaceContent() {
 
           {/* Product Grid */}
           <div className="w-full lg:w-3/4">
-            <MarketplaceProducts filterParams={filterParams} />
+            <MarketplaceProducts
+              filterParams={filterParams}
+              userCoords={userCoords}
+              onRequestLocation={handleRequestLocation}
+            />
           </div>
 
         </div>

@@ -31,7 +31,8 @@ export default function BadgesPage() {
 
   const carbonKg = totalSold * 0.98;
   const carbonText = carbonKg >= 1000 ? `${(carbonKg / 1000).toFixed(1)} Ton` : `${carbonKg.toFixed(0)} kg`;
-  const soilScore = Math.min(98, Math.round(60 + totalSold * 0.05));
+  // Konversi US EPA dari ImpactCalculator: Math.ceil(volume * 0.0108)
+  const treesPlanted = Math.ceil(totalSold * 0.0108);
 
   const badges = [
     {
@@ -39,11 +40,7 @@ export default function BadgesPage() {
       name: "Peternak Hijau",
       target: 100,
       description: "Kelola 100 kg limbah organik untuk mendukung ekonomi sirkular.",
-      icon: (
-        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
-        </svg>
-      ),
+      image: "/images/badges/petani_hijau.png",
       gradient: "from-emerald-400 to-emerald-600",
       tier: "Pioneer Hijau",
     },
@@ -52,11 +49,7 @@ export default function BadgesPage() {
       name: "Agen Iklim",
       target: 500,
       description: "Olah 500 kg limbah organik untuk meminimalkan dampak pemanasan global.",
-      icon: (
-        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-        </svg>
-      ),
+      image: "/images/badges/agen_iklim.png",
       gradient: "from-blue-400 to-blue-600",
       tier: "Pembela Atmosfer",
     },
@@ -65,11 +58,7 @@ export default function BadgesPage() {
       name: "Pahlawan Bumi",
       target: 1000,
       description: "Selamatkan 1.000 kg limbah untuk memulihkan kesuburan tanah daerah setempat.",
-      icon: (
-        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-      ),
+      image: "/images/badges/pahlawan_bumi.png",
       gradient: "from-amber-400 to-amber-600",
       tier: "Pelindung Ekosistem",
     },
@@ -78,12 +67,8 @@ export default function BadgesPage() {
       name: "Master Alkemis",
       target: 5000,
       description: "Daur ulang 5.000 kg limbah organik menjadi berkah pertanian berkelanjutan.",
-      icon: (
-        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-        </svg>
-      ),
-      gradient: "from-violet-500 to-fuchsia-600",
+      image: "/images/badges/alkemis_limbah.png",
+      gradient: "from-amber-400 to-yellow-500",
       tier: "Dewa Sirkular",
     },
   ];
@@ -92,7 +77,7 @@ export default function BadgesPage() {
     <div className="space-y-8 animate-fade-in pb-10">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-seller-textprimary mb-1">Galeri Lencana Dampak</h2>
-        <p className="text-sm text-seller-textsecondary">Pantau kontribusimu untuk ekonomi sirkular. Dapatkan lencana dengan mengolah limbah, memperbaiki tanah, dan mengurangi emisi karbon.</p>
+        <p className="text-sm text-seller-textsecondary">Pantau kontribusimu untuk ekonomi sirkular. Dapatkan lencana dengan mengolah limbah, memperbaiki tanah, serta reduksi emisi metana (CO₂e).</p>
       </div>
 
       {/* Top Cards */}
@@ -111,14 +96,16 @@ export default function BadgesPage() {
         </div>
 
         <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-blue-500/5 rounded-bl-full -mr-4 -mt-4"></div>
+          <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full -mr-4 -mt-4"></div>
           <div>
-            <div className="text-blue-500 mb-3">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+            <div className="text-[#009A44] mb-3">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
             </div>
-            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">SKOR KESEHATAN TANAH</span>
+            <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">KESETARAAN POHON</span>
             <h3 className="text-2xl font-bold text-seller-textprimary font-tabular">
-              {loading ? "..." : `${soilScore}/100`}
+              {loading ? "..." : `${treesPlanted} Pohon`}
             </h3>
           </div>
         </div>
@@ -126,8 +113,8 @@ export default function BadgesPage() {
         <div className="bg-seller-surfacewhite border border-seller-hairline p-6 rounded-2xl flex items-center justify-between relative overflow-hidden">
           <div className="absolute right-0 top-0 w-24 h-24 bg-amber-500/5 rounded-bl-full -mr-4 -mt-4"></div>
           <div>
-            <div className="text-amber-500 mb-3 font-bold text-xl flex items-center">
-              CO<sub className="text-xs">2</sub>
+            <div className="text-amber-500 mb-3 font-bold text-xl flex items-baseline">
+              <span>CO</span><sub className="text-xs">2</sub><span className="text-base font-medium">e</span>
             </div>
             <span className="text-[10px] font-bold text-seller-textsecondary uppercase tracking-wider block mb-1">PENGURANGAN KARBON</span>
             <h3 className="text-2xl font-bold text-seller-textprimary font-tabular">
@@ -152,33 +139,48 @@ export default function BadgesPage() {
               }`}
             >
               <div className="flex flex-col items-center w-full">
-                <div className="relative w-32 h-32 mb-6">
+                <div className="relative w-32 h-32 mb-6 flex items-center justify-center">
                   {/* Badge Graphic */}
-                  <div
-                    className={`w-full h-full rounded-full bg-gradient-to-br ${
-                      isUnlocked ? badge.gradient : "from-[#EAE6E1] to-[#D5CFC6]"
-                    } flex items-center justify-center border-4 border-white shadow-lg relative`}
-                  >
-                    {isUnlocked ? (
-                      badge.icon
-                    ) : (
-                      <svg className="w-10 h-10 text-seller-textsecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    )}
-                  </div>
+                  {badge.image ? (
+                    <img
+                      src={badge.image}
+                      alt={badge.name}
+                      className={`w-full h-full object-contain drop-shadow-md transition-transform duration-300 hover:scale-105 ${
+                        !isUnlocked ? "grayscale opacity-50" : ""
+                      }`}
+                    />
+                  ) : (
+                    <div
+                      className={`w-full h-full rounded-full bg-gradient-to-br ${
+                        isUnlocked ? badge.gradient : "from-[#EAE6E1] to-[#D5CFC6]"
+                      } flex items-center justify-center border-4 border-white shadow-lg relative`}
+                    >
+                      {isUnlocked ? (
+                        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-10 h-10 text-seller-textsecondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      )}
+                    </div>
+                  )}
+
                   {/* Status Indicator */}
                   <div
-                    className={`absolute bottom-2 right-2 w-6 h-6 rounded-full ${
+                    className={`absolute bottom-0 right-0 w-7 h-7 rounded-full ${
                       isUnlocked ? "bg-seller-primary text-white" : "bg-[#B5ADA3] text-white"
-                    } flex items-center justify-center border-2 border-white shadow-sm`}
+                    } flex items-center justify-center border-2 border-white shadow-md z-10`}
                   >
                     {isUnlocked ? (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <span className="text-[10px] font-bold">🔒</span>
+                      <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
                     )}
                   </div>
                 </div>

@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const authCookie = request.cookies.get('auth');
   const pathname = request.nextUrl.pathname;
 
-  const protectedRoutes = ['/home', '/marketplace', '/pesanan', '/cart', '/checkout'];
+  const protectedRoutes = ['/pesanan', '/cart', '/checkout'];
   const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
 
   if (isProtected && !authCookie) {
@@ -25,7 +25,6 @@ export const config = {
   matcher: [
     '/home',
     '/home/:path*',
-    '/marketplace/:path*',
     '/pesanan/:path*',
     '/cart/:path*',
     '/checkout/:path*',
