@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { saveAuth, getToken } from "@/lib/auth";
+import TwoFactorModal from "@/components/common/TwoFactorModal";
 
 interface ProfileResponse {
   success: boolean;
@@ -33,6 +34,7 @@ export default function SettingsPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("profil");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
 
   const [ownerName, setOwnerName] = useState("");
   const [farmName, setFarmName] = useState("");
@@ -516,14 +518,31 @@ export default function SettingsPage() {
                   <p className="text-xs text-seller-textsecondary mb-4">Tambahkan tingkat keamanan tambahan untuk melindungi akun toko peternakan Anda saat masuk sistem.</p>
                   <button
                     type="button"
-                    onClick={() => setIs2FAEnabled(!is2FAEnabled)}
+                    onClick={() => {
+                      if (is2FAEnabled) {
+                        setIs2FAEnabled(false);
+                      } else {
+                        setIs2FAModalOpen(true);
+                      }
+                    }}
                     className="px-4 py-2 bg-seller-warmbg hover:bg-seller-hairline text-seller-textprimary font-bold text-xs rounded-xl transition-all border border-seller-hairline"
                   >
-                    {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA'}
+                    {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA (Scan QR)'}
                   </button>
                 </div>
               </div>
             )}
+
+            {/* 2FA Google Authenticator Modal */}
+            <TwoFactorModal
+              isOpen={is2FAModalOpen}
+              userEmail={email || "peternak@agrowaste.id"}
+              userName={ownerName || "Peternak AgroWaste"}
+              onClose={() => setIs2FAModalOpen(false)}
+              onSuccess={() => {
+                setIs2FAEnabled(true);
+              }}
+            />
 
             <div className="mt-8 pt-6 border-t border-seller-hairline flex justify-end">
               <button

@@ -17,6 +17,7 @@ import {
   Leaf, 
   AlertCircle
 } from "lucide-react";
+import TwoFactorModal from "@/components/common/TwoFactorModal";
 
 interface ProfileResponse {
   success: boolean;
@@ -59,6 +60,7 @@ export default function ProfilePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
   const [passwordSuccessMsg, setPasswordSuccessMsg] = useState<string | null>(null);
 
   const [user, setUser] = useState<ProfileResponse["data"] | null>(null);
@@ -980,13 +982,31 @@ export default function ProfilePage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIs2FAEnabled(!is2FAEnabled)}
+                  onClick={() => {
+                    if (is2FAEnabled) {
+                      setIs2FAEnabled(false);
+                    } else {
+                      setIs2FAModalOpen(true);
+                    }
+                  }}
                   className="px-4 py-2 bg-[#F9F9F9] hover:bg-gray-100 border border-[#E8E0D5] text-[#111111] font-bold text-xs rounded-xl transition-all shrink-0"
                 >
-                  {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA'}
+                  {is2FAEnabled ? 'Nonaktifkan 2FA' : 'Aktifkan 2FA (Scan QR)'}
                 </button>
               </div>
             </div>
+
+            {/* 2FA Google Authenticator Modal */}
+            <TwoFactorModal
+              isOpen={is2FAModalOpen}
+              userEmail={user?.email || "pengguna@agrowaste.id"}
+              userName={user?.name || "Pengguna AgroWaste"}
+              onClose={() => setIs2FAModalOpen(false)}
+              onSuccess={() => {
+                setIs2FAEnabled(true);
+                setPasswordSuccessMsg("2FA Google Authenticator berhasil diaktifkan dengan aman!");
+              }}
+            />
 
           </div>
 

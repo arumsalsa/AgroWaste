@@ -96,9 +96,9 @@ export default function ImpactPage() {
   return (
     <div className="flex-1 animate-fade-in bg-land-bg min-h-screen pb-20">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-6 pt-16 md:pt-24 mb-16">
+      <div className="max-w-7xl mx-auto px-6 pt-4 md:pt-8 mb-6">
         <div className="text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-land-accent text-xs font-bold tracking-widest uppercase mb-6 shadow-sm border border-land-cream">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-land-accent text-xs font-bold tracking-widest uppercase mb-4 shadow-sm border border-land-cream">
             <Globe2 className="w-4 h-4 text-land-accent" /> Laporan Transparansi 2026
           </div>
           <h1 className="text-5xl md:text-7xl font-land-heading font-bold text-land-ink leading-tight mb-8" style={{ textWrap: "balance" }}>
