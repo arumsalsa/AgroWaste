@@ -28,6 +28,7 @@ class Product extends Model implements HasMedia
         'description',
         'jenis_ternak',
         'kondisi',
+        'nutrisi',
         'price',
         'unit',
         'stock_kg',
@@ -37,6 +38,10 @@ class Product extends Model implements HasMedia
         'kecamatan',
         'status',
         'rejection_reason',
+    ];
+
+    protected $casts = [
+        'nutrisi' => 'array',
     ];
 
     protected $appends = ['image_url', 'image_urls'];

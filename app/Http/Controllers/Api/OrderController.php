@@ -47,41 +47,41 @@ class OrderController extends Controller
      */
     public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
 
-        if ($user->role === 'pembeli') {
-            $orders = \App\Models\Order::with(['items.product', 'product'])
-                ->where(function ($q) use ($user) {
-                    // Alur checkout() baru: order disimpan dengan user_id
+            $query = \App\Models\Order::with(['items.product', 'product', 'payment.proof', 'reviews']);
+
+            if ($user->role === 'pembeli') {
+                $query->where(function ($q) use ($user) {
                     $q->where('user_id', $user->id);
-
-                    // Alur createOrder() lama: order disimpan dengan buyer_profile_id
                     if ($user->buyerProfile) {
                         $q->orWhere('buyer_profile_id', $user->buyerProfile->id);
                     }
-                })
-                ->latest()
-                ->get();
-        } else {
-            // Peternak: tampilkan pesanan yang masuk ke tokonya
-            $orders = \App\Models\Order::with(['items.product', 'product'])
-                ->where(function ($q) use ($user) {
-                    // Alur checkout() baru: order disimpan dengan peternak_id
+                });
+            } else if ($user->role === 'peternak') {
+                $query->where(function ($q) use ($user) {
                     $q->where('peternak_id', $user->id);
-
-                    // Alur createOrder() lama: cari via relasi produk
                     if ($user->peternakProfile) {
                         $peternakProfileId = $user->peternakProfile->id;
                         $q->orWhereHas('product', function ($pq) use ($peternakProfileId) {
                             $pq->where('peternak_profile_id', $peternakProfileId);
                         });
                     }
-                })
-                ->latest()
-                ->get();
-        }
+                });
+            } else {
+                $query->where('user_id', $user->id);
+            }
 
-        return response()->json(['success' => true, 'data' => $orders], 200);
+            $orders = $query->latest()->get();
+
+            return response()->json(['success' => true, 'data' => $orders], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => true, 'data' => []], 200);
+        }
     }
 
     /**

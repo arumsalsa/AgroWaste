@@ -14,7 +14,7 @@ class CartService
      */
     public function getCart()
     {
-        return CartItem::with('product')->where('user_id', Auth::id())->get();
+        return CartItem::with(['product.peternakProfile'])->where('user_id', Auth::id())->get();
     }
 
     /**

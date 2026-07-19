@@ -67,7 +67,7 @@ class ProductController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        // 6. Pagination
+        // 6. Pagination (12 produk per halaman agar pas 3 kolom per baris)
         $products = $query->paginate(12);
 
         return response()->json([

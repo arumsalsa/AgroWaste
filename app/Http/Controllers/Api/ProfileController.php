@@ -46,7 +46,7 @@ class ProfileController extends Controller
             $user->logistikProfile->update($request->only(['company_name', 'vehicle_plate']));
         } elseif ($user->role === 'peternak' && $user->peternakProfile) {
             $peternakData = $request->only([
-                'nama_peternakan',
+                'nama_kandang',
                 'deskripsi',
                 'provinsi',
                 'kabupaten',
@@ -54,7 +54,8 @@ class ProfileController extends Controller
                 'lat',
                 'lng',
                 'jenis_ternak',
-                'kapasitas_ternak'
+                'kapasitas_ternak',
+                'bank_account'
             ]);
 
             // If jenis_ternak is a JSON string from frontend, decode it so it stores correctly with array cast

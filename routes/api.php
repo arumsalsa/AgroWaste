@@ -15,6 +15,7 @@ Route::prefix('v1')->group(function () {
     // Katalog Produk & Kategori (Public - Bisa dilihat tanpa login)
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']); // Detail produk
+    Route::get('/products/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'index']); // Ulasan produk
     Route::get('/categories', [\App\Http\Controllers\Api\CategoryController::class, 'index']);
     Route::get('/sellers/{id}', [ProductController::class, 'sellerProfile']);
    
@@ -22,10 +23,13 @@ Route::prefix('v1')->group(function () {
     Route::get('/articles', [\App\Http\Controllers\Api\ArticleController::class, 'index']);
     Route::get('/articles/{slug}', [\App\Http\Controllers\Api\ArticleController::class, 'show']);
 
-
    // Protected Routes (Wajib bawa Token)
     Route::middleware('auth:sanctum')->group(function () {
         
+        // Review Routes (Protected)
+        Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
+        Route::get('/products/{id}/can-review', [\App\Http\Controllers\Api\ReviewController::class, 'canReview']);
+
         // Product Routes (Hanya peternak yang bisa POST, PUT, DELETE)
         Route::prefix('products')->group(function () {
             Route::post('/', [ProductController::class, 'store']); // Create Produk
@@ -109,7 +113,5 @@ Route::prefix('v1')->group(function () {
 
     // Webhook Midtrans Route (Public)
     Route::post('/webhooks/midtrans', [\App\Http\Controllers\Api\PaymentController::class, 'midtransWebhook']);
-
-
-
+    
 });
